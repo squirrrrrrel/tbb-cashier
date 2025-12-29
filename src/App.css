@@ -1,0 +1,16 @@
+@import "tailwindcss";
+@import "@fontsource/open-sans";
+
+:root {
+  --primary: #2190ac;
+  --secondary: #027491;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+}
+
+body{
+  font-family: 'Open Sans', sans-serif;
+}
