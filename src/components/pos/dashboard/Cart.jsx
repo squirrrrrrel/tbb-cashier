@@ -96,7 +96,7 @@ const Cart = () => {
           </div>
         </div>
         <div className="buttons flex gap-1">
-          <button className="clear-cart bg-gradient-to-b from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex gap-2">
+          <button className="clear-cart bg-gradient-to-b from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex items-center gap-2">
             <p>Select Customer</p>
             <svg
               viewBox="64 64 896 896"

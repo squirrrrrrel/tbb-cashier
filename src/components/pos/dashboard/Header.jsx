@@ -51,7 +51,7 @@ const Header = () => {
   return (
     <div className="header">
       <div className="p-4 flex gap-20 items-center">
-        <div className="logo bg-primary text-white px-6 py-4 text-2xl rounded-2xl font-bold">
+        <div className="logo bg-secondary text-white px-6 py-4 text-2xl rounded-2xl font-bold">
           warnoc
         </div>
         <div className="product-categories flex gap-4">
