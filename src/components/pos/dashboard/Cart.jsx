@@ -159,7 +159,7 @@ const Cart = () => {
             </div>
           </div>
           <div className="cart-btns mt-4 flex gap-2">
-            <div className="discount w-full bg-gray-100 p-4 fill-gray-700 text-gray-700 rounded-lg">
+            <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -173,7 +173,7 @@ const Cart = () => {
               </svg>
               <p>Discount</p>
             </div>
-            <div className="discount w-full bg-gray-100 p-4 fill-gray-700 text-gray-700 rounded-lg">
+            <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -187,7 +187,7 @@ const Cart = () => {
               </svg>
               <p>Exchange</p>
             </div>
-            <div className="discount w-full bg-gray-100 p-4 fill-gray-700 text-gray-700 rounded-lg">
+            <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"

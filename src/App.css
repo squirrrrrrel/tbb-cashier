@@ -4,13 +4,19 @@
 :root {
   --primary: #2190ac;
   --secondary: #027491;
+  --background: #f8f8f8;
+  --button-background: #f1eeee;
+  --hover-color: #5ea0b1;
 }
 
 @theme inline {
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
+  --color-background: var(--background);
+  --color-button-background: var(--button-background);
+  --color-hover-color: var(--hover-color);
 }
 
-body{
-  font-family: 'Open Sans', sans-serif;
+body {
+  font-family: "Open Sans", sans-serif;
 }

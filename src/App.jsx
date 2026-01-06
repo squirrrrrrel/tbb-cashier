@@ -18,7 +18,7 @@ const App = () => {
 
   useEffect(() => {
     hydrate();
-  }, []);
+  }, [hydrate]);
 
   if (!hydrated) return <div>Loading...</div>;
   return (
