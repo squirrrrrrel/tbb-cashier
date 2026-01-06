@@ -5,7 +5,7 @@ import Header from "../../components/pos/dashboard/Header";
 const Dashboard = () => {
   return (
     <div className="flex">
-      <div className="home w-3/5 bg-gray-50">
+      <div className="home w-3/5 bg-background">
         <div className="header">
           <Header />
         </div>
