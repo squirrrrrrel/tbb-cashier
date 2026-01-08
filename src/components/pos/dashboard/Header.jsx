@@ -78,7 +78,7 @@ const Header = () => {
           <input
             type="text"
             placeholder="Search By Product Name, Barcode Number"
-            className="p-2 pl-10 border border-gray-200 bg-white rounded-lg w-full shadow-sm outline-0 cursor-text"
+            className="p-2 pl-10 border border-gray-200 bg-white rounded-md w-full shadow-sm outline-0 cursor-text"
           />
         </div>
         <div className="button-group flex gap-2">
