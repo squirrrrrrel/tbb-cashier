@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import warnocLogo from "../../assets/images/warnoc-logo.png";
+import LogoutPopUp from "./LogoutPopUp";
 
 const NavButtons = ({ name, icon, target }) => {
   const location = useLocation();
@@ -30,7 +31,7 @@ const NavButtons = ({ name, icon, target }) => {
   );
 };
 
-const SideHeader = () => {
+const SideHeader = ({ setIsLogoutClicked }) => {
   const navLinks = [
     { name: "Home", icon: <HomeIcon />, target: "/pos/dashboard" },
     { name: "Customers", icon: <CustomersIcon />, target: "/pos/customers" },
@@ -58,7 +59,10 @@ const SideHeader = () => {
         </div>
       </div>
       <div className="logout">
-        <div className="link px-5 py-3 flex flex-col justify-center items-center bg-transparent hover:bg-gradient-to-b hover:from-primary hover:to-secondary rounded-3xl cursor-pointer text-gray-700 group">
+        <div
+          onClick={() => setIsLogoutClicked(true)}
+          className="link px-5 py-3 flex flex-col justify-center items-center bg-transparent hover:bg-linear-to-b hover:from-primary hover:to-secondary rounded-3xl cursor-pointer text-gray-700 group"
+        >
           <LogoutIcon />
           <p className="text-sm font-semibold group-hover:text-white">Logout</p>
         </div>
