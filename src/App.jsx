@@ -10,6 +10,7 @@ import Tables from "./pages/pos/Tables";
 import LowStock from "./pages/pos/LowStock";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuthStore } from "./store/useAuthStore";
+import { ReactNotifications } from "react-notifications-component";
 
 
 const App = () => {
@@ -22,23 +23,26 @@ const App = () => {
 
   if (!hydrated) return <div>Loading...</div>;
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/" element={<LoginPage />} />
+    <>
+      <ReactNotifications />
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<LoginPage />} />
 
-      {/* Protected POS */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/pos" element={<PosLayout />}>
-          <Route index element={<Navigate to="/pos/dashboard" replace />} />
-          <Route path="/pos/dashboard" element={<Dashboard />} />
-          <Route path="/pos/customers" element={<Customers />} />
-          <Route path="/pos/invoices" element={<Invoices />} />
-          <Route path="/pos/promotions" element={<Promotions />} />
-          <Route path="/pos/tables" element={<Tables />} />
-          <Route path="/pos/lowstock" element={<LowStock />} />
+        {/* Protected POS */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/pos" element={<PosLayout />}>
+            <Route index element={<Navigate to="/pos/dashboard" replace />} />
+            <Route path="/pos/dashboard" element={<Dashboard />} />
+            <Route path="/pos/customers" element={<Customers />} />
+            <Route path="/pos/invoices" element={<Invoices />} />
+            <Route path="/pos/promotions" element={<Promotions />} />
+            <Route path="/pos/tables" element={<Tables />} />
+            <Route path="/pos/lowstock" element={<LowStock />} />
+          </Route>
         </Route>
-      </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 };
 
