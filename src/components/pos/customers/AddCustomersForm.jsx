@@ -1,52 +1,175 @@
 import React from "react";
 import Select from "react-select";
 import { commonSelectStyles } from "../../common/select/selectStyle";
+import { useState, useEffect } from "react";
 
-const InputComp = ({ label, placeholder, isRequired = false, type }) => {
+const InputComp = ({ label, placeholder, isRequired = false, type, name, value, onChange, }) => {
   return (
     <div className="first-name flex flex-col w-full">
-      <label className="text-gray-600 text-sm font-semibold">
-        {label} <span className="text-red-600"> {isRequired ? " *" : ""}</span>
+      <label className="text-[#555555] text-sm font-semibold">
+        {label} <span className="text-red-500"> {isRequired ? " *" : ""}</span>
       </label>
       <input
         type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
         placeholder={placeholder}
-        className="p-2 border border-gray-300 rounded-md bg-gray-50 placeholder:text-gray-500 mt-1 focus:outline-primary"
+        className="p-2 border-0 border-gray-300 rounded-md bg-[#f8f8f8] outline-none placeholder:text-gray-500 mt-2 shadow-[0_0_3px_#00000026] focus:outline-primary text-sm "
       />
     </div>
   );
 };
+// border-0 rounded-[6px] 
 
-const AddCustomersForm = () => {
+
+
+const AddCustomersForm = ({
+  selectedCustomer,
+  clearSelection,
+  onAddCustomer,
+  onEditCustomer,
+  countries,
+}) => {
+
+
+
+  const defaultCodeOption = {
+    label: "Select Code",
+    value: "",
+  };
+
+  const codeOptions = countries.map((c) => ({
+    label: `${c.name} (${c.code})`, // shown in dropdown
+    value: c.code,                 // sent to backend
+  }));
+
+  const defaultCountryOption = {
+    label: "Select Country",
+    value: "",
+  };
+
+  const countryOptions = countries.map((c) => ({
+    label: c.name,
+    value: c.name,
+  }));
+
+  const initialFormData = {
+    firstName: "",
+    lastName: "",
+    phoneCode: defaultCodeOption,
+    phone: "",
+    email: "",
+    address1: "",
+    address2: "",
+    country: defaultCountryOption,
+    state: "",
+    city: "",
+    pincode: "",
+  }
+
+  const [formData, setFormData] = useState(initialFormData);
+
+  // Auto fill on Edit
+  useEffect(() => {
+    if (selectedCustomer) {
+      setFormData({
+        ...initialFormData,
+        ...selectedCustomer,
+        phoneCode:
+          codeOptions.find(
+            (opt) => opt.value === selectedCustomer.phoneCode
+          ) || defaultCodeOption,
+        country:
+          countryOptions.find(
+            (opt) => opt.value === selectedCustomer.country
+          ) || defaultCountryOption,
+      });
+    } else {
+      setFormData(initialFormData);
+    }
+  }, [selectedCustomer]);
+
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCancel = (e) => {
+    e.preventDefault();
+    setFormData(initialFormData);   // clear form
+    clearSelection(null);       // exit edit mode
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      ...formData,
+      phoneCode: formData.phoneCode.value,
+      country: formData.country.value,
+    };
+
+
+    if (!payload.firstName || !payload.lastName || !payload.phone || !payload.phoneCode) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    if (selectedCustomer) {
+      // UPDATE
+      onEditCustomer(payload);
+      alert("Customer edited successfully");
+    } else {
+      // ADD
+      onAddCustomer(payload);
+      alert("Customer added successfully");
+    }
+    setFormData(initialFormData);
+    clearSelection();
+  };
+
+
+
   return (
-    <div className="bg-white p-4 border-l border-gray-200 h-screen">
-      <h2 className="text-2xl font-semibold text-gray-700">Add New Customer</h2>
-      <div className="form mt-4">
-        <form className="flex flex-col gap-4">
+    <div className="bg-white p-3 border-l border-gray-200 ">
+      <h2 className="text-2xl font-semibold text-[#555555]">{selectedCustomer ? "Edit Customer" : "Add New Customer"}</h2>
+      <div className="form mt-4" onSubmit={handleSubmit} >
+        <form className="flex flex-col gap-3 ">
           <div className="name flex gap-4">
             <InputComp
               label={"First Name"}
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
               placeholder={"Enter First Name"}
               isRequired={true}
               type={"text"}
             />
             <InputComp
               label={"Last Name"}
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
               placeholder={"Enter First Name"}
               isRequired={true}
               type={"text"}
             />
           </div>
           <div className="phone-number flex gap-4">
-            <div className="code w-1/2 flex flex-col">
+            <div className="code w-1/2 flex flex-col ">
               <label className="text-gray-600 text-sm font-semibold mb-[5px]">
                 Code
                 <span className="text-red-600"> *</span>
               </label>
               <Select
-                isClearable="true"
-                placeholder="Code"
-                options={[{ label: "Select Code", value: "Select Code" }]}
+                // isClearable="true"
+                placeholder=" Code"
+                options={[defaultCodeOption, ...codeOptions]}
+                value={formData.phoneCode}
+                onChange={(option) =>
+                  setFormData((prev) => ({ ...prev, phoneCode: option }))
+                }
+                isClearable={false}
                 components={{
                   IndicatorSeparator: () => null,
                 }}
@@ -56,15 +179,13 @@ const AddCustomersForm = () => {
                     borderRadius: "6px",
                     border: "none",
                     outline: "1px",
-                    outlineStyle: "solid",
-                    outlineColor: "#d1d5dc",
-                    boxShadow: "none",
                     "&:focus, &:focus-within": {
                       outlineWidth: "2px",
                       outlineColor: "var(--color-primary)",
                     },
                     padding: "2px",
-                    backgroundColor: "#f9fafb",
+                    backgroundColor: "#f8f8f8",
+                    boxShadow: "0 0 3px #00000026",
                   }),
                   option: (provided, state) => ({
                     ...provided,
@@ -82,6 +203,9 @@ const AddCustomersForm = () => {
             </div>
             <InputComp
               label={"Phone Number"}
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
               placeholder={"Enter Phone Number"}
               isRequired="true"
               type={"tel"}
@@ -90,6 +214,9 @@ const AddCustomersForm = () => {
           <div className="email">
             <InputComp
               label={"Email"}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder={"Enter Email"}
               type={"email"}
             />
@@ -97,6 +224,9 @@ const AddCustomersForm = () => {
           <div className="address-line-1">
             <InputComp
               label={"Address Line 1"}
+              name="address1"
+              value={formData.address1}
+              onChange={handleChange}
               placeholder={"Enter Address Line 1"}
               type={"text"}
             />
@@ -104,6 +234,9 @@ const AddCustomersForm = () => {
           <div className="address-line-2">
             <InputComp
               label={"Address Line 2"}
+              name="address2"
+              value={formData.address2}
+              onChange={handleChange}
               placeholder={"Enter Address Line 2"}
               type={"text"}
             />
@@ -114,9 +247,14 @@ const AddCustomersForm = () => {
                 Country
               </label>
               <Select
-                isClearable="true"
+                // isClearable="true"
                 placeholder="Select Country"
-                options={[{ label: "Select Country", value: "Select Country" }]}
+                options={[defaultCountryOption, ...countryOptions]}
+                value={formData.country}
+                onChange={(option) =>
+                  setFormData((prev) => ({ ...prev, country: option }))
+                }
+                isClearable={false}
                 components={{
                   IndicatorSeparator: () => null,
                 }}
@@ -126,15 +264,14 @@ const AddCustomersForm = () => {
                     borderRadius: "6px",
                     border: "none",
                     outline: "1px",
-                    outlineStyle: "solid",
                     outlineColor: "#d1d5dc",
-                    boxShadow: "none",
                     "&:focus, &:focus-within": {
                       outlineWidth: "2px",
                       outlineColor: "var(--color-primary)",
                     },
                     padding: "2px",
-                    backgroundColor: "#f9fafb",
+                    backgroundColor: "#f8f8f8",
+                    boxShadow: "0 0 3px #00000026",
                   }),
                   option: (provided, state) => ({
                     ...provided,
@@ -152,6 +289,9 @@ const AddCustomersForm = () => {
             </div>
             <InputComp
               label={"State"}
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
               placeholder={"Enter State"}
               type={"text"}
             />
@@ -159,18 +299,27 @@ const AddCustomersForm = () => {
           <div className="city-pincode flex gap-4">
             <InputComp
               label={"City"}
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
               placeholder={"Enter City"}
               type={"text"}
             />
             <InputComp
               label={"Pincode"}
+              name="pincode"
+              value={formData.pincode}
+              onChange={handleChange}
               placeholder={"Enter Pincode"}
               type={"text"}
             />
           </div>
-          <button className="submit w-full p-4 bg-linear-180 from-primary to-secondary text-white font-bold text-center rounded-lg cursor-pointer">
-            Save Customer
+          <button className="submit w-full p-3 bg-linear-180 from-primary to-secondary text-white font-bold text-center rounded-lg cursor-pointer mt-2">
+            {selectedCustomer ? "Update Customer" : "Save Customer"}
           </button>
+          {selectedCustomer && (
+            <button type="button" onClick={handleCancel} className="cancel mb-5 w-full p-3 bg-white border-2 border-gray-200 text-black font-bold text-center rounded-lg cursor-pointer">Cancel</button>
+          )}
         </form>
       </div>
     </div>
@@ -178,3 +327,4 @@ const AddCustomersForm = () => {
 };
 
 export default AddCustomersForm;
+

@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import LoginPage from "./pages/login/LoginPage";
 import PosLayout from "./components/layout/PosLayout";
 import Dashboard from "./pages/pos/Dashboard";
@@ -10,8 +9,8 @@ import Promotions from "./pages/pos/Promotions";
 import Tables from "./pages/pos/Tables";
 import LowStock from "./pages/pos/LowStock";
 import ProtectedRoute from "./components/ProtectedRoute";
-import OfflineLoader from "./components/OfflineLoader";
-
+import { ReactNotifications } from "react-notifications-component";
+import  OfflineLoader  from "./components/OfflineLoader";
 import { useAuthStore } from "./store/useAuthStore";
 import { useNetworkStore } from "./store/useNetworkStore";
 import { usePosStore } from "./store/usePosStore";
@@ -37,23 +36,26 @@ const App = () => {
   }
 
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/" element={<LoginPage />} />
+    <>
+      <ReactNotifications />
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<LoginPage />} />
 
-      {/* Protected POS */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/pos" element={<PosLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="invoices" element={<Invoices />} />
-          <Route path="promotions" element={<Promotions />} />
-          <Route path="tables" element={<Tables />} />
-          <Route path="lowstock" element={<LowStock />} />
+        {/* Protected POS */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/pos" element={<PosLayout />}>
+            <Route index element={<Navigate to="/pos/dashboard" replace />} />
+            <Route path="/pos/dashboard" element={<Dashboard />} />
+            <Route path="/pos/customers" element={<Customers />} />
+            <Route path="/pos/invoices" element={<Invoices />} />
+            <Route path="/pos/promotions" element={<Promotions />} />
+            <Route path="/pos/tables" element={<Tables />} />
+            <Route path="/pos/lowstock" element={<LowStock />} />
+          </Route>
         </Route>
-      </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 };
 
