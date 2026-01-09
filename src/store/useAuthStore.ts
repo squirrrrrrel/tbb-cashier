@@ -1,14 +1,18 @@
 import { create } from "zustand";
 import { getAuth, saveAuth, clearAuth } from "../db/authDB";
-import api from "../utils/api"; // ✅ import axios instance
+import api from "../utils/api";
 
 interface AuthState {
   user: any | null;
   token: string | null;
   isAuthenticated: boolean;
   hydrated: boolean;
+
   login: (payload: { user: any; token: string }) => Promise<void>;
-  loginWithCredentials: (credentials: { username: string; password: string }) => Promise<void>;
+  loginWithCredentials: (credentials: {
+    username: string;
+    password: string;
+  }) => Promise<void>;
   logout: () => Promise<void>;
   hydrate: () => Promise<void>;
   verifyOnline: () => Promise<void>;
@@ -20,79 +24,89 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   hydrated: false,
 
-  // LOGIN (internal - saves auth data)
+  /* -------------------------------------------------------
+   * LOCAL LOGIN (NO SERVER)
+   * ----------------------------------------------------- */
   login: async (payload) => {
     await saveAuth(payload);
     set({
-      ...payload,
+      user: payload.user,
+      token: payload.token,
       isAuthenticated: true,
-      hydrated: true, // ✅ important
+      hydrated: true,
     });
   },
 
-  // LOGIN WITH CREDENTIALS (API call)
+  /* -------------------------------------------------------
+   * ONLINE LOGIN (SERVER REQUIRED)
+   * ----------------------------------------------------- */
   loginWithCredentials: async (credentials) => {
-    try {
-      const res = await api.post("/user/login", {
-        ...credentials,
-        side: "cashier", // POS cashier side
-      });
+    const res = await api.post("/user/login", {
+      ...credentials,
+      side: "cashier",
+    });
 
-      // Handle different response formats
-      const responseData = res.data?.data || res.data;
-      const token = responseData.token || responseData.accessToken;
-      const user = responseData.user;
+    const data = res.data?.data || res.data;
+    const token = data?.token || data?.accessToken;
+    const user = data?.user;
 
-      if (!token || !user) {
-        throw new Error("Invalid response from server");
-      }
-
-      // Save to IndexedDB and update state
-      await saveAuth({ user, token });
-      set({
-        user,
-        token,
-        isAuthenticated: true,
-        hydrated: true,
-      });
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Login failed. Please try again.";
-      throw new Error(errorMessage);
+    if (!token || !user) {
+      throw new Error("Invalid login response");
     }
+
+    await saveAuth({ user, token });
+
+    set({
+      user,
+      token,
+      isAuthenticated: true,
+      hydrated: true,
+    });
   },
 
-  // LOGOUT
+  /* -------------------------------------------------------
+   * LOGOUT (LOCAL ONLY)
+   * ----------------------------------------------------- */
   logout: async () => {
     await clearAuth();
     set({
       user: null,
       token: null,
       isAuthenticated: false,
-      hydrated: true, // ✅ important
+      hydrated: true,
     });
   },
 
-  // HYDRATE ON APP LOAD
+  /* -------------------------------------------------------
+   * HYDRATE (OFFLINE-FIRST, NO SERVER EVER)
+   * ----------------------------------------------------- */
   hydrate: async () => {
-    const data = await getAuth();
-    if (data) {
-      set({
-        ...data,
-        isAuthenticated: true,
-        hydrated: true,
-      });
-    } else {
+    try {
+      const data = await getAuth(); // IndexedDB only
+
+      if (data?.token && data?.user) {
+        set({
+          user: data.user,
+          token: data.token,
+          isAuthenticated: true,
+          hydrated: true,
+        });
+      } else {
+        set({ hydrated: true });
+      }
+    } catch (err) {
+      // 🔴 NEVER BLOCK UI
       set({ hydrated: true });
     }
   },
 
-  // VERIFY WHEN ONLINE
+  /* -------------------------------------------------------
+   * VERIFY (ONLINE ONLY, NEVER AUTO-LOGOUT)
+   * ----------------------------------------------------- */
   verifyOnline: async () => {
-    const { token, logout, login } = get();
+    const { token } = get();
 
+    // 🔒 Offline-safe guard
     if (!token || !navigator.onLine) return;
 
     try {
@@ -102,12 +116,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
       });
 
-      await login({
-        user: res.data.user,
-        token: res.data.token,
+      const data = res.data?.data || res.data;
+
+      if (!data?.user || !data?.token) return;
+
+      await saveAuth({
+        user: data.user,
+        token: data.token,
+      });
+
+      set({
+        user: data.user,
+        token: data.token,
+        isAuthenticated: true,
       });
     } catch (err) {
-      await logout();
+      // ❌ DO NOT LOGOUT
+      console.warn("Verify failed, continuing offline session");
     }
   },
 }));

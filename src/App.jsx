@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import LoginPage from "./pages/login/LoginPage";
 import { Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/login/LoginPage";
 import PosLayout from "./components/layout/PosLayout";
 import Dashboard from "./pages/pos/Dashboard";
 import Customers from "./pages/pos/Customers";
@@ -9,19 +9,32 @@ import Promotions from "./pages/pos/Promotions";
 import Tables from "./pages/pos/Tables";
 import LowStock from "./pages/pos/LowStock";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuthStore } from "./store/useAuthStore";
 import { ReactNotifications } from "react-notifications-component";
-
+import  OfflineLoader  from "./components/OfflineLoader";
+import { useAuthStore } from "./store/useAuthStore";
+import { useNetworkStore } from "./store/useNetworkStore";
+import { usePosStore } from "./store/usePosStore";
 
 const App = () => {
-  const hydrate = useAuthStore((s) => s.hydrate);
-  const hydrated = useAuthStore((s) => s.hydrated);
+  const authHydrate = useAuthStore((s) => s.hydrate);
+  const posHydrate = usePosStore((s) => s.hydrate);
+
+  const authHydrated = useAuthStore((s) => s.hydrated);
+  const posHydrated = usePosStore((s) => s.hydrated);
+
+  const initNetwork = useNetworkStore((s) => s.init);
 
   useEffect(() => {
-    hydrate();
-  }, [hydrate]);
+    initNetwork();   // online/offline detection
+    authHydrate();   // cookie-based auth
+    posHydrate();    // IndexedDB hydration
+  }, []);
 
-  if (!hydrated) return <div>Loading...</div>;
+  // 🔴 BLOCK UI UNTIL LOCAL DATA IS READY
+  if (!authHydrated || !posHydrated) {
+    return <OfflineLoader />;
+  }
+
   return (
     <>
       <ReactNotifications />
