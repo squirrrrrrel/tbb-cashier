@@ -27,7 +27,7 @@ const category = [
 
 const ProductCategoryComp = ({ category }) => {
   return (
-    <div className="p-2 bg-transparent rounded-2xl border-1 border-gray-200 hover:outline-2 hover:outline-primary cursor-pointer flex items-center">
+    <div className="p-2 bg-transparent rounded-2xl border border-gray-200 hover:outline-2 hover:outline-primary cursor-pointer flex items-center">
       <img src={category.image} alt={category.name} className="w-14" />
     </div>
   );
