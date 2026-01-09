@@ -10,7 +10,7 @@ import muteIcon from "../../../assets/icons/mute.svg";
 const category = [
   {
     id: 1,
-    name: "All Products",
+    name: "All",
     image: allProductsImage,
   },
   {
@@ -25,15 +25,27 @@ const category = [
   },
 ];
 
-const ProductCategoryComp = ({ category }) => {
+const ProductCategoryComp = ({ category, filters, setFilters }) => {
   return (
-    <div className="p-2 bg-transparent rounded-2xl border border-gray-200 hover:outline-2 hover:outline-primary cursor-pointer flex items-center">
+    <div
+      onClick={() =>
+        setFilters((prev) => ({
+          ...prev,
+          category: category ? category.name : "all",
+        }))
+      }
+      className={`p-2 bg-transparent rounded-2xl border border-gray-200 hover:outline-2 hover:outline-secondary cursor-pointer flex items-center ${
+        filters.category.toLowerCase() === category.name.toLowerCase()
+          ? "outline-2 outline-secondary"
+          : ""
+      }`}
+    >
       <img src={category.image} alt={category.name} className="w-14" />
     </div>
   );
 };
 
-const Header = () => {
+const Header = ({ filters, setFilters }) => {
   const [isFullScreen, setIsFullScreen] = useState(
     !!document.fullscreenElement
   );
@@ -56,7 +68,12 @@ const Header = () => {
         </div>
         <div className="product-categories flex gap-4">
           {category.map((cat) => (
-            <ProductCategoryComp key={cat.id} category={cat} />
+            <ProductCategoryComp
+              key={cat.id}
+              category={cat}
+              filters={filters}
+              setFilters={setFilters}
+            />
           ))}
         </div>
       </div>
@@ -79,6 +96,12 @@ const Header = () => {
             type="text"
             placeholder="Search By Product Name, Barcode Number"
             className="p-2 pl-10 border border-gray-200 bg-white rounded-md w-full shadow-sm outline-0 cursor-text"
+            onChange={(e) =>
+              setFilters((prev) => ({
+                ...prev,
+                product: e.target.value,
+              }))
+            }
           />
         </div>
         <div className="button-group flex gap-2">
