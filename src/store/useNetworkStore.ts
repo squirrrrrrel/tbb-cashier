@@ -1,13 +1,11 @@
+// store/useNetworkStore.js
 import { create } from "zustand";
 
 export const useNetworkStore = create((set) => ({
-  isOnline: navigator.onLine,
+  online: navigator.onLine,
+
+  init: () => {
+    window.addEventListener("online", () => set({ online: true }));
+    window.addEventListener("offline", () => set({ online: false }));
+  },
 }));
-
-window.addEventListener("online", () => {
-  useNetworkStore.setState({ isOnline: true });
-});
-
-window.addEventListener("offline", () => {
-  useNetworkStore.setState({ isOnline: false });
-});
