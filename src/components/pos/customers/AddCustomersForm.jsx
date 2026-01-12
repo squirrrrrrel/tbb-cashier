@@ -2,6 +2,7 @@ import React from "react";
 import Select from "react-select";
 import { commonSelectStyles } from "../../common/select/selectStyle";
 import { useState, useEffect } from "react";
+import { useNotification } from "../../../hooks/useNotification.jsx";
 
 const InputComp = ({ label, placeholder, isRequired = false, type, name, value, onChange, }) => {
   return (
@@ -32,7 +33,7 @@ const AddCustomersForm = ({
   countries,
 }) => {
 
-
+  const { notifySuccess, notifyError } = useNotification();
 
   const defaultCodeOption = {
     label: "Select Code",
@@ -40,7 +41,7 @@ const AddCustomersForm = ({
   };
 
   const codeOptions = countries.map((c) => ({
-    label: `${c.name} (${c.code})`, // shown in dropdown
+    label: c.name,
     value: c.code,                 // sent to backend
   }));
 
@@ -57,7 +58,7 @@ const AddCustomersForm = ({
   const initialFormData = {
     firstName: "",
     lastName: "",
-    phoneCode: defaultCodeOption,
+    phoneCode: null,
     phone: "",
     email: "",
     address1: "",
@@ -94,6 +95,27 @@ const AddCustomersForm = ({
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const validateForm = (data) => {
+    if (!data.firstName) {
+      notifyError("Please enter firstname!", "Require field missing");
+      return false;
+    }
+    if (!data.lastName) {
+      notifyError("Please enter lastName!", "Require field missing");
+      return false;
+    }
+    if (!data.phoneCode) {
+      notifyError("Please enter phoneCode!", "Require field missing");
+      return false;
+    }
+
+    if (!data.phone) {
+      notifyError("Please enter phone number!", "Require field missing");
+      return false;
+    }
+
+    return true;
+  };
 
   const handleCancel = (e) => {
     e.preventDefault();
@@ -102,30 +124,39 @@ const AddCustomersForm = ({
   };
 
   const handleSubmit = (e) => {
+
     e.preventDefault();
     const payload = {
       ...formData,
-      phoneCode: formData.phoneCode.value,
+      phoneCode: formData.phoneCode? formData.phoneCode.value : "",
       country: formData.country.value,
     };
-
-
-    if (!payload.firstName || !payload.lastName || !payload.phone || !payload.phoneCode) {
-      alert("Please fill all required fields");
-      return;
-    }
-
+    
+    
+    
+    if (!validateForm(formData)) return;
+    try {
+    
     if (selectedCustomer) {
       // UPDATE
       onEditCustomer(payload);
-      alert("Customer edited successfully");
+      notifySuccess("Customer edited successfully");
     } else {
       // ADD
       onAddCustomer(payload);
-      alert("Customer added successfully");
+      notifySuccess("Customer added successfully");
     }
+      
+    } catch (error) {
+      notifyError("An error occurred. Please try again.");
+      console.log(error);
+    } finally {
     setFormData(initialFormData);
     clearSelection();
+    }
+
+    
+
   };
 
 
@@ -156,15 +187,14 @@ const AddCustomersForm = ({
             />
           </div>
           <div className="phone-number flex gap-4">
-            <div className="code w-1/2 flex flex-col ">
+            <div className="code w-2/5 flex flex-col ">
               <label className="text-gray-600 text-sm font-semibold mb-[5px]">
                 Code
                 <span className="text-red-600"> *</span>
               </label>
               <Select
-                // isClearable="true"
                 placeholder=" Code"
-                options={[defaultCodeOption, ...codeOptions]}
+                options={codeOptions}
                 value={formData.phoneCode}
                 onChange={(option) =>
                   setFormData((prev) => ({ ...prev, phoneCode: option }))
@@ -173,9 +203,18 @@ const AddCustomersForm = ({
                 components={{
                   IndicatorSeparator: () => null,
                 }}
+                formatOptionLabel={(option, { context }) =>
+                  context === "menu"
+                    ? `(${option.value}) ${option.label}` // dropdown
+                    : option.value                        // selected field
+                }
                 styles={{
                   control: (provided) => ({
                     ...provided,
+                    fontSize: "14px",
+                    height: "36px",
+                    marginTop: "2px",
+                    color: "#555555",
                     borderRadius: "6px",
                     border: "none",
                     outline: "1px",
@@ -183,16 +222,32 @@ const AddCustomersForm = ({
                       outlineWidth: "2px",
                       outlineColor: "var(--color-primary)",
                     },
-                    padding: "2px",
+                    padding: "0px",
                     backgroundColor: "#f8f8f8",
                     boxShadow: "0 0 3px #00000026",
                   }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: "#gray",   // selected text color
+                    fontWeight: "500",
+                  }),
+                  menu: (provided) => ({
+                    ...provided,
+                    width: "15rem",
+                    fontWeight: "600",        // ⬅ dropdown width
+                    color: "#555555",
+                    fontSize: "0.8rem",
+                    padding: "0",
+
+                  }),
                   option: (provided, state) => ({
                     ...provided,
-                    backgroundColor: state.isSelected
-                      ? "var(--color-secondary)"
-                      : "white",
-                    color: state.isSelected ? "white" : "black",
+                    backgroundColor: state.isFocused
+                      ? "var(--color-hover-color)"
+                      : state.isSelected
+                        ? "var(--color-secondary)"
+                        : "white",
+                    color: state.isFocused || state.isSelected ? "white" : "black",
                     "&:hover": {
                       backgroundColor: "var(--color-hover-color)",
                       color: "white",
@@ -261,6 +316,10 @@ const AddCustomersForm = ({
                 styles={{
                   control: (provided) => ({
                     ...provided,
+                    fontSize: "14px",
+                    height: "36px",
+                    marginTop: "2px",
+                    color: "#555555",
                     borderRadius: "6px",
                     border: "none",
                     outline: "1px",
@@ -273,12 +332,29 @@ const AddCustomersForm = ({
                     backgroundColor: "#f8f8f8",
                     boxShadow: "0 0 3px #00000026",
                   }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: "#gray",   // selected text color
+                    fontWeight: "500",
+                  }),
+                  menu: (provided) => ({
+                    ...provided,
+                    width: "15rem",
+                    fontWeight: "600",        // ⬅ dropdown width
+                    color: "#555555",
+                    fontSize: "0.8rem",
+                    padding: "0",
+
+                  }),
                   option: (provided, state) => ({
                     ...provided,
-                    backgroundColor: state.isSelected
-                      ? "var(--color-secondary)"
-                      : "white",
-                    color: state.isSelected ? "white" : "black",
+
+                    backgroundColor: state.isFocused
+                      ? "var(--color-hover-color)"
+                      : state.isSelected
+                        ? "var(--color-secondary)"
+                        : "white",
+                    color: state.isFocused || state.isSelected ? "white" : "black",
                     "&:hover": {
                       backgroundColor: "var(--color-hover-color)",
                       color: "white",

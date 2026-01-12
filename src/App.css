@@ -32,3 +32,11 @@
 body {
   font-family: "Open Sans", sans-serif;
 }
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}

@@ -9,7 +9,7 @@ import Promotions from "./pages/pos/Promotions";
 import Tables from "./pages/pos/Tables";
 import LowStock from "./pages/pos/LowStock";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { ReactNotifications } from "react-notifications-component";
+import { Toaster } from "react-hot-toast";
 import  OfflineLoader  from "./components/OfflineLoader";
 import { useAuthStore } from "./store/useAuthStore";
 import { useNetworkStore } from "./store/useNetworkStore";
@@ -37,7 +37,10 @@ const App = () => {
 
   return (
     <>
-      <ReactNotifications />
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+      />
       <Routes>
         {/* Public */}
         <Route path="/" element={<LoginPage />} />
