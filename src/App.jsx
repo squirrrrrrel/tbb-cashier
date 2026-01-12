@@ -10,7 +10,7 @@ import Tables from "./pages/pos/Tables";
 import LowStock from "./pages/pos/LowStock";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuthStore } from "./store/useAuthStore";
-import { ReactNotifications } from "react-notifications-component";
+import { Toaster } from "react-hot-toast";
 
 
 const App = () => {
@@ -24,7 +24,10 @@ const App = () => {
   if (!hydrated) return <div>Loading...</div>;
   return (
     <>
-      <ReactNotifications />
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+      />
       <Routes>
         {/* Public */}
         <Route path="/" element={<LoginPage />} />

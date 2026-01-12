@@ -2,26 +2,27 @@ import React from "react";
 // import { Pencil } from "lucide-react";
 import { AiOutlineEdit, AiOutlineDelete , AiOutlineCheck, AiOutlineMail, AiOutlinePhone   } from "react-icons/ai";
 
+
 const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer }) => {
   return (
     <>
       {/* List */}
-      <div className="mt-4   w-full h-full bg-background ">
+      <div className=" mt-1 w-full h-full bg-background ">
         {customers.map((customer) => (
           <div
             key={customer.id}
-            className="flex justify-between  p-1 shadow rounded-md mb-2 mr-2 bg-white hover:bg-gray-50 items-stretch"
+            className="flex justify-between shadow-[0_0_3px_#00000028] rounded-md py-1   mr-3 mb-3 bg-white items-stretch"
           >
             {/* LEFT: USER INFO */}
-          <div className="flex  gap-2">
+          <div className="flex  gap-2 mx-1">
             {/* User Icon */}
-            <div className="flex items-center justify-center h-full text-4xl ml-1">
+            <div className="flex items-center justify-center text-4xl ml-1">
               <img src="../../../../src/assets/images/user.png"  className=" rounded-full w-15" />
             </div>
 
             {/* Name + Details */}
             <div>
-              <p className="font-semibold text-[#117892] text-xl">
+              <p className="font-semibold leading-tight  text-secondary text-lg m-0 ">
                 {customer.firstName} {customer.lastName}
               </p>
 
@@ -40,25 +41,25 @@ const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer }) => 
           </div>
 
            {/* RIGHT: ACTION BUTTONS */}
-          <div className="flex items-center gap-1 mr-3">
+          <div className="flex items-center gap-1.5 mr-3">
             <button
               onClick={() => onSelectEditCustomer(customer)}
-              className="px-3 py-2.5 rounded-md border-2 border-gray-100 bg-white-100 text-black-700 hover:bg-gray-200 hover:px-2.5 hover:py-2 hover:m-0.5 flex items-center gap-1 text-xl"
+              className="px-2 py-2.5 rounded-md  border-gray-100 bg-white-100 text-[#555555] hover:bg-gray-200 hover:px-1.75 hover:py-2.25 hover:m-0.25  hover:shadow-none flex items-center text-xl shadow-[0_0_3px_#00000026]"
             >
               <AiOutlineEdit />
             </button>
 
             <button
               onClick={() => onDeleteCustomer(customer.id)}
-              className="px-3 py-2.5 rounded-md bg-white-100  border-2 border-gray-100 text-red-500 hover:bg-gray-200 hover:px-2.5 hover:py-2 hover:m-0.5 flex items-center gap-1 text-xl"
+              className="px-2 py-2.5 rounded-md bg-white-100  text-red-500 hover:bg-gray-200  hover:px-1.75 hover:py-2.25 hover:m-0.25 flex items-center hover:shadow-none text-xl shadow-[0_0_3px_#00000026]"
             >
               <AiOutlineDelete />
             </button>
 
             <button
-              className="px-3 py-2 rounded-md bg-white-100  border-2 border-gray-100 text-gray-700 font-normal  flex items-center gap-1 text-l hover:bg-gray-200 hover:px-2.5 hover:py-1.5 hover:m-0.5"
+              className="px-2 py-1.5 rounded-md bg-white-100   text-[#555555] font-normal  flex items-center gap-1 text-lg hover:bg-gray-200 hover:px-1.75 hover:py-1.25 hover:m-0.25 hover:shadow-none shadow-[0_0_3px_#00000026]"
             >
-              <AiOutlineCheck  />
+              <AiOutlineCheck className="text-black" />
               Set Customer
             </button>
           </div>
