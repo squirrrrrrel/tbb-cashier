@@ -45,7 +45,7 @@ const ProductCategoryComp = ({ category, filters, setFilters }) => {
   );
 };
 
-const Header = ({ filters, setFilters }) => {
+const Header = ({ filters, setFilters, productListLength }) => {
   const [isFullScreen, setIsFullScreen] = useState(
     !!document.fullscreenElement
   );
@@ -130,6 +130,9 @@ const Header = ({ filters, setFilters }) => {
           >
             <img src={isMuted ? muteIcon : speakerIcon} alt="Speaker" />
           </div>
+        </div>
+        <div className="product-length">
+          <h2 className="text-sm">{productListLength} Results</h2>
         </div>
       </div>
     </div>
