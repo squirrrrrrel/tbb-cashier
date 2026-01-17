@@ -2,13 +2,16 @@ import React from "react";
 import Cart from "../../components/pos/dashboard/Cart";
 import Header from "../../components/pos/dashboard/Header";
 import bottleImage from "../../assets/images/bottle.jpg";
+import butcheryImage from "../../assets/images/butchery.png";
+import shotsImage from "../../assets/images/shots.png";
+import wineImage from "../../assets/images/wine.jpg";
 import { useEffect } from "react";
 import { useState } from "react";
 
 const product = [
   {
     id: 1,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Mature-Beef-Tenderloin-500g",
     price: "60.00",
     unit: "pkg",
@@ -19,7 +22,7 @@ const product = [
   },
   {
     id: 2,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Organic-Chicken-Drumsticks-1kg",
     price: "35.50",
     unit: "pkg",
@@ -30,7 +33,7 @@ const product = [
   },
   {
     id: 3,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Heritage-Pork-Chops-400g",
     price: "52.00",
     unit: "pkg",
@@ -41,7 +44,7 @@ const product = [
   },
   {
     id: 4,
-    img: bottleImage,
+    img: wineImage,
     name: "Classic-Red-Wine-750ml",
     price: "110.00",
     unit: "btl",
@@ -52,7 +55,7 @@ const product = [
   },
   {
     id: 5,
-    img: bottleImage,
+    img: wineImage,
     name: "Premium-White-Wine-1L",
     price: "120.75",
     unit: "btl",
@@ -63,7 +66,7 @@ const product = [
   },
   {
     id: 6,
-    img: bottleImage,
+    img: wineImage,
     name: "Russian-Vodka-500ml",
     price: "60.00",
     unit: "btl",
@@ -74,7 +77,7 @@ const product = [
   },
   {
     id: 7,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Butcher's-Lamb-Cutlets-350g",
     price: "78.90",
     unit: "pkg",
@@ -85,7 +88,7 @@ const product = [
   },
   {
     id: 8,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Seared-Beef-Burger-Patties-300g",
     price: "29.99",
     unit: "pkg",
@@ -96,7 +99,7 @@ const product = [
   },
   {
     id: 9,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Smoky-BBQ-Sausages-200g",
     price: "25.00",
     unit: "pkg",
@@ -151,7 +154,7 @@ const product = [
   },
   {
     id: 14,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Butchery-Turkey-Whole-2kg",
     price: "120.00",
     unit: "pkg",
@@ -162,7 +165,7 @@ const product = [
   },
   {
     id: 15,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Raw-Shrimp-500g",
     price: "78.75",
     unit: "pkg",
@@ -173,7 +176,7 @@ const product = [
   },
   {
     id: 16,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Extra-Mature-Cheddar-200g",
     price: "26.95",
     unit: "pkg",
@@ -184,7 +187,7 @@ const product = [
   },
   {
     id: 17,
-    img: bottleImage,
+    img: wineImage,
     name: "Rose-Wine-1L",
     price: "112.00",
     unit: "btl",
@@ -195,7 +198,7 @@ const product = [
   },
   {
     id: 18,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Butchery-Deli-Beef-Salami-150g",
     price: "12.20",
     unit: "pkg",
@@ -206,7 +209,7 @@ const product = [
   },
   {
     id: 19,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Duck-Breast-Fillet-400g",
     price: "50.00",
     unit: "pkg",
@@ -217,7 +220,7 @@ const product = [
   },
   {
     id: 20,
-    img: bottleImage,
+    img: wineImage,
     name: "Vanilla-Flavored-Vodka-1L",
     price: "73.50",
     unit: "btl",
@@ -239,7 +242,7 @@ const product = [
   },
   {
     id: 22,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Butchery-Roast-Beef-1kg",
     price: "137.00",
     unit: "pkg",
@@ -250,7 +253,7 @@ const product = [
   },
   {
     id: 23,
-    img: bottleImage,
+    img: wineImage,
     name: "Rosé-Champagne-750ml",
     price: "210.00",
     unit: "btl",
@@ -261,7 +264,7 @@ const product = [
   },
   {
     id: 24,
-    img: bottleImage,
+    img: wineImage,
     name: "Cabernet-Merlot-1.5L",
     price: "175.00",
     unit: "btl",
@@ -272,7 +275,7 @@ const product = [
   },
   {
     id: 25,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Butchery-Cured-Bacon-250g",
     price: "42.50",
     unit: "pkg",
@@ -283,7 +286,7 @@ const product = [
   },
   {
     id: 26,
-    img: bottleImage,
+    img: wineImage,
     name: "Blueberry-Infused-Wine-750ml",
     price: "130.00",
     unit: "btl",
@@ -294,7 +297,7 @@ const product = [
   },
   {
     id: 27,
-    img: bottleImage,
+    img: butcheryImage,
     name: "Butchery-Lamb-Minced-500g",
     price: "44.00",
     unit: "pkg",
@@ -305,7 +308,7 @@ const product = [
   },
   {
     id: 28,
-    img: bottleImage,
+    img: wineImage,
     name: "Chardonnay-Classic-750ml",
     price: "115.20",
     unit: "btl",
@@ -316,7 +319,7 @@ const product = [
   },
   {
     id: 29,
-    img: bottleImage,
+    img: wineImage,
     name: "Triple-Distilled-Vodka-1.5L",
     price: "155.00",
     unit: "btl",
@@ -393,7 +396,7 @@ const product = [
   },
   {
     id: 36,
-    img: bottleImage,
+    img: shotsImage,
     name: "Champagne-Sparkling-Bottle-750ml",
     price: "195.00",
     unit: "btl",
@@ -461,7 +464,13 @@ const ProductComp = ({
     <div className="product bg-white border border-gray-300 rounded-lg w-34 h-[260px] hover:border-secondary cursor-pointer">
       <img
         src={img}
-        className="rounded-t-lg rounded-tl-lg border-b border-b-gray-300"
+        alt={name}
+        style={{
+          width: "136px",
+          height: "136px",
+          objectFit: "cover",
+        }}
+        className="rounded-t-lg border-b border-b-gray-300"
       />
       <div className="product-details p-2 flex h-[120px] items-center">
         <div className="flex flex-col gap-1">
@@ -511,6 +520,7 @@ const Dashboard = () => {
     category: "all",
   });
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const productListLength = filteredProducts.length;
 
   useEffect(() => {
     let filtered = [...product];
@@ -540,7 +550,11 @@ const Dashboard = () => {
     <div className="flex">
       <div className="home w-3/5 bg-background">
         <div className="header">
-          <Header filters={filters} setFilters={setFilters} />
+          <Header
+            filters={filters}
+            setFilters={setFilters}
+            productListLength={productListLength}
+          />
         </div>
         <div className="product-list-container p-4">
           <div
