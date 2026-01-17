@@ -205,7 +205,7 @@ const AddCustomersForm = ({
                 }}
                 formatOptionLabel={(option, { context }) =>
                   context === "menu"
-                    ? `(${option.value}) ${option.label}` // dropdown
+                    ? `${option.label} ${option.value}` // dropdown
                     : option.value                        // selected field
                 }
                 styles={{
@@ -393,8 +393,10 @@ const AddCustomersForm = ({
           <button className="submit w-full p-3 bg-linear-180 from-primary to-secondary text-white font-bold text-center rounded-lg cursor-pointer mt-2">
             {selectedCustomer ? "Update Customer" : "Save Customer"}
           </button>
-          {selectedCustomer && (
-            <button type="button" onClick={handleCancel} className="cancel mb-5 w-full p-3 bg-white border-2 border-gray-200 text-black font-bold text-center rounded-lg cursor-pointer">Cancel</button>
+          {selectedCustomer ? (
+            <button type="button" onClick={handleCancel} className="cancel mb-5 w-full p-3 bg-white border-2 border-gray-200 text-[#555555] font-bold text-center rounded-lg cursor-pointer">Cancel</button>
+          ) : (
+            <button type="button" onClick={handleCancel} className="cancel mb-5 w-full p-3 bg-white border-2 border-gray-200 text-[#555555] font-bold text-center rounded-lg cursor-pointer">Reset</button>
           )}
         </form>
       </div>
