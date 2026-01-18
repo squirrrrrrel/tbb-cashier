@@ -1,0 +1,433 @@
+import React, { useEffect, useRef, useState } from "react";
+
+const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) => {
+  const printRef = useRef();
+  const [ReceiveAmount, setReceiveAmount] = useState(0.0);
+  const [RefundAmound, setRefundAmount] = useState(0.0);
+
+  const handlePrint = () => {
+    if (printRef?.current) {
+      const formatDateForFilename = (dt) => {
+        try {
+          // e.g., "Nov 5,2025"
+          return dt
+            .toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+            .replace(", ", ", ");
+        } catch {
+          return "";
+        }
+      };
+      const printDate = orderDetails?.orderDate
+        ? new Date(orderDetails.orderDate)
+        : new Date();
+      const datePart = formatDateForFilename(printDate);
+      const filename = `${datePart ? `${datePart}` : ""} ( Invoice #${orderDetails?.orderId ?? "Receipt"
+        } )`;
+      const originalTitle = document.title;
+
+      // Avoid any external network requests during print on slow networks.
+      // If a preloaded data URL is available on window, use it; otherwise skip the logo entirely.
+      const logoDataUrl =
+        typeof window !== "undefined" ? window.__PRINT_LOGO_DATAURL : null;
+      const logoFigureHtml = logoDataUrl
+        ? `<figure class="logo"><img src="${logoDataUrl}" alt="logo" /></figure>`
+        : "";
+
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+
+      iframe.contentDocument.write(`
+                <html>
+                    <head>
+                        <title>${filename}</title>
+                        ${logoFigureHtml}
+                        <style>
+                            @media print {
+                                @page {
+                                    margin: 0;
+                                    size: 80mm 297mm;
+                                }
+                            }
+                            body {
+                                font-family: Arial, sans-serif;
+                                padding: 20px;
+                                margin: 0;
+                                width: 80mm;
+                            }
+                            h3 {
+                                text-align: center;
+                                text-transform: uppercase;
+                                border-top: 2px dashed #555;
+                                border-bottom: 2px dashed #555;
+                                padding: 10px 0;
+                                margin: 0 0 10px 0;
+                            }
+                            figure {
+                                text-align: center;
+                                margin: 0;
+                            }
+                            img {
+                                width: 100px;
+                                height: 100px;
+                                margin: 0 auto;
+                            }
+                            .receipt-content {
+                                font-size: 18px;
+                                width: 100%;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin: 10px 0;
+                            }
+                            table th, table td {
+                                font-size: 18px
+                                font-weight: 400;
+                                padding: 8px 0;
+                                text-align: left;
+                            }
+                            .inputvalue{
+                              text-align: right;
+                                }
+                            table th {
+                                font-weight: 700;
+                                border-top: 2px dashed #555;
+                                border-bottom: 2px dashed #555;
+                            }
+                            table td:first-child {
+                                width: 39%;
+                            }
+                            .sub-total-table tr:nth-child(4) td {
+                                font-weight: 700;
+                                font-size: 20px
+                            }
+                            .sub-total-table tr:nth-child(1) td {
+                                font-weight: 700;
+                                font-size: 18px
+                            }
+                            .table tr:nth-child(5) td,
+                            .sub-total-table tr:nth-child(1) td,
+                            .sub-total-table tr:nth-child(2) td,
+                            .sub-total-table tr:nth-child(4) td, 
+                            .sub-total-table tr:last-child td {
+                                border-bottom: 2px dashed #555;
+                                padding-bottom: 5px;
+                            }
+                            .receipt-content div {
+                                margin-top: 20px;
+                                line-height: 1.4;
+                                text-align: center;
+                            }
+                            span {
+                                display: block;
+                                text-align: center;
+                                margin: 2px 0;
+                            }
+                            .receipt-content span b {
+                                padding: 20px 0 3px;
+                                display: inline-block;
+                            }
+                            p {
+                                margin: 5px 0;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${printRef?.current?.innerHTML}
+                    </body>
+                </html>
+            `);
+
+      iframe.contentDocument.close();
+
+      iframe.contentWindow.onafterprint = () => {
+        document.body.removeChild(iframe);
+        try {
+          document.title = originalTitle;
+        } catch { }
+      };
+
+      // Try to influence the filename used by "Save as PDF"
+      try {
+        iframe.contentDocument.title = filename;
+        document.title = filename;
+      } catch { }
+
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      }, 50);
+    }
+  };
+  useEffect(() => {
+    if (!orderDetails?.orderItems?.length) {
+      setRefundAmount(0);
+      setReceiveAmount(0);
+      return;
+    }
+
+    const safeNum = (val) => (isNaN(Number(val)) ? 0 : Number(val));
+
+    const { returnTotal, newTotal } = orderDetails.orderItems.reduce(
+      (totals, item) => {
+        const subtotal = safeNum(item?.subtotal);
+        const baseAmount = Math.abs(subtotal);
+        const taxPercentage = safeNum(
+          item?.taxPercentagePerProduct ?? item?.tax_percentage_per_product ?? 0
+        );
+        const taxAmount = (baseAmount * taxPercentage) / 100;
+        const grandTotal = baseAmount + taxAmount;
+
+        if (item?.type === "RETURN") {
+          totals.returnTotal += grandTotal;
+        } else if (
+          item?.type === "EXCHANGE_NEW" ||
+          item?.type === "REEXCHANGE_NEW"
+        ) {
+          totals.newTotal += grandTotal;
+        }
+
+        return totals;
+      },
+      { returnTotal: 0, newTotal: 0 }
+    );
+
+    const difference = newTotal - returnTotal;
+
+    if (difference > 0) {
+      setRefundAmount(0);
+      setReceiveAmount(difference);
+    } else if (difference < 0) {
+      setRefundAmount(Math.abs(difference));
+      setReceiveAmount(0);
+    } else {
+      setRefundAmount(0);
+      setReceiveAmount(0);
+    }
+  }, [orderDetails]);
+  useEffect(() => {
+    if (show === true && orderDetails) {
+      handlePrint();
+      setShow(false);
+    }
+  }, [show, orderDetails]);
+
+  return (
+    <>
+      <div ref={printRef} style={{ display: "none" }}>
+        <div className="receipt-content">
+          <h3>Sales Receipt</h3>
+          <p>
+            <b>Order:</b> #{orderDetails?.orderId}
+          </p>
+          <p>
+            <b>Date:</b> {new Date()?.toLocaleDateString()}
+          </p>
+          <p>
+            <b>Cashier:</b> {orderDetails?.userId ?? "-"}
+          </p>
+          <p>
+            <b>Customer:</b> {orderDetails?.customerId ?? "-"}
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th className="inputvalue">Qty</th>
+                <th className="inputvalue">Total</th>
+              </tr>
+            </thead>
+            {/* <tbody>
+              {orderDetails?.orderItems?.map((product, index) => (
+                <tr key={index}>
+                  <td>
+                    {product?.productName}
+                    {product?.type === "EXCHANGE_NEW"
+                      ? "(New item)"
+                      : product?.type === "RETURN"
+                      ? "(Return)"
+                      : ""}
+                  </td>
+                  <td>{`P ${product?.subtotal}`}</td>
+                  <td>{product?.quantity}</td>
+                  <td>{`P${product?.subtotal}`}</td>
+                </tr>
+              ))}
+            </tbody> */}
+            <tbody>
+              {(() => {
+                const originalItems = orderDetails?.orderItems || [];
+                const exchangeGroups = orderDetails?.exchangeData || [];
+
+                return (
+                  <>
+                    {/* 1. ORIGINAL ITEMS SECTION */}
+                    {originalItems.length > 0 && (
+                      <>
+                        <tr>
+                          <td colSpan="4" style={{ fontWeight: "bold", borderTop: "2px dashed #555", paddingTop: "8px" }}>
+                            ORIGINAL ITEMS
+                          </td>
+                        </tr>
+                        {originalItems.map((item, idx) => (
+                          <tr key={`orig-${idx}`}>
+                            <td>{item.productName}</td>
+                            <td>{`P${parseFloat(item.unitAmount || 0).toFixed(2)}`}</td>
+                            <td className="inputvalue">{item.quantity}</td>
+                            <td className="inputvalue">{`P${parseFloat(item.itemSubtotal || 0).toFixed(2)}`}</td>
+                          </tr>
+                        ))}
+                      </>
+                    )}
+
+                    {/* 2. EXCHANGES SECTION */}
+                    {exchangeGroups.length > 0 && (
+                      <>
+                        <tr>
+                          <td colSpan="4" style={{ fontWeight: "bold", borderTop: "2px dashed #555", paddingTop: "8px", marginTop: "10px" }}>
+                            EXCHANGES
+                          </td>
+                        </tr>
+                        {exchangeGroups.map((exchange, exIdx) => (
+                          <React.Fragment key={`ex-group-${exIdx}`}>
+                            {/* Render Returns */}
+                            {exchange.returnItems?.map((ri, i) => {
+                              // Find the original item to get the price and name
+                              const prod = originalItems.find(p => String(p.productId) === String(ri.orderItemId));
+
+                              // Calculate pricing based on the original unit amount
+                              const unitPrice = parseFloat(prod?.unitAmount || 0);
+                              const totalReturnVal = unitPrice * ri.quantity;
+
+                              return (
+                                <tr key={`ret-${i}`}>
+                                  <td>{prod?.productName || "Returned Item"} (Ret)</td>
+                                  <td>P{unitPrice.toFixed(2)}</td>
+                                  <td className="inputvalue">-{ri.quantity}</td>
+                                  <td className="inputvalue">P-{totalReturnVal.toFixed(2)}</td>
+                                </tr>
+                              );
+                            })}
+
+                            {/* Render New Items */}
+                            {exchange.newItems?.map((ni, i) => {
+                              // 1. Fixed syntax: we need the {} and return() here to use .find
+                              const productDetails = productList.find(p => String(p.id) === String(ni.productId));
+                              const price = ni.selling_price || productDetails?.selling_price || 0;
+                              const subtotal = ni.quantity * price;
+
+                              return (
+                                <tr key={`new-${i}`}>
+                                  <td>{ni.productName || productDetails?.product_name} (New)</td>
+                                  <td>P{parseFloat(price).toFixed(2)}</td>
+                                  <td className="inputvalue">{ni.quantity}</td>
+                                  <td className="inputvalue">P{parseFloat(subtotal).toFixed(2)}</td>
+                                </tr>
+                              );
+                            })}
+                          </React.Fragment>
+                        ))}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+            </tbody>
+          </table>
+          <span>
+            <b>
+              {orderDetails?.orderItems?.length}{" "}
+              {orderDetails?.orderItems?.length > 1
+                ? "Items Sold"
+                : "Item Sold"}
+            </b>
+          </span>
+          <table className="sub-total-table">
+            <tbody>
+              <tr>
+                <td>Sub Total</td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">{`P${orderDetails?.subtotal}`}</td>
+              </tr>
+              <tr>
+                <td>Discount</td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">{`P${orderDetails?.discount}`}</td>
+              </tr>
+              <tr>
+                <td>Tax</td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">
+                  {orderDetails?.taxAmount
+                    ? `P${orderDetails?.taxAmount}`
+                    : "-"}
+                </td>
+              </tr>
+              <tr>
+                <td>Total</td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">{`P${orderDetails?.amount}`}</td>
+              </tr>
+              <tr>
+                <td>
+                  Exchange
+                  {RefundAmound ? "(refund)" : ReceiveAmount ? "(receive)" : ""}
+                </td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">
+                  {RefundAmound
+                    ? RefundAmound.toFixed(2)
+                    : ReceiveAmount.toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <td>Refunded</td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">
+                  {orderDetails?.refunded ? `P${orderDetails?.refunded}` : "-"}
+                </td>
+              </tr>
+              <tr>
+                <td>Total Tendered</td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">
+                  {orderDetails?.tenderedAmount
+                    ? `P${orderDetails?.tenderedAmount}`
+                    : "-"}
+                </td>
+              </tr>
+              <tr>
+                <td>Change</td>
+                <td></td>
+                <td></td>
+                <td className="inputvalue">
+                  {orderDetails?.change
+                    ? `P${orderDetails?.change}`
+                    : "-"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div>
+            <span>Thank You, HAVE A NICE DAY.</span>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PrintInvoiceSlip;
