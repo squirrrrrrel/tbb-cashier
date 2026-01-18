@@ -49,7 +49,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const data = res.data?.data || res.data;
     const token = data?.token || data?.accessToken;
     const user = data?.user;
-
     if (!token || !user) {
       throw new Error("Invalid login response");
     }

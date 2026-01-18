@@ -123,7 +123,7 @@ const AddCustomersForm = ({
     clearSelection(null);       // exit edit mode
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
 
     e.preventDefault();
     const payload = {
@@ -139,11 +139,11 @@ const AddCustomersForm = ({
     
     if (selectedCustomer) {
       // UPDATE
-      onEditCustomer(payload);
+      await onEditCustomer(payload);
       notifySuccess("Customer edited successfully");
     } else {
       // ADD
-      onAddCustomer(payload);
+      await onAddCustomer(payload);
       notifySuccess("Customer added successfully");
     }
       
@@ -262,7 +262,7 @@ const AddCustomersForm = ({
               value={formData.phone}
               onChange={handleChange}
               placeholder={"Enter Phone Number"}
-              isRequired="true"
+              isRequired={true}
               type={"tel"}
             />
           </div>
