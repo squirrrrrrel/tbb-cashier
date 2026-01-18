@@ -1,6 +1,7 @@
 import React from "react";
 // import { Pencil } from "lucide-react";
 import { AiOutlineEdit, AiOutlineDelete , AiOutlineCheck, AiOutlineMail, AiOutlinePhone   } from "react-icons/ai";
+import userImg from "../../../assets/images/user.png";
 
 
 const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer }) => {
@@ -10,14 +11,14 @@ const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer }) => 
       <div className=" mt-1 w-full h-full bg-background ">
         {customers.map((customer) => (
           <div
-            key={customer.id}
+            key={customer.localId}
             className="flex justify-between shadow-[0_0_3px_#00000028] rounded-md py-1   mr-3 mb-3 bg-white items-stretch"
           >
             {/* LEFT: USER INFO */}
           <div className="flex  gap-2 mx-1">
             {/* User Icon */}
             <div className="flex items-center justify-center text-4xl ml-1">
-              <img src="../../../../src/assets/images/user.png"  className=" rounded-full w-15" />
+             <img src={userImg} className="rounded-full w-15" />
             </div>
 
             {/* Name + Details */}
@@ -50,7 +51,7 @@ const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer }) => 
             </button>
 
             <button
-              onClick={() => onDeleteCustomer(customer.id)}
+              onClick={() => onDeleteCustomer(customer.localId)}
               className="px-2 py-2.5 rounded-md bg-white-100  text-red-500 hover:bg-gray-200  hover:px-1.75 hover:py-2.25 hover:m-0.25 flex items-center hover:shadow-none text-xl shadow-[0_0_3px_#00000026]"
             >
               <AiOutlineDelete />
