@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import warnocLogo from "../../assets/images/warnoc-logo.png";
-import LogoutPopUp from "./LogoutPopUp";
+import qkartsLogo from "../../assets/images/qkarts-small-logo.png";
 
 const NavButtons = ({ name, icon, target }) => {
   const location = useLocation();
@@ -44,8 +43,8 @@ const SideHeader = ({ setIsLogoutClicked }) => {
   return (
     <div className="header w-28 p-4 h-screen flex flex-col items-center justify-between gap-4 border-r border-gray-200">
       <div className="flex flex-col items-center justify-center gap-2">
-        <div className="logo">
-          <img src={warnocLogo} className="w-18" alt="warnoc-logo" />
+        <div className="logo mb-1">
+          <img src={qkartsLogo} className="w-16" alt="warnoc-logo" />
         </div>
         <div className="navlinks flex flex-col gap-2">
           {navLinks.map((link, index) => (

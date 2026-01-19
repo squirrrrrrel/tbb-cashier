@@ -1,30 +1,35 @@
 "use client";
 import React, { useState } from "react";
 import arrowDownIcon from "../../../assets/icons/arrow_down.svg";
+import { useNavigate } from "react-router-dom";
 
-const CartProdctComponent = () => {
+const CartProdctComponent = ({ product, onRemove, onQuantityChange }) => {
+  const totalPrice = (product.price * product.quantity).toFixed(2);
+  const unitPrice = product.price.toFixed(2);
+
   return (
     <div className="cart-product w-full odd:bg-gray-50 p-2 flex justify-between items-center">
       <div className="product-detail flex gap-2 items-center">
         <img src={arrowDownIcon} alt="arrow-down" />
         <img
-          className="w-14"
-          src="https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png"
+          className="w-14 h-14 object-cover rounded"
+          src={product.imgUrl}
+          alt={product.name}
         />
         <div className="product_heading">
-          <h2 className="text-base font-semibold text-gray-600">Product 1</h2>
-          <h3 className="text-sm text-gray-400 font-semibold">30.00 × 1pcs</h3>
+          <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
+          <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.quantity}pcs</h3>
         </div>
       </div>
       <div className="product-amount flex items-center gap-4">
-        <h2 className="text-gray-700 font-semibold">30.00 (exc.tax)</h2>
-        <div className="delete-btn">
+        <h2 className="text-gray-500 font-semibold flex items-baseline gap-1">{totalPrice} <p className="text-xs">(exc.tax)</p></h2>
+        <div className="delete-btn cursor-pointer" onClick={onRemove}>
           <svg
             viewBox="64 64 896 896"
             focusable="false"
             data-icon="delete"
-            width="20"
-            height="20"
+            width="16"
+            height="16"
             fill="currentColor"
             aria-hidden="true"
           >
@@ -36,39 +41,30 @@ const CartProdctComponent = () => {
   );
 };
 
-const Cart = () => {
-  const [cartProducts, setCartProducts] = useState([
-    // Sample cart products can be added here
-    {
-      id: 1,
-      name: "Product 1",
-      price: 100,
-      quantity: 1,
-      imgUrl:
-        "https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png",
-    },
-    {
-      id: 2,
-      name: "Product 2",
-      price: 200,
-      quantity: 1,
-      imgUrl:
-        "https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png",
-    },
-    {
-      id: 3,
-      name: "Product 3",
-      price: 300,
-      quantity: 1,
-      imgUrl:
-        "https://png.pngtree.com/png-vector/20250303/ourmid/pngtree-ripe-mango-fruit-with-leaf-for-healthy-snack-png-image_15699037.png",
-    },
-  ]);
+const Cart = ({cartProducts, setCartProducts}) => {
+  const navigate = useNavigate();
+
+  const handleRemoveProduct = (productId) => {
+    setCartProducts((prev) => prev.filter((p) => p.id !== productId));
+  };
+
+  const calculateSubtotal = () => {
+    return cartProducts.reduce((sum, product) => {
+      return sum + (product.price * product.quantity);
+    }, 0);
+  };
+
+  const subtotal = calculateSubtotal();
+  const tax = 0; // Can be calculated later if needed
+  const discount = 0; // Can be calculated later if needed
+  const total = subtotal + tax - discount;
+  const totalItems = cartProducts.reduce((sum, product) => sum + product.quantity, 0);
+
   return (
-    <div className="h-screen border-l-1 border-gray-200">
-      <div className="cart-header flex items-center justify-between p-4 border-b-1 border-gray-200">
+    <div className="h-screen border-l border-gray-200">
+      <div className="cart-header flex items-center justify-between p-4 border-b border-gray-200">
         <div className="icons flex gap-2 fill-gray-600">
-          <div className="cart-icons p-2 border-1 border-gray-300 rounded-md">
+          <div className="cart-icons p-2 border border-gray-300 rounded-md">
             <svg
               viewBox="0 0 1024 1024"
               focusable="false"
@@ -81,7 +77,7 @@ const Cart = () => {
               <path d="M922.9 701.9H327.4l29.9-60.9 496.8-.9c16.8 0 31.2-12 34.2-28.6l68.8-385.1c1.8-10.1-.9-20.5-7.5-28.4a34.99 34.99 0 00-26.6-12.5l-632-2.1-5.4-25.4c-3.4-16.2-18-28-34.6-28H96.5a35.3 35.3 0 100 70.6h125.9L246 312.8l58.1 281.3-74.8 122.1a34.96 34.96 0 00-3 36.8c6 11.9 18.1 19.4 31.5 19.4h62.8a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7h161.1a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7H923c19.4 0 35.3-15.8 35.3-35.3a35.42 35.42 0 00-35.4-35.2zM305.7 253l575.8 1.9-56.4 315.8-452.3.8L305.7 253zm96.9 612.7c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6zm325.1 0c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6z"></path>
             </svg>
           </div>
-          <div className="reset-icons p-2 border-1 border-gray-300 rounded-md">
+          <div className="reset-icons p-2 border border-gray-300 rounded-md">
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -96,7 +92,10 @@ const Cart = () => {
           </div>
         </div>
         <div className="buttons flex gap-1">
-          <button className="clear-cart bg-gradient-to-b from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex items-center gap-2">
+          <button
+            onClick={() => navigate("/pos/customers")}
+            className="select-customer cursor-pointer bg-linear-to-b from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex items-center gap-2 w-[180px]"
+          >
             <p>Select Customer</p>
             <svg
               viewBox="64 64 896 896"
@@ -110,7 +109,7 @@ const Cart = () => {
               <path d="M880 836H144c-17.7 0-32 14.3-32 32v36c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-36c0-17.7-14.3-32-32-32zm-622.3-84c2 0 4-.2 6-.5L431.9 722c2-.4 3.9-1.3 5.3-2.8l423.9-423.9a9.96 9.96 0 000-14.1L694.9 114.9c-1.9-1.9-4.4-2.9-7.1-2.9s-5.2 1-7.1 2.9L256.8 538.8c-1.5 1.5-2.4 3.3-2.8 5.3l-29.5 168.2a33.5 33.5 0 009.4 29.8c6.6 6.4 14.9 9.9 23.8 9.9z"></path>
             </svg>
           </button>
-          <button className="checkout bg-green-500 text-white px-4 py-2 rounded flex gap-2 items-center">
+          <button onClick={() => navigate("/pos/tables")} className="select-table cursor-pointer bg-pos-green text-white px-4 py-2 rounded flex gap-2 items-center w-[180px] justify-center">
             <p>Select Table</p>
             <svg
               className="w-6"
@@ -135,11 +134,17 @@ const Cart = () => {
       </div>
       <div className="cart-container">
         {/* Cart items will be rendered here */}
-        <div className="cart-products p-2 h-[calc(100vh-380px)]">
+        <div className="cart-products p-2 h-[calc(100vh-380px)] overflow-y-auto">
           {cartProducts.length > 0 ? (
-            cartProducts.map((p) => <CartProdctComponent key={p.id} />)
+            cartProducts.map((p) => (
+              <CartProdctComponent 
+                key={p.id} 
+                product={p}
+                onRemove={() => handleRemoveProduct(p.id)}
+              />
+            ))
           ) : (
-            <p className="text-sm">No Products in Cart</p>
+            <p className="text-sm text-gray-700">No Products in Cart</p>
           )}
         </div>
         <div className="cart-details border-t-1 border-gray-200 p-4">
@@ -147,15 +152,15 @@ const Cart = () => {
           <div className="cart-summary flex flex-col gap-2 text-gray-600 text-sm">
             <div className="subtotal flex justify-between ">
               <span>Subtotal</span>
-              <span>P0.00</span>
+              <span>P{subtotal.toFixed(2)}</span>
             </div>
             <div className="subtotal flex justify-between ">
               <span>Tax</span>
-              <span>P0.00</span>
+              <span>P{tax.toFixed(2)}</span>
             </div>
             <div className="subtotal flex justify-between ">
               <span>Discount</span>
-              <span>P0.00</span>
+              <span>P{discount.toFixed(2)}</span>
             </div>
           </div>
           <div className="cart-btns mt-4 flex gap-2">
@@ -205,10 +210,10 @@ const Cart = () => {
           <div className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg">
             <div className="proceed">
               <h3 className="text-xl font-semibold">Proceed to Pay</h3>
-              <h4 className="text-sm">0 Item</h4>
+              <h4 className="text-sm">{totalItems} {totalItems === 1 ? 'Item' : 'Items'}</h4>
             </div>
             <div className="proceed flex gap-2 items-center">
-              <div className="price text-xl font-semibold">P0.00</div>
+              <div className="price text-xl font-semibold">P{total.toFixed(2)}</div>
               <div className="icon">
                 <svg
                   viewBox="64 64 896 896"
