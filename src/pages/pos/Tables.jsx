@@ -51,8 +51,19 @@ const Tables = () => {
   };
 
   const handleAddTableSave = ({ tableNumber, seats }) => {
-    try {
-      const nextIndex = tableList.length + 1;
+  try {
+    // 1. Check if a table with the same number already exists
+    const tableExists = tableList.some(
+      (table) => Number(table.tableNo) === Number(tableNumber)
+    );
+
+    if (tableExists) {
+      notifyError("Table already exists!");
+      return; // Exit the function early
+    }
+
+    // 2. Proceed with adding the table if it doesn't exist
+    const nextIndex = tableList.length + 1;
 
     const newTable = {
       tableId: `TAB-${String(nextIndex).padStart(3, "0")}`,
@@ -63,11 +74,11 @@ const Tables = () => {
 
     setTableList((prev) => [...prev, newTable]);
     notifySuccess("Table Added");
-    } catch (error) {
-      console.log(error);
-      notifyError("Something Went Wrong");
-    }
-  };
+  } catch (error) {
+    console.error(error);
+    notifyError("Something Went Wrong");
+  }
+};
 
   const handleDeleteTable = (tableId) => {
 
@@ -209,8 +220,8 @@ const Tables = () => {
 
                   {/* Action Buttons */}
                   <div className="mt-[15px] flex items-center justify-between gap-1">
-                    <span className="flex-1 items-center flex-wrap rounded-md bg-white p-[8px_2px] text-center shadow-[0_0_3px_0_rgba(0,0,0,0.15)] cursor-pointer hover:bg-black/5 hover:shadow-none ">
-                      <div className="mx-auto flex w-4/5 items-center text-xs justify-center text-[#555555]" onClick={!isSelected ? () => setSelectedTable(item) : undefined}>
+                    <span className="flex-1 items-center flex-wrap rounded-md bg-white p-[8px_2px] text-center shadow-[0_0_3px_0_rgba(0,0,0,0.15)] cursor-pointer hover:bg-black/5 hover:shadow-none " onClick={!isSelected ? () => setSelectedTable(item) : ()=> setSelectedTable({})}>
+                      <div className="mx-auto flex w-4/5 items-center text-xs justify-center text-[#555555]" >
                         <span className="mr-1 text-lg text-[#15b71a]">
                           <svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor">
                             <path d="M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474a32 32 0 00-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1.4-12.8-6.3-12.8z"></path>

@@ -192,7 +192,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
                           <img src={bottleImage} alt="img" className="w-12 h-12" />
                           <div className="flex flex-col gap-1 text-sm ">
                             <span className="text-[#15b71a]">{item?.product_name || "Item"}</span>
-                            <span className="text-gray-500">{item?.selling_price} X {ni.quantity} (Old Item)</span>
+                            <span className="text-gray-500">{item?.selling_price} X {ni.quantity} (New Item)</span>
                           </div>
                         </div>
                         <span className=" text-[#15b71a]">P{item?.selling_price * ni.quantity}</span>

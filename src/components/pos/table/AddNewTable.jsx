@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNotification } from "../../../hooks/useNotification";
 
 const AddNewTable = ({ onClose, onSave }) => {
     const [tableNumber, setTableNumber] = useState("");
     const [seats, setSeats] = useState("");
+    const {notifyError} = useNotification();
 
     const resetForm = () => {
         setTableNumber("");
@@ -19,6 +21,11 @@ const AddNewTable = ({ onClose, onSave }) => {
 
     const handleSave = () => {
         if (!tableNumber || !seats) return;
+
+        if(tableNumber == 0 || seats == 0){
+            notifyError("Table No. and No. of Seat can not be Zero(0)");
+            return;
+        }
 
         onSave({
             tableNumber,
