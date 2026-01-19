@@ -7,6 +7,7 @@
   --background: #f8f8f8;
   --button-background: #f1eeee;
   --hover-color: #5ea0b1;
+  --green: #15b71a;
 }
 
 @theme inline {
@@ -15,6 +16,7 @@
   --color-background: var(--background);
   --color-button-background: var(--button-background);
   --color-hover-color: var(--hover-color);
+  --color-pos-green: var(--green);
 }
 
 @layer utilities {
@@ -49,6 +51,6 @@ input::-webkit-inner-spin-button {
 }
 
 /* Hide spinners in Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }

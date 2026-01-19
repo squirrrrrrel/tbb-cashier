@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import allProductsImage from "../../../assets/images/all-product.png";
 import shotsImage from "../../../assets/images/shots.png";
 import butcheryImage from "../../../assets/images/butchery.png";
+import qkartsLogo from "../../../assets/images/qkarts-logo.png";
 import fullScreenIcon from "../../../assets/icons/full-screen.svg";
 import exitFullScreenIcon from "../../../assets/icons/close-full-screen.svg";
 import speakerIcon from "../../../assets/icons/speaker.svg";
@@ -25,7 +26,7 @@ const category = [
   },
 ];
 
-const ProductCategoryComp = ({ category, filters, setFilters }) => {
+const ProductCategoryComp = ({ category, filters, setFilters}) => {
   return (
     <div
       onClick={() =>
@@ -45,11 +46,10 @@ const ProductCategoryComp = ({ category, filters, setFilters }) => {
   );
 };
 
-const Header = ({ filters, setFilters, productListLength }) => {
+const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
   const [isFullScreen, setIsFullScreen] = useState(
     !!document.fullscreenElement
   );
-  const [isMuted, setIsMuted] = useState(false);
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -62,9 +62,9 @@ const Header = ({ filters, setFilters, productListLength }) => {
 
   return (
     <div className="header">
-      <div className="p-4 flex gap-20 items-center">
-        <div className="logo bg-secondary text-white px-6 py-4 text-2xl rounded-2xl font-bold">
-          warnoc
+      <div className="p-4 flex gap-10 items-center">
+        <div className="logo bg-white p-2 text-2xl rounded-md font-bold">
+          <img src={qkartsLogo} className="w-36 object-cover" />
         </div>
         <div className="product-categories flex gap-4">
           {category.map((cat) => (
@@ -77,61 +77,63 @@ const Header = ({ filters, setFilters, productListLength }) => {
           ))}
         </div>
       </div>
-      <div className="search-button-group px-4 flex gap-4 items-center">
-        <div className="search relative w-2/3">
-          <svg
-            className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search By Product Name, Barcode Number"
-            className="p-2 pl-10 border border-gray-200 bg-white rounded-md w-full shadow-sm outline-0 cursor-text"
-            onChange={(e) =>
-              setFilters((prev) => ({
-                ...prev,
-                product: e.target.value,
-              }))
-            }
-          />
-        </div>
-        <div className="button-group flex gap-2">
-          <div className="reset-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer shadow-sm">
+      <div className="flex justify-between px-4 items-center search-button-group gap-4 w-full">
+        <div className="search-button-group flex gap-4 items-center w-full">
+          <div className="search relative w-3/5">
             <svg
-              className="w-6 h-6"
+              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
             >
-              <path d="M7 3h6a4.5 4.5 0 010 9H9v9H7V3zm2 2v5h4a2.5 2.5 0 000-5H9z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
-          </div>
-          <div
-            onClick={toggleFullscreen}
-            className="full-screen-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer shadow-sm"
-          >
-            <img
-              src={isFullScreen ? exitFullScreenIcon : fullScreenIcon}
-              alt="Full Screen"
+            <input
+              type="text"
+              placeholder="Search By Product Name, Barcode Number"
+              className="p-2 pl-10 border border-gray-200 bg-white rounded-md w-full outline-0 cursor-text"
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  product: e.target.value,
+                }))
+              }
             />
           </div>
-          <div
-            onClick={() => setIsMuted(!isMuted)}
-            className="reset-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer shadow-sm"
-          >
-            <img src={isMuted ? muteIcon : speakerIcon} alt="Speaker" />
+          <div className="button-group flex gap-2">
+            <div className="reset-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer ">
+              <svg
+                className="w-6 h-6"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M7 3h6a4.5 4.5 0 010 9H9v9H7V3zm2 2v5h4a2.5 2.5 0 000-5H9z" />
+              </svg>
+            </div>
+            <div
+              onClick={toggleFullscreen}
+              className="full-screen-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer"
+            >
+              <img
+                src={isFullScreen ? exitFullScreenIcon : fullScreenIcon}
+                alt="Full Screen"
+              />
+            </div>
+            <div
+              onClick={() => setMute(!mute)}
+              className="reset-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer"
+            >
+              <img src={mute ? muteIcon : speakerIcon} alt="Speaker" />
+            </div>
           </div>
         </div>
-        <div className="product-length">
+        <div className="product-length w-20">
           <h2 className="text-sm">{productListLength} Results</h2>
         </div>
       </div>
