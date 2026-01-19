@@ -28,7 +28,7 @@ const LoginPage = () => {
       // Navigate to POS dashboard on success
       navigate("/pos/dashboard");
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }

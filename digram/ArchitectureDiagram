@@ -82,3 +82,40 @@ IndexedDB → Zustand → UI
 
 OFFLINE + HARD REFRESH:
 Refresh → Loader → IndexedDB → Zustand → UI
+
+
+
+example how the online and offline data flows work ::::
+
+online data flow:
+Cashier clicks "Save Customer"
+↓
+Customer saved in IndexedDB (isSynced = false)
+↓
+UI updates instantly
+↓
+navigator.onLine === true
+↓
+Send customer to backend
+↓
+Backend success
+↓
+Update IndexedDB → isSynced = true
+
+
+
+
+offline data flow:
+Cashier clicks "Save Customer"
+↓
+Customer saved in IndexedDB (isSynced = false)
+↓
+UI updates instantly
+↓
+No internet → stop
+↓
+Later internet comes back
+↓
+Auto sync
+↓
+isSynced = true

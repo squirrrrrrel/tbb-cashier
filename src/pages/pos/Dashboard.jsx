@@ -7,6 +7,7 @@ import shotsImage from "../../assets/images/shots.png";
 import wineImage from "../../assets/images/wine.jpg";
 import { useEffect } from "react";
 import { useState } from "react";
+import ProductComp from "../../components/pos/dashboard/ProductComp";
 
 const product = [
   {
@@ -451,68 +452,6 @@ const product = [
   },
 ];
 
-const ProductComp = ({
-  img,
-  name,
-  price,
-  unit,
-  stock,
-  stockQueue,
-  isLowStock,
-}) => {
-  return (
-    <div className="product bg-white border border-gray-300 rounded-lg w-34 h-[260px] hover:border-secondary cursor-pointer">
-      <img
-        src={img}
-        alt={name}
-        style={{
-          width: "136px",
-          height: "136px",
-          objectFit: "cover",
-        }}
-        className="rounded-t-lg border-b border-b-gray-300"
-      />
-      <div className="product-details p-2 flex h-[120px] items-center">
-        <div className="flex flex-col gap-1">
-          <h2
-            className="text-sm text-gray-700"
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              wordBreak: "break-word",
-            }}
-            title={name}
-          >
-            {name}
-          </h2>
-          <span className="text-sm text-secondary">
-            {price} / {unit}
-          </span>
-          <span className="text-xs text-green-600">
-            In Stock ({stock} {unit})
-          </span>
-          <span className="text-xs text-gray-700">
-            + Stock ({stockQueue} {unit})
-          </span>
-        </div>
-      </div>
-      {isLowStock && (
-        <div className="relative">
-          <div
-            className="low-stock-badge text-[8px] bg-red-100 rounded-full py-px px-2 absolute animate-pulse text-red-600"
-            style={{ right: 8, bottom: 8, position: "absolute" }}
-          >
-            Low
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const Dashboard = () => {
   const [filters, setFilters] = useState({
     barcode: "",
@@ -521,6 +460,8 @@ const Dashboard = () => {
   });
   const [filteredProducts, setFilteredProducts] = useState([]);
   const productListLength = filteredProducts.length;
+  const [cartProducts, setCartProducts] = useState([]);
+  const [mute, setMute] = useState(false)
 
   useEffect(() => {
     let filtered = [...product];
@@ -554,6 +495,8 @@ const Dashboard = () => {
             filters={filters}
             setFilters={setFilters}
             productListLength={productListLength}
+            mute={mute}
+            setMute={setMute}
           />
         </div>
         <div className="product-list-container p-4">
@@ -571,6 +514,7 @@ const Dashboard = () => {
             {filteredProducts.map((p) => (
               <ProductComp
                 key={p.id}
+                id={p.id}
                 img={p.img}
                 name={p.name}
                 price={p.price}
@@ -578,13 +522,15 @@ const Dashboard = () => {
                 stock={p.stock}
                 stockQueue={p.stockQueue}
                 isLowStock={p.isLowStock}
+                setCartProducts={setCartProducts}
+                mute={mute}
               />
             ))}
           </div>
         </div>
       </div>
       <div className="w-2/5 h-screen">
-        <Cart />
+        <Cart cartProducts={cartProducts} setCartProducts={setCartProducts}/>
       </div>
     </div>
   );
