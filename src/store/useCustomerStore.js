@@ -6,7 +6,7 @@ import {
   deleteCustomerDB,
 } from "../db/customersDB";
 import api from "../utils/api";
-import { mapCustomerToApiPayload } from "../utils/customerMapper";
+import { mapCustomerToApiPayload, mapApiResponseToCustomer } from "../utils/customerMapper";
 
 export const useCustomerStore = create((set, get) => ({
   customers: [],
@@ -20,6 +20,17 @@ hydrate: async () => {
       customers: customers.filter(c => !c.isDeleted),
       hydrated: true,
     });
+    
+    // If online, also fetch from API to sync with server
+    if (navigator.onLine) {
+      try {
+        const { fetchCustomersFromAPI } = get();
+        await fetchCustomersFromAPI();
+      } catch (err) {
+        console.warn("⚠️ Failed to fetch customers from API during hydration:", err);
+        // Don't block hydration if API fetch fails
+      }
+    }
   } catch {
     set({ hydrated: true });
   }
@@ -54,7 +65,7 @@ const { isDuplicateCustomer } = get();
     phone: payload.phone,
   });
 
-  if (isDuplicate) {
+  if (isDuplicate && !payload.isDeleted) {
     throw new Error("Customer with same email or phone already exists");
   }
   
@@ -105,6 +116,16 @@ const { isDuplicateCustomer } = get();
 
 // edit customer
 editCustomer: async (payload) => {
+  const { isDuplicateCustomer } = get();
+  
+  const isDuplicate = await isDuplicateCustomer({
+    email: payload.email,
+    phone: payload.phone,
+  });
+
+  if (isDuplicate && !payload.isDeleted) {
+    throw new Error("Customer with same email or phone already exists");
+  }
   const updatedCustomer = {
     ...payload,
     isSynced: false,
@@ -179,6 +200,173 @@ deleteCustomer: async (localId) => {
 },
 
 
+
+// FETCH CUSTOMERS FROM API AND STORE IN INDEXEDDB
+fetchCustomersFromAPI: async () => {
+  if (!navigator.onLine) {
+    console.warn("⚠️ Cannot fetch customers: offline");
+    return;
+  }
+
+  try {
+    console.log("🔄 Fetching customers from API...");
+    // Fetch customers from API
+    const res = await api.get("/tenant/customer");
+    console.log("📦 API Response:", res.data);
+    
+    // Handle different possible response structures
+    let apiCustomers = [];
+    if (Array.isArray(res.data?.data)) {
+      // Response: { data: [...] }
+      apiCustomers = res.data.data;
+    } else if (Array.isArray(res.data?.data?.customers)) {
+      // Response: { data: { customers: [...] } }
+      apiCustomers = res.data.data.customers;
+    } else if (Array.isArray(res.data)) {
+      // Response: [...]
+      apiCustomers = res.data;
+    } else {
+      console.warn("⚠️ Invalid API response format:", res.data);
+      return;
+    }
+    
+    console.log(`📊 Received ${apiCustomers.length} customers from API`);
+
+    // Get ALL existing customers from IndexedDB (including deleted for reference)
+    const existingCustomers = await getCustomersDB();
+    console.log(`💾 Found ${existingCustomers.length} existing customers in IndexedDB`);
+    
+    // Create maps for quick lookup
+    const existingByServerId = new Map();
+    const existingByLocalId = new Map();
+    
+    existingCustomers.forEach(c => {
+      if (c.serverId) {
+        existingByServerId.set(String(c.serverId), c);
+      }
+      existingByLocalId.set(c.localId, c);
+    });
+
+    // Track processed customers to avoid duplicates
+    const processedLocalIds = new Set();
+    const processedCustomers = [];
+    
+    // Process each customer from API
+    for (const apiCustomer of apiCustomers) {
+      // Extract serverId from various possible fields
+      const serverId = apiCustomer.customer_id || apiCustomer.customerId || apiCustomer.id || apiCustomer._id;
+      
+      if (!serverId) {
+        console.warn("⚠️ Customer from API missing ID:", apiCustomer);
+        continue;
+      }
+      
+      const serverIdStr = String(serverId);
+      let existing = existingByServerId.get(serverIdStr);
+      
+      if (existing) {
+        // Customer exists in IndexedDB - update with server data
+        const mappedCustomer = mapApiResponseToCustomer(apiCustomer, existing.localId);
+        
+        // Preserve local unsaved changes if customer was recently edited locally
+        if (!existing.isSynced && existing.updatedAt && 
+            existing.updatedAt > (mappedCustomer.updatedAt || 0)) {
+          // Keep existing customer with serverId updated
+          const updated = {
+            ...existing,
+            serverId: mappedCustomer.serverId, // Ensure serverId is set
+          };
+          await updateCustomerDB(updated);
+          processedCustomers.push(updated);
+          processedLocalIds.add(updated.localId);
+        } else {
+          // Update with server data (server is source of truth)
+          const mergedCustomer = {
+            ...mappedCustomer,
+            localId: existing.localId, // Preserve localId
+          };
+          await updateCustomerDB(mergedCustomer);
+          processedCustomers.push(mergedCustomer);
+          processedLocalIds.add(mergedCustomer.localId);
+        }
+      } else {
+        // New customer from server - check if we have a local match by email/phone
+        const mappedCustomer = mapApiResponseToCustomer(apiCustomer);
+        let foundLocal = false;
+        
+        for (const existing of existingCustomers) {
+          // Skip if already processed or deleted
+          if (processedLocalIds.has(existing.localId) || existing.isDeleted) continue;
+          
+          // Match by email or phone if local customer doesn't have serverId
+          if (!existing.serverId) {
+            const emailMatch = existing.email && mappedCustomer.email && 
+                              existing.email.toLowerCase() === mappedCustomer.email.toLowerCase();
+            const phoneMatch = existing.phone && mappedCustomer.phone && 
+                              existing.phone === mappedCustomer.phone;
+            
+            if (emailMatch || phoneMatch) {
+              // Match found - merge local customer with server data
+              const updatedCustomer = {
+                ...existing,
+                serverId: mappedCustomer.serverId,
+                isSynced: true,
+                // Use server data as source of truth
+                firstName: mappedCustomer.firstName,
+                lastName: mappedCustomer.lastName,
+                phoneCode: mappedCustomer.phoneCode,
+                phone: mappedCustomer.phone,
+                email: mappedCustomer.email,
+                address1: mappedCustomer.address1,
+                address2: mappedCustomer.address2,
+                city: mappedCustomer.city,
+                state: mappedCustomer.state,
+                pincode: mappedCustomer.pincode,
+                country: mappedCustomer.country,
+              };
+              await updateCustomerDB(updatedCustomer);
+              processedCustomers.push(updatedCustomer);
+              processedLocalIds.add(updatedCustomer.localId);
+              foundLocal = true;
+              break;
+            }
+          }
+        }
+        
+        if (!foundLocal) {
+          // Completely new customer from server
+          await addCustomerDB(mappedCustomer);
+          processedCustomers.push(mappedCustomer);
+          processedLocalIds.add(mappedCustomer.localId);
+        }
+      }
+    }
+
+    // Preserve ALL local-only customers (those without serverId that aren't deleted and not processed)
+    const localOnlyCustomers = existingCustomers.filter(
+      c => !c.isDeleted && 
+           !c.serverId && 
+           !processedLocalIds.has(c.localId)
+    );
+    
+    console.log(`💾 Preserving ${localOnlyCustomers.length} local-only customers`);
+    
+    // Combine server customers with local-only customers
+    const allCustomers = [...processedCustomers, ...localOnlyCustomers];
+    
+    // Update Zustand state (only non-deleted customers)
+    const activeCustomers = allCustomers.filter(c => !c.isDeleted);
+    set({
+      customers: activeCustomers,
+    });
+
+    console.log(`✅ Successfully synced ${processedCustomers.length} customers from API, preserved ${localOnlyCustomers.length} local customers. Total: ${activeCustomers.length} active customers`);
+  } catch (err) {
+    console.error("❌ Failed to fetch customers from API:", err);
+    console.error("Error details:", err.response?.data || err.message);
+    // Don't throw - allow app to continue with local data
+  }
+},
 
  // SYNC WHEN ONLINE
 syncCustomers: async () => {
