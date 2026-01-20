@@ -24,10 +24,10 @@ const App = () => {
 
   const initNetwork = useNetworkStore((s) => s.init);
 
-  useEffect(() => {
-    initNetwork();   // online/offline detection
+  useEffect(() => {   // online/offline detection
     authHydrate();   // cookie-based auth
-    posHydrate();    // IndexedDB hydration
+    posHydrate();  // IndexedDB hydration
+    initNetwork();   // online/offline detection
   }, []);
 
   // 🔴 BLOCK UI UNTIL LOCAL DATA IS READY

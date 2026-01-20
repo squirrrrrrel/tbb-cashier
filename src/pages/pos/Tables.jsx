@@ -1,106 +1,64 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AddNewTable from "../../components/pos/table/AddNewTable";
 import { useNotification } from "./../../hooks/useNotification";
-
+import { useTableStore } from "../../store/useTableStore";
 const Tables = () => {
-
-  const testTableList = [
-    {
-      tableId: "1",
-      tableNo: 1,
-      seatsAvailable: 2,
-      occupied: true
-    },
-    {
-      tableId: "2",
-      tableNo: 2,
-      seatsAvailable: 4,
-      occupied: false
-    },
-    {
-      tableId: "3",
-      tableNo: 3,
-      seatsAvailable: 6,
-      occupied: true
-    },
-    {
-      tableId: "4",
-      tableNo: 4,
-      seatsAvailable: 0,
-      occupied: false
-    },
-    {
-      tableId: "5",
-      tableNo: 5,
-      seatsAvailable: 8,
-      occupied: true
-    }
-  ];
-  const [tableList, setTableList] = useState(testTableList);
+  const { tables, hydrate, hydrated, addTable, deleteTable } = useTableStore();
   const [addNewTableModal, setAddNewModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedTable, setSelectedTable] = useState({});
   const { notifyError, notifySuccess } = useNotification();
 
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  if (!hydrated) return null;
+
   const handleAddNewTableModal = () => {
     setAddNewModal(true);
   };
+
   const handleAddNewTableCloseModal = () => {
     setAddNewModal(false);
   };
 
-  const handleAddTableSave = ({ tableNumber, seats }) => {
+  const handleAddTableSave = async ({ tableNumber, seats }) => {
     try {
-      const nextIndex = tableList.length + 1;
-
-    const newTable = {
-      tableId: `TAB-${String(nextIndex).padStart(3, "0")}`,
-      tableNo: Number(tableNumber),
-      seatsAvailable: Number(seats),
-      occupied: false, // new table is free by default
-    };
-
-    setTableList((prev) => [...prev, newTable]);
-    notifySuccess("Table Added");
-    } catch (error) {
-      console.log(error);
-      notifyError("Something Went Wrong");
+      await addTable({ tableNumber, seats });
+      notifySuccess("Table Added");
+    } catch {
+      notifyError("Something went wrong");
     }
   };
-
-  const handleDeleteTable = (tableId) => {
-
+  
+  const handleDeleteTable = async (localId) => {
     try {
-      setTableList((prev) =>
-        prev.filter((table) => table.tableId !== tableId)
-      );
-
-      // If deleted table was selected, clear selection
-      if (selectedTable?.tableId === tableId) {
+      await deleteTable(localId);
+      notifySuccess("Table Deleted");
+      if (selectedTable?.localId === localId) {
         setSelectedTable({});
       }
-      notifySuccess("Table Deleted")
-    } catch (error) {
-      console.log(error);
-      notifyError("Something Went Wrong");
+    } catch {
+      notifyError("Something went wrong");
     }
   };
-
 
   const handleFilterChange = (filterType) => {
     setFilter(filterType);
   };
 
-  const filteredTableList = tableList
+  const filteredTableList = tables
     .filter((item) => {
-      if (filter === "occupied") return item?.tableId === selectedTable?.tableId;
-      if (filter === "vacant") return item?.tableId !== selectedTable?.tableId;
+      if (filter === "occupied") return item.occupied === true;
+      if (filter === "vacant") return item.occupied === false;
       return true;
     })
     .filter((item) =>
-      item.seatsAvailable.toString().includes(searchQuery)
+      item.seats?.toString().includes(searchQuery) || ""
     );
+
   return (
     <div className="grid grid-cols-1 w-full h-screen">
       <div className="flex flex-col bg-background h-full overflow-hidden">
@@ -164,10 +122,10 @@ const Tables = () => {
           {filteredTableList.length > 0 ? (
           <div className="flex flex-wrap gap-10 overflow-y-auto overflow-x-hidden py-5 px-3 h-full m-2">
             {filteredTableList.map((item) => {
-              const isSelected = selectedTable?.tableId === item?.tableId;
+              const isSelected = selectedTable?.localId === item?.localId;
 
               return (
-                <div className="group" key={item.tableId}>
+                <div className="group" key={item.localId}>
                   {/* Table Visual Card */}
                   <div className="relative p-2.5">
                     <div
@@ -177,9 +135,9 @@ const Tables = () => {
                           : "bg-white text-secondary"}`}
                     >
                       <div className={`flex flex-col gap-1 text-secondary ${isSelected ? "text-white" : "text-[#117892]"}`}>
-                        <h3 className="text-2xl">Table {item.tableNo}</h3>
+                        <h3 className="text-2xl">Table {item.tableNumber}</h3>
                         <p className={`text-md font-semibold `}>
-                          Seats: {item.seatsAvailable}
+                          Seats: {item.seats}
                         </p>
                       </div>
                     </div>
@@ -223,7 +181,7 @@ const Tables = () => {
                     <div
                       className="w-1/5 flex justify-end items-center text-[#555555] text-lg cursor-pointer"
                       aria-label="Delete table"
-                      onClick={() => handleDeleteTable(item.tableId)}
+                      onClick={() => handleDeleteTable(item.localId)}
                     >
                       <svg viewBox="64 64 896 896" width="20px" height="20px" fill="currentColor">
                         <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"></path>
