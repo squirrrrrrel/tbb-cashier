@@ -2,9 +2,11 @@ import React from "react";
 // import { Pencil } from "lucide-react";
 import { AiOutlineEdit, AiOutlineDelete , AiOutlineCheck, AiOutlineMail, AiOutlinePhone   } from "react-icons/ai";
 import userImg from "../../../assets/images/user.png";
+import { useNavigate } from "react-router-dom";
 
 
-const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer }) => {
+const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer, setSelectedCustomer, selectedCustomer }) => {
+  const navigate = useNavigate();
   return (
     <>
       {/* List */}
@@ -58,10 +60,12 @@ const CustomerList = ({ customers, onSelectEditCustomer, onDeleteCustomer }) => 
             </button>
 
             <button
+              onClick={selectedCustomer?.localId== customer.localId ? ()=> setSelectedCustomer({}): ()=> {setSelectedCustomer(customer); navigate("/pos/dashboard")}}
               className="px-2 py-1.5 rounded-md bg-white-100   text-[#555555] font-normal  flex items-center gap-1 text-lg hover:bg-gray-200 hover:px-1.75 hover:py-1.25 hover:m-0.25 hover:shadow-none shadow-[0_0_3px_#00000026]"
             >
-              <AiOutlineCheck className="text-black" />
-              Set Customer
+              <AiOutlineCheck className={`${selectedCustomer?.localId== customer.localId ? "text-green-500":"text-black"}`} />
+              {selectedCustomer?.localId== customer.localId ? "Current Customer":"Set Customer"}
+              
             </button>
           </div>
           </div>
