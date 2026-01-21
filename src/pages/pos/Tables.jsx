@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import AddNewTable from "../../components/pos/table/AddNewTable";
 import { useNotification } from "./../../hooks/useNotification";
 import { useTableStore } from "../../store/useTableStore";
+import { useCartStore } from "../../store/useCartStore";
+import SearchBar from "../../components/searchBar/SearchBar";
 const Tables = () => {
   const { tables, hydrate, hydrated, addTable, deleteTable } = useTableStore();
   const [addNewTableModal, setAddNewModal] = useState(false);
