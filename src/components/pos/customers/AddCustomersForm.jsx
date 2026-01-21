@@ -3,6 +3,7 @@ import Select from "react-select";
 import { commonSelectStyles } from "../../common/select/selectStyle";
 import { useState, useEffect } from "react";
 import { useNotification } from "../../../hooks/useNotification.jsx";
+import PhoneInputWithCode from "../../phoneCodeInput/PhoneInputWithCode.jsx";
 
 const InputComp = ({ label, placeholder, isRequired = false, type, name, value, onChange, }) => {
   return (
@@ -26,7 +27,7 @@ const InputComp = ({ label, placeholder, isRequired = false, type, name, value, 
 
 
 const AddCustomersForm = ({
-  selectedCustomer,
+  focusedCustomer,
   clearSelection,
   onAddCustomer,
   onEditCustomer,
@@ -73,23 +74,23 @@ const AddCustomersForm = ({
 
   // Auto fill on Edit
   useEffect(() => {
-    if (selectedCustomer) {
+    if (focusedCustomer) {
       setFormData({
         ...initialFormData,
-        ...selectedCustomer,
+        ...focusedCustomer,
         phoneCode:
           codeOptions.find(
-            (opt) => opt.value === selectedCustomer.phoneCode
+            (opt) => opt.value === focusedCustomer.phoneCode
           ) || defaultCodeOption,
         country:
           countryOptions.find(
-            (opt) => opt.value === selectedCustomer.country
+            (opt) => opt.value === focusedCustomer.country
           ) || defaultCountryOption,
       });
     } else {
       setFormData(initialFormData);
     }
-  }, [selectedCustomer]);
+  }, [focusedCustomer]);
 
 
   const handleChange = (e) => {
@@ -123,39 +124,39 @@ const AddCustomersForm = ({
     clearSelection(null);       // exit edit mode
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
 
     e.preventDefault();
     const payload = {
       ...formData,
-      phoneCode: formData.phoneCode? formData.phoneCode.value : "",
+      phoneCode: formData.phoneCode ? formData.phoneCode.value : "",
       country: formData.country.value,
     };
-    
-    
-    
+
+
+
     if (!validateForm(formData)) return;
     try {
-    
-    if (selectedCustomer) {
-      // UPDATE
-      await onEditCustomer(payload);
-      notifySuccess("Customer edited successfully");
-    } else {
-      // ADD
-      await onAddCustomer(payload);
-      notifySuccess("Customer added successfully");
-    }
-      
+
+      if (focusedCustomer) {
+        // UPDATE
+        await onEditCustomer(payload);
+        notifySuccess("Customer edited successfully");
+      } else {
+        // ADD
+        await onAddCustomer(payload);
+        notifySuccess("Customer added successfully");
+      }
+
     } catch (error) {
       notifyError("An error occurred. Please try again.");
       console.log(error);
     } finally {
-    setFormData(initialFormData);
-    clearSelection();
+      setFormData(initialFormData);
+      clearSelection();
     }
 
-    
+
 
   };
 
@@ -163,7 +164,7 @@ const AddCustomersForm = ({
 
   return (
     <div className="bg-white p-3 border-l border-gray-200 ">
-      <h2 className="text-2xl font-semibold text-[#555555]">{selectedCustomer ? "Edit Customer" : "Add New Customer"}</h2>
+      <h2 className="text-2xl font-semibold text-[#555555]">{focusedCustomer ? "Edit Customer" : "Add New Customer"}</h2>
       <div className="form mt-4" onSubmit={handleSubmit} >
         <form className="flex flex-col gap-3 ">
           <div className="name flex gap-4">
@@ -186,86 +187,11 @@ const AddCustomersForm = ({
               type={"text"}
             />
           </div>
-          <div className="phone-number flex gap-4">
-            <div className="code w-2/5 flex flex-col ">
-              <label className="text-gray-600 text-sm font-semibold mb-[5px]">
-                Code
-                <span className="text-red-600"> *</span>
-              </label>
-              <Select
-                placeholder=" Code"
-                options={codeOptions}
-                value={formData.phoneCode}
-                onChange={(option) =>
-                  setFormData((prev) => ({ ...prev, phoneCode: option }))
-                }
-                isClearable={false}
-                components={{
-                  IndicatorSeparator: () => null,
-                }}
-                formatOptionLabel={(option, { context }) =>
-                  context === "menu"
-                    ? `${option.label} ${option.value}` // dropdown
-                    : option.value                        // selected field
-                }
-                styles={{
-                  control: (provided) => ({
-                    ...provided,
-                    fontSize: "14px",
-                    height: "36px",
-                    marginTop: "2px",
-                    color: "#555555",
-                    borderRadius: "6px",
-                    border: "none",
-                    outline: "1px",
-                    "&:focus, &:focus-within": {
-                      outlineWidth: "2px",
-                      outlineColor: "var(--color-primary)",
-                    },
-                    padding: "0px",
-                    backgroundColor: "#f8f8f8",
-                    boxShadow: "0 0 3px #00000026",
-                  }),
-                  singleValue: (provided) => ({
-                    ...provided,
-                    color: "#gray",   // selected text color
-                    fontWeight: "500",
-                  }),
-                  menu: (provided) => ({
-                    ...provided,
-                    width: "15rem",
-                    fontWeight: "600",        // ⬅ dropdown width
-                    color: "#555555",
-                    fontSize: "0.8rem",
-                    padding: "0",
-
-                  }),
-                  option: (provided, state) => ({
-                    ...provided,
-                    backgroundColor: state.isFocused
-                      ? "var(--color-hover-color)"
-                      : state.isSelected
-                        ? "var(--color-secondary)"
-                        : "white",
-                    color: state.isFocused || state.isSelected ? "white" : "black",
-                    "&:hover": {
-                      backgroundColor: "var(--color-hover-color)",
-                      color: "white",
-                    },
-                  }),
-                }}
-              />
-            </div>
-            <InputComp
-              label={"Phone Number"}
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder={"Enter Phone Number"}
-              isRequired={true}
-              type={"tel"}
-            />
-          </div>
+          <PhoneInputWithCode
+            formData={formData}
+            setFormData={setFormData}
+            onPhoneChange={handleChange}
+          />
           <div className="email">
             <InputComp
               label={"Email"}
@@ -391,9 +317,9 @@ const AddCustomersForm = ({
             />
           </div>
           <button className="submit w-full p-3 bg-linear-180 from-primary to-secondary text-white font-bold text-center rounded-lg cursor-pointer mt-2">
-            {selectedCustomer ? "Update Customer" : "Save Customer"}
+            {focusedCustomer ? "Update Customer" : "Save Customer"}
           </button>
-          {selectedCustomer ? (
+          {focusedCustomer ? (
             <button type="button" onClick={handleCancel} className="cancel mb-5 w-full p-3 bg-white border-2 border-gray-200 text-[#555555] font-bold text-center rounded-lg cursor-pointer">Cancel</button>
           ) : (
             <button type="button" onClick={handleCancel} className="cancel mb-5 w-full p-3 bg-white border-2 border-gray-200 text-[#555555] font-bold text-center rounded-lg cursor-pointer">Reset</button>

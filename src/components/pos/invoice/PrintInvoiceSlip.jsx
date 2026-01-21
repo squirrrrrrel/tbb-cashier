@@ -229,7 +229,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
             <b>Date:</b> {new Date()?.toLocaleDateString()}
           </p>
           <p>
-            <b>Cashier:</b> {orderDetails?.userId ?? "-"}
+            <b>Cashier:</b> {orderDetails?.customerData ?? "-"}
           </p>
           <p>
             <b>Customer:</b> {orderDetails?.customerId ?? "-"}
@@ -422,7 +422,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
             </tbody>
           </table>
           <div>
-            <span>Thank You, HAVE A NICE DAY.</span>
+            <span>THANK YOU, HAVE A NICE DAY.</span>
           </div>
         </div>
       </div>

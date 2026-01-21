@@ -97,11 +97,18 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
             onClose();
         }
     };
-    const isExchangeDisabled = !exchangeRows.some(row =>
-        row.returnQty > 0 &&                    // 1. Must be returning something
-        row.selectedNewProductId !== "" &&      // 2. Must have picked a new item
-        row.newQty > 0                          // 3. New item quantity must be > 0
+    const isExchangeDisabled = exchangeRows.length === 0 || !exchangeRows.every(row => {
+    // If the user hasn't touched this row (returnQty is 0 or empty), it's technically "valid" to skip
+    if (!row.returnQty || row.returnQty <= 0) {
+        return true; 
+    }
+
+    // If they ARE returning something, they MUST fulfill these requirements
+    return (
+        row.selectedNewProductId !== "" && 
+        row.newQty > 0
     );
+}) || !exchangeRows.some(row => row.returnQty > 0);
 
 
     return (
