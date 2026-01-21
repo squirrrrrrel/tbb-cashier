@@ -1,42 +1,22 @@
-
+import SearchBar from "../../searchBar/SearchBar";
 const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, searchTerm, setSearchTerm }) => {
     //   const { dateAsPerTimezone } = useDate();
     return (
         <div className="px-1 flex flex-col h-full min-h-0">
-
-            <div className="search relative mt-4 mb-2  flex items-center gap-3 px-1.5 bg-background">
-            <svg
-              className="absolute text-lg left-3 top-3 w-4 h-5 text-gray-500 mx-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by Customer Name, Customer Mobile Number and Waiter Name...."
-
-              className="p-2 pl-10  bg-white rounded-md w-4/5 shadow-[0_0_3px_#00000026] outline-0 cursor-text placeholder:text-[#555555] placeholder:text-sm"
-            />
-            <span className="text-sm text-[#555555] ml-auto pr-0.5">
-              {orders.length} Results
-            </span>
-          </div>
+            <div className="px-1 pb-2">
+            <SearchBar
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Search by Customer Name, Customer Mobile Number and Waiter Name...."
+                resultCount={orders.length}
+            /></div>
 
             {orders.length === 0 ? (
                 <p className="text-center text-gray-500 py-2 bg-white mx-2 mt-2">
                     No order Details found
                 </p>
             ) : (
-                <ul className="flex-grow overflow-y-auto min-h-0 py-0.5 px-1">
+                <ul className="flex-grow overflow-y-auto no-scrollbar min-h-0 py-0.5 px-1">
                     {orders.map((order) => {
                         const isActive = order?.orderId === selectedHoldOrder?.orderId;
                         return (
@@ -86,7 +66,7 @@ const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, sear
                                                 </svg>
                                             </span>
                                             <span>
-                                                
+
                                                 {order?.timestamp
                                                     ? new Date(order.timestamp).toLocaleString("en-US", {
                                                         month: "long",
