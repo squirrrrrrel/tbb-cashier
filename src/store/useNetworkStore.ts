@@ -1,25 +1,30 @@
 import { create } from "zustand";
 import { useCustomerStore } from "./useCustomerStore";
+import { useTableStore } from "./useTableStore";
 
-export const useNetworkStore = create((set, get) => ({
+let initialized = false;
+
+export const useNetworkStore = create((set) => ({
   online: navigator.onLine,
 
   init: () => {
-    // 🔹 CASE 1: App loads and internet is already ON
-    if (navigator.onLine) {
-      useCustomerStore.getState().syncCustomers();
-    }
+    if (initialized) return; // 🛑 prevent double init
+    initialized = true;
 
     const handleOnline = () => {
       set({ online: true });
-      console.log("Network online");
-      // 🔁 trigger sync safely
+      console.log("🌐 Network online");
+
+      // PUSH → THEN PULL
       useCustomerStore.getState().syncCustomers();
+      useTableStore.getState().syncTables();
+
+      useCustomerStore.getState().fetchCustomersFromAPI();
+      useTableStore.getState().fetchTablesFromAPI();
     };
 
     const handleOffline = () => {
-      console.log("Network offline");
-      
+      console.log("📴 Network offline");
       set({ online: false });
     };
 
@@ -27,3 +32,4 @@ export const useNetworkStore = create((set, get) => ({
     window.addEventListener("offline", handleOffline);
   },
 }));
+

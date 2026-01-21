@@ -45,7 +45,7 @@ const LoginPage = () => {
     <div className="login bg-gradient-to-b from-primary to-secondary min-h-screen flex items-center justify-center">
       <div className="card bg-white shadow-lg py-16 px-20 text-primary">
         <h1 className="text-3xl font-semibold mb-10 text-center">
-          Welcome to Warnoc POS!
+          Welcome to Qkarts POS!
         </h1>
         <form
           onSubmit={handleSubmit}
