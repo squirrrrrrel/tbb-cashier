@@ -4,6 +4,7 @@ import { useNotification } from "./../../hooks/useNotification";
 import { useTableStore } from "../../store/useTableStore";
 import { useCartStore } from "../../store/useCartStore";
 import SearchBar from "../../components/searchBar/SearchBar";
+import { useNavigate } from "react-router-dom";
 const Tables = () => {
   const { tables, hydrate, hydrated, addTable, deleteTable } = useTableStore();
   const [addNewTableModal, setAddNewModal] = useState(false);
@@ -11,6 +12,7 @@ const Tables = () => {
   const [filter, setFilter] = useState("all");
   const { selectedTable, setSelectedTable } = useCartStore();
   const { notifyError, notifySuccess } = useNotification();
+  const navigate = useNavigate();
 
   useEffect(() => {
     hydrate();
@@ -53,12 +55,12 @@ const Tables = () => {
 
   const filteredTableList = tables
     .filter((item) => {
-      if (filter === "occupied") return item.occupied === true;
-      if (filter === "vacant") return item.occupied === false;
+      if (filter === "occupied") return item.localId === selectedTable.localId;
+      if (filter === "vacant") return item.localId !== selectedTable.localId;
       return true;
     })
     .filter((item) =>
-      item.seats?.toString().includes(searchQuery) || ""
+      item.tableNumber?.toString().includes(searchQuery) || ""
     );
 
   return (
@@ -125,22 +127,22 @@ const Tables = () => {
                         </div>
 
                         {/* Decorative Table  (Chair effect) */}
-                        <span className={`absolute left-[50px] top-[-5px] h-2.5 w-[70px] rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
+                        <span className={`absolute left-[40px] top-[-15px] h-2.5 w-[70px] rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
                             : "bg-white"}`}>
                         </span>
-                        <span className={`absolute bottom-[-5px] left-[50px] h-2.5 w-[70px] rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
+                        <span className={`absolute bottom-[-15px] left-[40px] h-2.5 w-[70px] rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
                             : "bg-white"}`}>
                         </span>
-                        <span className={`absolute left-[-5px] top-[35px] h-[70px] w-2.5 rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
+                        <span className={`absolute left-[-15px] top-[30px] h-[70px] w-2.5 rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
                             : "bg-white"}`}>
                         </span>
-                        <span className={`absolute right-[-5px] top-[35px] h-[70px] w-2.5 rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
+                        <span className={`absolute right-[-15px] top-[30px] h-[70px] w-2.5 rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
                             : "bg-white"}`}>
@@ -148,30 +150,20 @@ const Tables = () => {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="mt-[15px] flex items-center justify-between gap-1">
-                        <span className="flex-1 items-center flex-wrap rounded-md bg-white p-[8px_2px] text-center shadow-[0_0_3px_0_rgba(0,0,0,0.15)] cursor-pointer hover:bg-black/5 hover:shadow-none " onClick={!isSelected ? () => { setSelectedTable(item); navigate("/pos/dashboard"); } : () => setSelectedTable({})}>
-                          <div className="mx-auto flex w-4/5 items-center text-xs justify-center text-[#555555]" >
-                            <span className="mr-1 text-lg text-[#15b71a]">
+                      <div className="mt-[25px] flex items-center justify-center gap-1">
+                        <div className="flex-1 w-5/6 items-center flex-wrap rounded-md bg-white p-[8px_2px] text-center shadow-[0_0_3px_0_rgba(0,0,0,0.15)] cursor-pointer hover:bg-black/5 hover:shadow-none " onClick={!isSelected ? () => { setSelectedTable(item); navigate("/pos/dashboard"); } : () => setSelectedTable({})}>
+                          <div className="flex gap-1 items-center text-xs justify-center text-[#555555]" >
+                            <span className="text-lg text-[#15b71a]">
                               <svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor">
                                 <path d="M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474a32 32 0 00-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1.4-12.8-6.3-12.8z"></path>
                               </svg>
                             </span>
                             {isSelected ? "Current Table" : "Set Table"}
                           </div>
-                        </span>
-
-                        <div
-                          className="w-1/5 flex justify-end items-center text-[#555555] text-lg cursor-pointer"
-                          aria-label="Delete table"
-                          onClick={() => handleDeleteTable(item.tableId)}
-                        >
-                          <svg viewBox="64 64 896 896" width="20px" height="20px" fill="currentColor">
-                            <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"></path>
-                          </svg>
                         </div>
 
                         <div
-                          className="w-1/5 flex justify-end items-center text-[#555555] text-lg cursor-pointer"
+                          className="w-1/6 flex justify-end items-center text-[#555555] text-lg cursor-pointer"
                           aria-label="Delete table"
                           onClick={() => handleDeleteTable(item.localId)}
                         >
