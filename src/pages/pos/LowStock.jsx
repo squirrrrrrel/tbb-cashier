@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { useLowStockStore } from "../../store/useLowStockStore";
+import { useProductStore } from "../../store/useProductStore";
 import OfflineLoader from "../../components/OfflineLoader";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
 
 const LowStock = () => {
   const { lowStock, hydrate, hydrated } = useLowStockStore();
+  const { products } = useProductStore();
 
   const [filters, setFilters] = useState({
     product: "",
@@ -19,20 +21,20 @@ const LowStock = () => {
 
   if (!hydrated) return <OfflineLoader />;
 
-  // 🔹 Build filter dropdown options from data
-  const products = [
-    ...new Set(lowStock.map((i) => i.productName).filter(Boolean)),
+
+  const productOptions = [
+    ...new Set(products.map((p) => p.name).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
-  const categories = [
+  const categoryOptions = [
     ...new Set(lowStock.map((i) => i.categoryName).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
-  const outlets = [
+  const outletOptions = [
     ...new Set(lowStock.map((i) => i.outletName).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
-  // 🔹 Filter logic
+ 
   const filtered = lowStock.filter((p) => {
     if (filters.product && p.productName !== filters.product) return false;
     if (filters.category && p.categoryName !== filters.category) return false;
@@ -47,7 +49,7 @@ const LowStock = () => {
       {/* Filters */}
       <div className="filters grid grid-cols-3 gap-2 mt-4">
         <Select
-          options={outlets}
+          options={outletOptions}
           isClearable
           placeholder="Select Outlet"
           styles={commonSelectStyles}
@@ -57,7 +59,7 @@ const LowStock = () => {
         />
 
         <Select
-          options={categories}
+          options={categoryOptions}
           isClearable
           placeholder="Select Category"
           styles={commonSelectStyles}
@@ -67,7 +69,7 @@ const LowStock = () => {
         />
 
         <Select
-          options={products}
+          options={productOptions}
           isClearable
           placeholder="Select Product"
           styles={commonSelectStyles}
@@ -81,8 +83,8 @@ const LowStock = () => {
       <table className="w-full mt-4">
         <thead className="bg-linear-to-r from-primary to-secondary text-white">
           <tr>
+            <th className="p-2">Image</th>
             <th className="p-2">Product</th>
-            
             <th className="p-2">Category</th>
             <th className="p-2">Outlet</th>
             <th className="p-2">Stock</th>
@@ -100,10 +102,22 @@ const LowStock = () => {
 
           {filtered.map((ls) => (
             <tr key={ls.localId} className="even:bg-gray-100">
+              <td className="p-2 flex items-center justify-center">
+     <img
+      src={ls.img || "/images/no-image.png"}
+      alt={ls.productName}
+      className="w-10 h-10 object-cover"
+      onError={(e) => {
+        e.target.src = "/images/no-image.png";
+      }}
+    />
+  </td>
               <td className="p-2">{ls.productName}</td>
               <td className="p-2">{ls.categoryName}</td>
               <td className="p-2">{ls.outletName}</td>
-              <td className="p-2 text-red-600 font-semibold">{ls.stock}</td>
+              <td className="p-2 text-red-600 font-semibold">
+                {ls.stock}
+              </td>
             </tr>
           ))}
         </tbody>
