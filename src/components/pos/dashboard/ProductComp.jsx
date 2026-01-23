@@ -1,5 +1,5 @@
 import React from "react";
-
+import { useCartStore } from "../../../store/useCartStore";
 const ProductComp = ({
   id,
   img,
@@ -25,23 +25,12 @@ const ProductComp = ({
   };
 
   const handleAddToCart = () => {
-    setCartProducts((prev) => {
-      // Check if product already exists in cart
-      const existingProduct = prev.find((p) => p.id === id);
-      if (existingProduct) {
-        // If exists, increment quantity
-        return prev.map((p) =>
-          p.id === id ? { ...p, quantity: p.quantity + 1 } : p
-        );
-      }
-      // If not exists, add new product
-      return [...prev, {
-        id: id,
-        imgUrl: img,
-        name: name,
-        price: parseFloat(price),
-        quantity: 1,
-      }];
+    useCartStore.getState().addToCart({
+      id,
+      img,
+      name,
+      price,
+      unit,
     });
     playBeepSound()
   };

@@ -18,9 +18,24 @@ export const getProductsDB = async () => {
   return db.getAll(STORE);
 };
 
-export const upsertProductDB = async (product) => {
+export const updateProductStockDB = async (serverId, newStock) => {
   const db = await dbPromise;
-  await db.put(STORE, product);   // put = upsert
+  const tx = db.transaction(STORE, "readwrite");
+  const store = tx.objectStore(STORE);
+  const index = store.index("serverId");
+
+  const product = await index.get(serverId);
+  if (!product) {
+    console.warn("⚠️ Product not found in IndexedDB:", serverId);
+    return;
+  }
+
+  product.stock = Math.max(0, Number(newStock));
+  product.updatedAt = Date.now();
+  product.isSynced = false; // 👈 important for later reconciliation
+
+  await store.put(product);
+  await tx.done;
 };
 
 export const deleteProductDB = async (localId) => {

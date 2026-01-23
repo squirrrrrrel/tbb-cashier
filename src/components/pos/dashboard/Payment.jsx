@@ -1,12 +1,28 @@
 import { useEffect, useState } from "react";
 import { useCartStore } from "../../../store/useCartStore";
+import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
 
 export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal, cartProducts }) => {
+    const { paymentMethods, hydrate, hydrated } = usePaymentMethodStore();
+    
+    useEffect(() => {
+        if (!hydrated) {
+            hydrate();
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const buttonBase = "py-5 shadow-[0_0_3px_#00000028] transition-all duration-200 cursor-pointer border-2 border-transparent";
     const hoverStyle = "hover:border-secondary hover:text-secondary";
     const [payingAmount, setPayingAmount] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState("Cash");
+    const defaultPaymentMethodId = paymentMethods.length > 0 ? paymentMethods[0].id : null;
+    const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethodId);
+    
+    // Update payment method when payment methods are loaded
+    useEffect(() => {
+        if (paymentMethods.length > 0 && !paymentMethod) {
+            setPaymentMethod(paymentMethods[0].id);
+        }
+    }, [paymentMethods, paymentMethod]);
     const [payLeft, setPayLeft] = useState(total);
     const [change, setChange] = useState("0.00");
     const { selectedTable, selectedCustomer } = useCartStore();
@@ -67,9 +83,13 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
             orderItems: [...cartProducts],
             subtotal: subtotal,
             discount: discount,
-            tenderedAmount: payingAmount,
-            change: change,
-            paymentMethodId: paymentMethod
+            tenderedAmount: parseFloat(payingAmount) || 0,
+            cashReturned: parseFloat(change) || 0,
+            paymentMethods: [{
+                paymentMethodId: paymentMethod,
+                amount: parseFloat(payingAmount) || total
+            }],
+            paymentMethodId: paymentMethod // Keep for backward compatibility
         }
         onPay(finalOrderData);
     }
@@ -133,15 +153,19 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                                 }}
                                 className="flex-1 outline-secondary rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028]" />
                             <select
-                                value={paymentMethod}
+                                value={paymentMethod || ""}
                                 onChange={(e) => setPaymentMethod(e.target.value)}
                                 className="flex-1 outline-none rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028] cursor-pointer"
                             >
-                                <option value="Cash">Cash</option>
-                                <option value="Card">Credit/Debit Card</option>
-                                <option value="Wallet">Mobile Wallet</option>
-                                <option value="Bottles">Empty Bottles</option>
-                                <option value="Credit">Credit</option>
+                                {paymentMethods.length > 0 ? (
+                                    paymentMethods.map((pm) => (
+                                        <option key={pm.id} value={pm.id}>
+                                            {pm.display_name || pm.payment_method_name}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option value="">Loading payment methods...</option>
+                                )}
                             </select>
                         </div>
                     </div>

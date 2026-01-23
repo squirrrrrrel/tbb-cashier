@@ -1,21 +1,32 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import arrowDownIcon from "../../../assets/icons/arrow_down.svg";
-import { useNavigate } from "react-router-dom";
 import keyup from "../../../assets/icons/keyup.svg";
+import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
 
-const CartProdctComponent = ({ product, onRemove, onQuantityChange, isExpanded, onToggle }) => {
-  const totalPrice = (product.price * product.quantity).toFixed(2);
-  const unitPrice = product.price.toFixed(2);
-  const [qty, setQty] = useState(product.quantity);
+/* ---------------- CART ITEM ---------------- */
+
+const CartProdctComponent = ({
+  product,
+  onRemove,
+  onQuantityChange,
+  isExpanded,
+  onToggle,
+}) => {
+  const price = Number(product.price) || 0;
+  const quantity = Number(product.quantity) || 0;
+
+  const unitPrice = price.toFixed(2);
+  const totalPrice = (price * quantity).toFixed(2);
+
+  const [qty, setQty] = useState(quantity);
 
   const onUpdateHandler = () => {
     onQuantityChange(product.id, qty);
     onToggle();
-    // setQty(product.quantity)
-  }
+  };
 
   return (
     <>
@@ -25,7 +36,7 @@ const CartProdctComponent = ({ product, onRemove, onQuantityChange, isExpanded, 
           <img src={isExpanded ? keyup : arrowDownIcon} alt="arrow-down" onClick={onToggle} />
           <img
             className="w-14 h-14 object-cover rounded"
-            src={product.imgUrl}
+            src={product.img}
             alt={product.name}
           />
           <div className="product_heading">
@@ -95,117 +106,52 @@ const CartProdctComponent = ({ product, onRemove, onQuantityChange, isExpanded, 
   );
 };
 
-const Cart = ({ cartProducts, setCartProducts, onHoldOrder, setPayToProceed, subtotal, tax, discount, total }) => {
+/* ---------------- CART ---------------- */
+
+const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total }) => {
   const navigate = useNavigate();
-  const {selectedTable, selectedCustomer, resetCart} = useCartStore();
   const { notifyError, notifySuccess } = useNotification();
-  const [activeModal, setActiveModal] = useState(null);
-  const [showDiscount, setShowDiscount] = useState(false);
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [discountType, setDiscountType] = useState("percentage");
-  const [discountValue, setDiscountValue] = useState(0.00);
-  const openModal = (modalName) => {
+const [activeModal, setActiveModal] = useState(null);
+  const {
+    cartData,
+    removeFromCart,
+    updateQuantity,
+    resetCart,
+    selectedCustomer,
+    selectedTable,
+  } = useCartStore();
+const openModal = (modalName) => {
     setActiveModal(modalName);
   };
   const closeModal = () => {
     setActiveModal(null);
   };
-  const [waiterName, setWaiterName] = useState("");
-
-  const totalItems = cartProducts.reduce((sum, product) => sum + product.quantity, 0);
-  const [expandedProductId, setExpandedProductId] = useState(null);
-
-  const handleToggleExpand = (id) => {
-    setExpandedProductId(prevId => (prevId === id ? null : id));
-  };
-
-  const handleLoginChange = (e) => {
-  const { placeholder, value } = e.target;
-  const field = e.target.name; 
-  setLoginData(prev => ({
-    ...prev,
-    [field]: value
-  }));
-};
-
-  const handleRemoveProduct = (productId) => {
-    setCartProducts((prev) => prev.filter((p) => p.id !== productId));
-  };
-
+ // const [expandedId, setExpandedId] = useState(null);
   const cartEndRef = useRef(null);
 
+  const totalItems = cartData.reduce(
+    (sum, p) => sum + (Number(p.quantity) || 0),
+    0
+  );
+const [expandedProductId, setExpandedProductId] = useState(null);
+
+const handleToggleExpand = (id) => {
+  setExpandedProductId(prev => (prev === id ? null : id));
+};
   useEffect(() => {
-    if (cartEndRef.current) {
-      cartEndRef.current.scrollIntoView({ behavior: "smooth" });
+    cartEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [cartData]);
+
+  const handleProceed = () => {
+    if (totalItems === 0) {
+      notifyError("Please add items in the cart");
+      return;
     }
-  }, [cartProducts]);
-
-  const handleUpdateProduct = (productId, newQuantity) => {
-    // 1. Prevent quantity from going below 1 (optional logic)
-    if (newQuantity < 1) return;
-
-    setCartProducts((prevList) =>
-      prevList.map((item) => {
-        if (item.id == productId) {
-          return {
-            ...item,
-            quantity: newQuantity,
-            // total: updatedTotal, // Syncing the total field
-          };
-        }
-        return item;
-      })
-    );
+    setPayToProceed(true);
   };
 
-  const handleHoldOrder = () => {
-    try {
-      onHoldOrder(waiterName);
-      notifySuccess("Order Held Successfully!");
-      setCartProducts([]);
-    } catch (error) {
-      console.log(error);
-      notifyError("Something Went wrong");
-    } finally {
-      closeModal();
-      setWaiterName("");
-    }
-  }
-
-  const managerLoginHandler =()=>{
-    if(!loginData.username || !loginData.password) {
-      notifyError("Username and Password is required");
-      return;
-    } else{
-      closeModal();
-      setShowDiscount(true);
-      setLoginData({ username: '', password: '' })
-      notifySuccess("Manager loged In")
-    }
-  }
-
-  const saveDiscountHandler = ()=>{
-    const discountData = {
-      discountType,
-      value: discountValue
-    }
-    console.log(discountData);
-    setShowDiscount(false);
-    
-  }
-
-  const handleProceedToPay = () => {
-    { totalItems === 0 ? notifyError("Please add items in the cart first") : setPayToProceed(true) }
-
-  }
-
-  const resetCartData = ()=>{
-    setCartProducts([]);
-    resetCart();
-  }
-
   return (
-    <div className="h-screen border-l border-gray-200">
+      <div className="h-screen border-l border-gray-200">
       <div className="cart-header flex items-center justify-between p-4 border-b border-gray-200">
         <div className="icons flex gap-2 fill-gray-600">
           <div className="cart-icons p-2 border border-gray-300 rounded-md">
@@ -221,7 +167,7 @@ const Cart = ({ cartProducts, setCartProducts, onHoldOrder, setPayToProceed, sub
               <path d="M922.9 701.9H327.4l29.9-60.9 496.8-.9c16.8 0 31.2-12 34.2-28.6l68.8-385.1c1.8-10.1-.9-20.5-7.5-28.4a34.99 34.99 0 00-26.6-12.5l-632-2.1-5.4-25.4c-3.4-16.2-18-28-34.6-28H96.5a35.3 35.3 0 100 70.6h125.9L246 312.8l58.1 281.3-74.8 122.1a34.96 34.96 0 00-3 36.8c6 11.9 18.1 19.4 31.5 19.4h62.8a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7h161.1a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7H923c19.4 0 35.3-15.8 35.3-35.3a35.42 35.42 0 00-35.4-35.2zM305.7 253l575.8 1.9-56.4 315.8-452.3.8L305.7 253zm96.9 612.7c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6zm325.1 0c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6z"></path>
             </svg>
           </div>
-          <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={resetCartData}>
+          <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={removeFromCart}>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -290,16 +236,16 @@ const Cart = ({ cartProducts, setCartProducts, onHoldOrder, setPayToProceed, sub
       <div className="cart-container">
         {/* Cart items will be rendered here */}
         <div className="cart-products p-2 h-[calc(100vh-380px)] overflow-y-auto no-scrollbar">
-          {cartProducts?.length > 0 ? (
-            cartProducts?.map((p) => (
+          {cartData?.length > 0 ? (
+            cartData?.map((p) => (
               <>
                 <CartProdctComponent
                   key={p.id}
                   product={p}
                   isExpanded={expandedProductId === p.id}
                   onToggle={() => handleToggleExpand(p.id)}
-                  onRemove={() => handleRemoveProduct(p.id)}
-                  onQuantityChange={handleUpdateProduct}
+                  onRemove={() => removeFromCart(p.id)}
+                  onQuantityChange={updateQuantity}
                 />
                 <div ref={cartEndRef} />
               </>
@@ -353,7 +299,7 @@ const Cart = ({ cartProducts, setCartProducts, onHoldOrder, setPayToProceed, sub
               </svg>
               <p>Exchange</p>
             </div>
-            <div onClick={() => openModal('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => onHoldOrder('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -382,7 +328,7 @@ const Cart = ({ cartProducts, setCartProducts, onHoldOrder, setPayToProceed, sub
             )}
 
             {/* Hold Order Popup */}
-            {showDiscount && (
+            {/* {showDiscount && (
               <div onClick={()=> setShowDiscount(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                 <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100">
                   <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Apply Discount</h2>
@@ -422,9 +368,9 @@ const Cart = ({ cartProducts, setCartProducts, onHoldOrder, setPayToProceed, sub
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
-          <div onClick={handleProceedToPay} className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer">
+          <div onClick={handleProceed} className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer">
             <div className="proceed">
               <h3 className="text-xl font-semibold">Proceed to Pay</h3>
               <h4 className="text-sm">{totalItems} {totalItems === 1 ? 'Item' : 'Items'}</h4>

@@ -12,7 +12,7 @@ import { useCartStore } from "../../store/useCartStore";
 import PrintOrder from "../../components/pos/dashboard/PrintOrder";
 import PhoneInputWithCode from "../../components/phoneCodeInput/PhoneInputWithCode";
 import DashboardPopup from "../../components/pos/dashboard/dashboardPopup";
-
+import  {createOfflineOrder}  from "../../utils/createOfflineOrder";
 
 const Dashboard = () => {
   const { products, hydrate, hydrated } = useProductStore();
@@ -32,21 +32,21 @@ const Dashboard = () => {
   const [customerDetails, setCustomerDetails] = useState({ name: '', phoneCode: { value: "+91" }, phone: '' });
   const { orderData, setOrderData } = useCartStore();
   const [isPrinting, setIsPrinting] = useState(false);
-  const { cartData, setCartData, resetCart } = useCartStore();
+  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable } = useCartStore();
 
-  // 1️⃣ Restore from store
-  useEffect(() => {
-    if (cartData && cartData.length > 0) {
-      setCartProducts(cartData);
-    }
-  }, []);
+  // // 1️⃣ Restore from store
+  // useEffect(() => {
+  //   if (cartData && cartData.length > 0) {
+  //     setCartProducts(cartData);
+  //   }
+  // }, []);
 
-  // 2️⃣ Sync local → store
-  useEffect(() => {
-    if (cartProducts.length > 0) {
-      setCartData(cartProducts);
-    }
-  }, [cartProducts]);
+  // // 2️⃣ Sync local → store
+  // useEffect(() => {
+  //   if (cartProducts.length > 0) {
+  //     setCartData(cartProducts);
+  //   }
+  // }, [cartProducts]);
 
   // Function to trigger the flow
   const openPaySuccess = (id) => {
@@ -99,35 +99,43 @@ const Dashboard = () => {
     }));
   };
 
-  const handlePay = (data) => {
-    try {
-      setOrderData({ ...data, orderId: "5468" });
-      console.log(orderData);
-      openPaySuccess(orderData.orderId ? data.orderId : "5467");
-      notifySuccess("Payment Successfull");
-    } catch (error) {
-      console.log(error);
-      notifyError("payment Unsuccessfull")
-    }
-
+ const handlePay = async (finalOrderData) => {
+  
+  try {
+    const { subtractStockLocal } = useProductStore.getState();
+    const order = await createOfflineOrder({
+      cartData,
+      customer: selectedCustomer || null,
+      table: selectedTable || null,
+      totals: { subtotal, tax, discount, total },
+      paymentMethods: finalOrderData?.paymentMethods || [],
+      tenderedAmount: finalOrderData?.tenderedAmount || 0,
+      cashReturned: finalOrderData?.cashReturned || 0,
+    });
+    await subtractStockLocal(cartData);
+    setOrderData(order);
+    notifySuccess("Order saved successfully");
+    resetCart();
+    setPayToProceed(false);
+  } catch (err) {
+    notifyError("Order failed");
+    console.error("Error creating order:", err);
   }
+};
 
-  const calculateSubtotal = () => {
-    return cartProducts.reduce((sum, product) => {
-      return sum + (product.price * product.quantity);
-    }, 0);
-  };
+ const subtotal = cartData.reduce(
+    (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0),
+    0
+  );
 
-  const subtotal = calculateSubtotal();
-  const tax = 0; // Can be calculated later if needed
-  const discount = 0; // Can be calculated later if needed
+  const tax = 0;
+  const discount = 0;
   const total = subtotal + tax - discount;
-
   return (
     <div className="flex">
       <div className="home w-3/5 bg-background">
         {payToProceed ? (
-          <Payment setPayToProceed={setPayToProceed} total={total} onPay={handlePay} tax={tax} discount={discount} subtotal={subtotal} cartProducts={cartProducts} />
+          <Payment setPayToProceed={setPayToProceed} total={total} onPay={handlePay} tax={tax} discount={discount} subtotal={subtotal} cartProducts={cartData} />
         ) : (
           <>
             <div className="header">
@@ -154,15 +162,14 @@ const Dashboard = () => {
                 {filteredProducts.map((p) => (
                   <ProductComp
                     key={p.id}
-                    id={p.id}
+                    id={p.serverId}
                     img={p.img}
                     name={p.name}
-                    price={p.price}
+                    price={p.sellingPrice}
                     unit={p.unit}
                     stock={p.stock}
                     stockQueue={p.stockQueue}
                     isLowStock={p.isLowStock}
-                    setCartProducts={setCartProducts}
                     mute={mute}
                   />
                 ))}
@@ -172,7 +179,15 @@ const Dashboard = () => {
         )}
       </div>
       <div className="w-2/5 h-screen">
-        <Cart cartProducts={cartProducts} setCartProducts={setCartProducts} onHoldOrder={saveHoldOrder} setPayToProceed={setPayToProceed} subtotal={subtotal} tax={tax} discount={discount} total={total} />
+        {/* <Cart cartProducts={cartProducts} setCartProducts={setCartProducts} onHoldOrder={saveHoldOrder} setPayToProceed={setPayToProceed} subtotal={subtotal} tax={tax} discount={discount} total={total} /> */}
+      <Cart
+          onHoldOrder={() => {}}
+          setPayToProceed={setPayToProceed}
+          subtotal={subtotal}
+          tax={tax}
+          discount={discount}
+          total={total}
+        />
       </div>
       <DashboardPopup
         activePopup={activePopup}

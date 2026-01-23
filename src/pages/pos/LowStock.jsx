@@ -21,22 +21,22 @@ const LowStock = () => {
 
   // 🔹 Build filter dropdown options from data
   const products = [
-    ...new Set(lowStock.map((i) => i.product)),
+    ...new Set(lowStock.map((i) => i.productName).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
   const categories = [
-    ...new Set(lowStock.map((i) => i.category)),
+    ...new Set(lowStock.map((i) => i.categoryName).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
   const outlets = [
-    ...new Set(lowStock.map((i) => i.outlet)),
+    ...new Set(lowStock.map((i) => i.outletName).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
   // 🔹 Filter logic
   const filtered = lowStock.filter((p) => {
-    if (filters.product && p.product !== filters.product) return false;
-    if (filters.category && p.category !== filters.category) return false;
-    if (filters.outlet && p.outlet !== filters.outlet) return false;
+    if (filters.product && p.productName !== filters.product) return false;
+    if (filters.category && p.categoryName !== filters.category) return false;
+    if (filters.outlet && p.outletName !== filters.outlet) return false;
     return true;
   });
 
@@ -82,6 +82,7 @@ const LowStock = () => {
         <thead className="bg-linear-to-r from-primary to-secondary text-white">
           <tr>
             <th className="p-2">Product</th>
+            
             <th className="p-2">Category</th>
             <th className="p-2">Outlet</th>
             <th className="p-2">Stock</th>
@@ -99,9 +100,9 @@ const LowStock = () => {
 
           {filtered.map((ls) => (
             <tr key={ls.localId} className="even:bg-gray-100">
-              <td className="p-2">{ls.product}</td>
-              <td className="p-2">{ls.category}</td>
-              <td className="p-2">{ls.outlet}</td>
+              <td className="p-2">{ls.productName}</td>
+              <td className="p-2">{ls.categoryName}</td>
+              <td className="p-2">{ls.outletName}</td>
               <td className="p-2 text-red-600 font-semibold">{ls.stock}</td>
             </tr>
           ))}
