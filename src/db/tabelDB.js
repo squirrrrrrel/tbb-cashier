@@ -4,8 +4,8 @@ const DB_NAME = "pos-tables-db";
 const STORE = "tables";
 
 const dbPromise = openDB(DB_NAME, 1, {
-  upgrade(db, oldVersion) {
-    if (oldVersion < 1) {
+  upgrade(db) {
+    if (oldVersion < 2) {
       if (db.objectStoreNames.contains(STORE)) {
         db.deleteObjectStore(STORE);
       }

@@ -14,24 +14,28 @@ import  OfflineLoader  from "./components/OfflineLoader";
 import { useAuthStore } from "./store/useAuthStore";
 import { useNetworkStore } from "./store/useNetworkStore";
 import { usePosStore } from "./store/usePosStore";
+import { usePaymentMethodStore } from "./store/usePaymentMethodStore";
 
 const App = () => {
   const authHydrate = useAuthStore((s) => s.hydrate);
   const posHydrate = usePosStore((s) => s.hydrate);
+  const paymentMethodHydrate = usePaymentMethodStore((s) => s.hydrate);
 
   const authHydrated = useAuthStore((s) => s.hydrated);
   const posHydrated = usePosStore((s) => s.hydrated);
+  const paymentMethodHydrated = usePaymentMethodStore((s) => s.hydrated);
 
   const initNetwork = useNetworkStore((s) => s.init);
 
   useEffect(() => {   // online/offline detection
     authHydrate();   // cookie-based auth
     posHydrate();  // IndexedDB hydration
+    paymentMethodHydrate(); // Payment methods hydration
     initNetwork();   // online/offline detection
   }, []);
 
   // 🔴 BLOCK UI UNTIL LOCAL DATA IS READY
-  if (!authHydrated || !posHydrated) {
+  if (!authHydrated || !posHydrated || !paymentMethodHydrated) {
     return <OfflineLoader />;
   }
 

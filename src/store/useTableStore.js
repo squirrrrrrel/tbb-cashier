@@ -255,7 +255,8 @@ export const useTableStore = create((set, get) => ({
 
     const tables = await getTablesDB();
     const outletTables = tables.filter(t => t.outletId === outletId);
-    const unsynced = outletTables.filter(t => !t.isSynced && !t.isDeleted);
+    // Only sync tables that don't have a serverId yet (truly new local tables)
+    const unsynced = outletTables.filter(t => !t.isSynced && !t.isDeleted && !t.serverId);
 
     for (const table of unsynced) {
       try {
@@ -271,7 +272,8 @@ export const useTableStore = create((set, get) => ({
         await updateTableDB(table);
       } catch (err) {
         console.warn("⚠️ Table sync failed:", err);
-        return;
+        // Don't return - continue with other tables
+        continue;
       }
     }
 
