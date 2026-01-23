@@ -218,7 +218,7 @@ const handleToggleExpand = (id) => {
                 </g>
               </g>
             </svg>
-            <p>{selectedTable?.tableNo? `Table ${selectedTable.tableNo}` : "Select Table"}</p>
+            <p>{selectedTable?.tableNumber? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
