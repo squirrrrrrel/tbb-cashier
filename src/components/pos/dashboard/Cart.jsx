@@ -111,7 +111,11 @@ const CartProdctComponent = ({
 const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total }) => {
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
 const [activeModal, setActiveModal] = useState(null);
+const [showDiscount, setShowDiscount] = useState(false);
+ const [discountType, setDiscountType] = useState("percentage");
+  const [discountValue, setDiscountValue] = useState(0.00);
   const {
     cartData,
     removeFromCart,
@@ -149,6 +153,34 @@ const handleToggleExpand = (id) => {
     }
     setPayToProceed(true);
   };
+   const handleLoginChange = (e) => {
+  const { placeholder, value } = e.target;
+  const field = e.target.name; 
+  setLoginData(prev => ({
+    ...prev,
+    [field]: value
+  }));
+};
+ const managerLoginHandler =()=>{
+    if(!loginData.username || !loginData.password) {
+      notifyError("Username and Password is required");
+      return;
+    } else{
+      closeModal();
+      setShowDiscount(true);
+      setLoginData({ username: '', password: '' })
+      notifySuccess("Manager loged In")
+    }
+  }
+    const saveDiscountHandler = ()=>{
+    const discountData = {
+      discountType,
+      value: discountValue
+    }
+    console.log(discountData);
+    setShowDiscount(false);
+    
+  }
 
   return (
       <div className="h-screen border-l border-gray-200">
@@ -328,7 +360,7 @@ const handleToggleExpand = (id) => {
             )}
 
             {/* Hold Order Popup */}
-            {/* {showDiscount && (
+            {showDiscount && (
               <div onClick={()=> setShowDiscount(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                 <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100">
                   <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Apply Discount</h2>
@@ -368,7 +400,7 @@ const handleToggleExpand = (id) => {
                   </div>
                 </div>
               </div>
-            )} */}
+            )}  
           </div>
           <div onClick={handleProceed} className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer">
             <div className="proceed">
