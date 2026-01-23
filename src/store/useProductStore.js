@@ -1,40 +1,49 @@
 import { create } from "zustand";
 import api from "../utils/api";
 import { useAuthStore } from "./useAuthStore";
-import { getProductsDB, updateProductStockDB } from "../db/productsDB";
+import { getProductsDB, updateProductStockDB ,upsertProductDB} from "../db/productsDB";
 import { aggregateInventoryToProducts } from "../utils/productAggregator";
 
 export const useProductStore = create((set, get) => ({
   products: [],
   hydrated: false,
-   setProducts: (products) => set({ products }),
+  ready: false, // 🔒 NEW FLAG
 
   hydrate: async () => {
     const outletId = useAuthStore.getState().user?.outlet_id;
     if (!outletId) {
-      set({ hydrated: true });
+      set({ hydrated: true, ready: true });
       return;
     }
 
+    // 1️⃣ Load from IndexedDB
     const local = await getProductsDB();
     set({
       products: local.filter(p => p.outletId === outletId),
       hydrated: true,
     });
 
+    // 2️⃣ If online → fetch from API FIRST
     if (navigator.onLine) {
       await get().fetchProductsFromAPI();
     }
+
+    // 🔓 Products are now guaranteed to exist
+    set({ ready: true });
   },
 
-   // 🔻 SUBTRACT STOCK LOCALLY
+  // 🚫 DO NOTHING IF NOT READY
   subtractStockLocal: async (cartItems) => {
+    if (!get().ready) {
+      console.warn("⛔ Products not ready, skipping stock subtraction");
+      return;
+    }
+
     set((state) => {
       const updatedProducts = state.products.map((product) => {
         const orderedItem = cartItems.find(
-          (item) => item.id === product.serverId 
+          (item) => item.id === product.serverId
         );
-        console.log("Updating stock for product:", product.serverId, "Ordered item:", orderedItem);
         if (!orderedItem) return product;
 
         const newStock = Math.max(
@@ -42,16 +51,11 @@ export const useProductStore = create((set, get) => ({
           product.stock - orderedItem.quantity
         );
 
-        // 🔁 update IndexedDB async (fire & forget)
-        updateProductStockDB(product.localId, newStock);
+        updateProductStockDB(product.serverId, newStock);
 
-        return {
-          ...product,
-          stock: newStock,
-        };
+        return { ...product, stock: newStock };
       });
-      //setProducts(updatedProducts);
-      set({ products: updatedProducts });
+
       return { products: updatedProducts };
     });
   },
@@ -66,7 +70,7 @@ export const useProductStore = create((set, get) => ({
     const products = aggregateInventoryToProducts(apiData, outletId);
 
     for (const product of products) {
-      await updateProductStockDB(product.serverId, product.stock); // idempotent
+      await upsertProductDB(product);
     }
 
     const local = await getProductsDB();

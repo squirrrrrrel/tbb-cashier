@@ -13,6 +13,7 @@ import PrintOrder from "../../components/pos/dashboard/PrintOrder";
 import PhoneInputWithCode from "../../components/phoneCodeInput/PhoneInputWithCode";
 import DashboardPopup from "../../components/pos/dashboard/dashboardPopup";
 import  {createOfflineOrder}  from "../../utils/createOfflineOrder";
+import { createOrder } from "../../utils/createOrder";
 
 const Dashboard = () => {
   const { products, hydrate, hydrated } = useProductStore();
@@ -78,7 +79,7 @@ const Dashboard = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [filters]);
+  }, [filters,products,hydrate]);
   useEffect(() => {
     hydrate();
   }, [hydrate]);
@@ -102,8 +103,7 @@ const Dashboard = () => {
  const handlePay = async (finalOrderData) => {
   
   try {
-    const { subtractStockLocal } = useProductStore.getState();
-    const order = await createOfflineOrder({
+     const result = await createOrder({
       cartData,
       customer: selectedCustomer || null,
       table: selectedTable || null,
@@ -112,11 +112,17 @@ const Dashboard = () => {
       tenderedAmount: finalOrderData?.tenderedAmount || 0,
       cashReturned: finalOrderData?.cashReturned || 0,
     });
-    await subtractStockLocal(cartData);
-    setOrderData(order);
-    notifySuccess("Order saved successfully");
+
+    setOrderData(result.order);
+    openPaySuccess(result.orderId);
+
+    notifySuccess(
+      result.mode === "online"
+        ? "Order created successfully"
+        : "Order saved offline"
+    );
     resetCart();
-    setPayToProceed(false);
+    //setPayToProceed(false);
   } catch (err) {
     notifyError("Order failed");
     console.error("Error creating order:", err);
@@ -181,7 +187,7 @@ const Dashboard = () => {
       <div className="w-2/5 h-screen">
         {/* <Cart cartProducts={cartProducts} setCartProducts={setCartProducts} onHoldOrder={saveHoldOrder} setPayToProceed={setPayToProceed} subtotal={subtotal} tax={tax} discount={discount} total={total} /> */}
       <Cart
-          onHoldOrder={() => {}}
+          onHoldOrder={saveHoldOrder}
           setPayToProceed={setPayToProceed}
           subtotal={subtotal}
           tax={tax}

@@ -38,6 +38,12 @@ export const updateProductStockDB = async (serverId, newStock) => {
   await tx.done;
 };
 
+
+export const upsertProductDB = async (product) => { 
+  const db = await dbPromise; 
+  await db.put(STORE, product); 
+};
+
 export const deleteProductDB = async (localId) => {
   const db = await dbPromise;
   await db.delete(STORE, localId);
