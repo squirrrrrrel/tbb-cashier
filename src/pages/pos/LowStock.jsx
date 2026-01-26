@@ -4,7 +4,7 @@ import { useLowStockStore } from "../../store/useLowStockStore";
 import { useProductStore } from "../../store/useProductStore";
 import OfflineLoader from "../../components/OfflineLoader";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
-
+import defaultImg from   "./../../assets/images/Default_Product_Img.png";
 const LowStock = () => {
   const { lowStock, hydrate, hydrated } = useLowStockStore();
   const { products } = useProductStore();
@@ -103,15 +103,20 @@ const LowStock = () => {
           {filtered.map((ls) => (
             <tr key={ls.localId} className="even:bg-gray-100">
               <td className="p-2 flex items-center justify-center">
-     <img
-      src={ls.img || "/images/no-image.png"}
-      alt={ls.productName}
-      className="w-10 h-10 object-cover"
-      onError={(e) => {
-        e.target.src = "/images/no-image.png";
-      }}
-    />
-  </td>
+     {ls.img ? (
+             <img
+               src={ls.img}
+               alt={defaultImg}
+               className="w-10 h-10 object-cover"
+             />
+           ) : (
+             <img
+               src={defaultImg}
+               alt={defaultImg}
+               className="w-10 h-10 object-cover"
+             />
+           )}
+              </td>
               <td className="p-2">{ls.productName}</td>
               <td className="p-2">{ls.categoryName}</td>
               <td className="p-2">{ls.outletName}</td>

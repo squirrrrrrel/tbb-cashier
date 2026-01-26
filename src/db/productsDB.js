@@ -30,7 +30,7 @@ export const updateProductStockDB = async (serverId, newStock) => {
     return;
   }
 
-  product.stock = Math.max(0, Number(newStock));
+  product.stock = Math.max(-1, Number(newStock));
   product.updatedAt = Date.now();
   product.isSynced = false; // 👈 important for later reconciliation
 

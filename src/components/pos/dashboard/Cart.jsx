@@ -5,6 +5,7 @@ import keyup from "../../../assets/icons/keyup.svg";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
+import defaultImg from "../../../assets/images/Default_Product_Img.png";
 
 /* ---------------- CART ITEM ---------------- */
 
@@ -14,6 +15,7 @@ const CartProdctComponent = ({
   onQuantityChange,
   isExpanded,
   onToggle,
+  notifyError
 }) => {
   const price = Number(product.price) || 0;
   const quantity = Number(product.quantity) || 0;
@@ -22,6 +24,9 @@ const CartProdctComponent = ({
   const totalPrice = (price * quantity).toFixed(2);
 
   const [qty, setQty] = useState(quantity);
+ useEffect(() => {
+    setQty(quantity);
+  }, [quantity]);
 
   const onUpdateHandler = () => {
     onQuantityChange(product.id, qty);
@@ -34,11 +39,19 @@ const CartProdctComponent = ({
         <div className="product-detail flex gap-2 items-center">
           {/* <img src={keyup} alt="arrow-down" onClick={()=> setIsChnage(false)}/> */}
           <img src={isExpanded ? keyup : arrowDownIcon} alt="arrow-down" onClick={onToggle} />
-          <img
+          {product.img ? ( 
+            <img
             className="w-14 h-14 object-cover rounded"
             src={product.img}
             alt={product.name}
           />
+        ) : (
+            <img
+            className="w-14 h-14 object-cover rounded"
+            src={defaultImg}
+            alt={defaultImg}
+          />    
+          )}
           <div className="product_heading">
             <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
             <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.quantity}pcs</h3>
@@ -67,14 +80,19 @@ const CartProdctComponent = ({
             <p className="text-sm font-semibold text-[#555555]">Quantity</p>
             <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden  border border-gray-200">
               <div
-                onClick={() => setQty(Math.max(0, qty - 1))}
+                onClick={() => setQty(Math.max(1, qty - 1))}
                 className="w-10 pb-0.5 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
               >
                 -
               </div>
               <span className="flex-1 text-center  text-sm">{qty}</span>
               <div
-                onClick={() => setQty(qty + 1)}
+                onClick={() =>{if (qty >= product.stock) {
+                   notifyError(`only ${product.stock} items available is the stock for ${product.name}`);
+                    return;
+                  }
+                 setQty(qty  + 1);
+                }}
                 className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
               >
                 +
@@ -278,6 +296,7 @@ const handleToggleExpand = (id) => {
                   onToggle={() => handleToggleExpand(p.id)}
                   onRemove={() => removeFromCart(p.id)}
                   onQuantityChange={updateQuantity}
+                   notifyError={notifyError}
                 />
                 <div ref={cartEndRef} />
               </>

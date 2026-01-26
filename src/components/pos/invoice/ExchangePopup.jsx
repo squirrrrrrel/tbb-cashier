@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import bottleImage from "./../../../assets/images/bottle.jpg";
+import defaultImg from "./../../../assets/images/Default_Product_Img.png";
 import exchangeImg from "./../../../assets/images/exchange.png";
 import { useNotification } from "../../../hooks/useNotification";
 
@@ -45,7 +45,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
 
     // Calculations
     const totalOldValue = exchangeRows.reduce((sum, row) =>
-        sum + (Number(row.returnQty) * Number(row.unitAmount)), 0
+        sum + (Number(row.returnQty) * Number(row.unitPrice)), 0
     );
     const totalNewValue = exchangeRows.reduce((sum, row) => {
         const subtotal = row.newQty * row.newUnitValue; // Based on newQty
@@ -126,10 +126,14 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
                             <div className="flex items-center gap-4 flex-[1.2] min-w-0">
                                 {/* 1. PRODUCT INFO */}
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <img src={bottleImage} className="w-12.5 object-cover rounded shadow-sm flex-shrink-0" alt="product" />
+                                   { item.imageUrl ? (
+                                    <img src={item.imageUrl} className="w-12.5 object-cover rounded shadow-sm flex-shrink-0" alt="product" />
+                                   ) : (
+                                    <img src={defaultImg} className="w-12.5 object-cover rounded shadow-sm flex-shrink-0" alt="product" />
+                                   )}
                                     <div className="min-w-0">
                                         <p className="text-md text-gray-500 font-bold">{item.productName}</p>
-                                        <p className="text-sm text-gray-500 ">P{item.unitAmount} x {item.quantity} = {item.unitAmount * item.quantity}</p>
+                                        <p className="text-sm text-gray-500 ">P{item.unitPrice} x {item.quantity} = {item.unitPrice * item.quantity}</p>
                                     </div>
                                 </div>
 

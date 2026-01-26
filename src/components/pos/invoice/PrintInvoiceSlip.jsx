@@ -223,16 +223,16 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
         <div className="receipt-content">
           <h3>Sales Receipt</h3>
           <p>
-            <b>Order:</b> #{orderDetails?.orderId}
+            <b>Order:</b> #{orderDetails?.display_id}
           </p>
           <p>
             <b>Date:</b> {new Date()?.toLocaleDateString()}
           </p>
           <p>
-            <b>Cashier:</b> {orderDetails?.customerData ?? "-"}
+            <b>Cashier:</b> {orderDetails?.cashierName ?? "-"}
           </p>
           <p>
-            <b>Customer:</b> {orderDetails?.customerId ?? "-"}
+            <b>Customer:</b> {orderDetails?.customerName ?? "-"}
           </p>
           <table>
             <thead>
@@ -278,9 +278,9 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                         {originalItems.map((item, idx) => (
                           <tr key={`orig-${idx}`}>
                             <td>{item.productName}</td>
-                            <td>{`P${parseFloat(item.unitAmount || 0).toFixed(2)}`}</td>
+                            <td>{`P${parseFloat(item.unitPrice || 0).toFixed(2)}`}</td>
                             <td className="inputvalue">{item.quantity}</td>
-                            <td className="inputvalue">{`P${parseFloat(item.itemSubtotal || 0).toFixed(2)}`}</td>
+                            <td className="inputvalue">{`P${parseFloat(item.subtotal || 0).toFixed(2)}`}</td>
                           </tr>
                         ))}
                       </>
@@ -360,7 +360,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td>Discount</td>
                 <td></td>
                 <td></td>
-                <td className="inputvalue">{`P${orderDetails?.discount}`}</td>
+                <td className="inputvalue">{`P${orderDetails?.discountAmount}`}</td>
               </tr>
               <tr>
                 <td>Tax</td>
@@ -376,7 +376,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td>Total</td>
                 <td></td>
                 <td></td>
-                <td className="inputvalue">{`P${orderDetails?.amount}`}</td>
+                <td className="inputvalue">{`P${orderDetails?.totalAmount}`}</td>
               </tr>
               <tr>
                 <td>
@@ -404,8 +404,8 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td></td>
                 <td></td>
                 <td className="inputvalue">
-                  {orderDetails?.tenderedAmount
-                    ? `P${orderDetails?.tenderedAmount}`
+                  {orderDetails?.transactions?.[0]?.tenderedAmount
+                    ? `P${orderDetails?.transactions?.[0]?.tenderedAmount}`
                     : "-"}
                 </td>
               </tr>
@@ -414,8 +414,8 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td></td>
                 <td></td>
                 <td className="inputvalue">
-                  {orderDetails?.change
-                    ? `P${orderDetails?.change}`
+                  {orderDetails?.transactions?.[0]?.cashReturned
+                    ? `P${orderDetails?.transactions?.[0]?.cashReturned}`
                     : "-"}
                 </td>
               </tr>
