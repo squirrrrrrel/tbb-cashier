@@ -1,5 +1,9 @@
 import React from "react";
 import { useCartStore } from "../../../store/useCartStore";
+import defaultImg from   "./../../../assets/images/Default_Product_Img.png";
+import { useNotification } from "../../../hooks/useNotification";
+
+const { notifyError } = useNotification();
 const ProductComp = ({
   id,
   img,
@@ -25,28 +29,56 @@ const ProductComp = ({
   };
 
   const handleAddToCart = () => {
-    useCartStore.getState().addToCart({
-      id,
-      img,
-      name,
-      price,
-      unit,
-    });
-    playBeepSound()
+    const result = useCartStore.getState().addToCart({
+    id,
+    img,
+    name,
+    price,
+    unit,
+    stock,
+    stockQueue
+  });
+
+  if (result?.success === false) {
+    if (result.reason === "OUT_OF_STOCK") {
+      notifyError(<>
+    Only <span style={{ color: "red" }}>{stock + stockQueue}</span> items available in
+    <br />
+    stock for {name}
+  </>);
+    }
+     playBeepSound();
+    return; 
+  }
+
+  playBeepSound(); 
   };
 
   return (
     <div onClick={handleAddToCart} className="product bg-white border border-gray-300 rounded-lg w-36 h-[270px] hover:border-secondary cursor-pointer">
-      <img
-        src={img}
-        alt={name}
-        style={{
-          width: "144px",
-          height: "144px",
-          objectFit: "cover",
-        }}
-        className="rounded-t-lg border-b border-b-gray-300"
-      />
+      {img ? (
+        <img
+          src={img}
+          alt={defaultImg}
+          style={{
+            width: "144px",
+            height: "144px",
+            objectFit: "cover",
+          }}
+          className="rounded-t-lg border-b border-b-gray-300"
+        />
+      ) : (
+        <img
+          src={defaultImg}
+          alt={defaultImg}
+          style={{
+            width: "144px",
+            height: "144px",
+            objectFit: "cover",
+          }}
+          className="rounded-t-lg border-b border-b-gray-300"
+        />
+      )}
       <div className="product-details p-3 flex h-[120px] items-center">
         <div className="flex flex-col gap-1 font-semibold">
           <h2

@@ -2,9 +2,10 @@ import { create } from "zustand";
 import { useCustomerStore } from "./useCustomerStore";
 import { useTableStore } from "./useTableStore";
 import { usePaymentMethodStore } from "./usePaymentMethodStore";
-import { useLowStockStore } from "./useLowStockStore";
-import { syncPendingOrders } from "../utils/syncOrders";
 import { useProductStore } from "./useProductStore";
+import { syncPendingOrders } from "../utils/syncOrders";
+import { fetchOrdersFromAPI } from "../utils/fetchOrdersFromAPI";
+import { useOrderStore } from "./useOrderStore";
 
 let initialized = false;
 
@@ -20,26 +21,30 @@ export const useNetworkStore = create((set) => ({
       set({ online: true });
 
       try {
-
-        await syncPendingOrders();
-        await useProductStore.getState().fetchProductsFromAPI();
-
-        // 🔼 PUSH local → server
+        // 🔼 PUSH: master data first
         await useCustomerStore.getState().syncCustomers();
         await useTableStore.getState().syncTables();
+
+        // 🔼 PUSH: transactions
+        await syncPendingOrders();
       } catch (err) {
-        console.warn("⚠️ Sync failed:", err);
+        console.warn("⚠️ Push sync failed:", err);
       }
 
       try {
-        // 🔽 PULL server → local
+        // 🔽 PULL: master data
         await useCustomerStore.getState().fetchCustomersFromAPI();
         await useTableStore.getState().fetchTablesFromAPI();
         await usePaymentMethodStore.getState().fetchPaymentMethodsFromAPI();
         await useProductStore.getState().fetchProductsFromAPI();
-        //await useLowStockStore.getState().fetchLowStockFromAPI();
+
+        // 🔽 PULL: transactions
+        await fetchOrdersFromAPI();
+
+        // 🔁 reload UI from IndexedDB
+        await useOrderStore.getState().loadOrdersFromDB();
       } catch (err) {
-        console.warn("⚠️ Fetch failed:", err);
+        console.warn("⚠️ Pull sync failed:", err);
       }
     };
 

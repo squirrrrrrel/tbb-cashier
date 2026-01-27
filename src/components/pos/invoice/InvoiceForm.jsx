@@ -1,5 +1,5 @@
 import React from "react";
-import bottleImage from "./../../../assets/images/bottle.jpg"
+import defaultImg from "./../../../assets/images/Default_Product_Img.png";
 import { useState } from "react";
 import PrintInvoiceSlip from "./PrintInvoiceSlip";
 import RefundPopup from "./RefundPopup";
@@ -37,7 +37,8 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
     { id: 11, product_name: "Schweppes-Dry Lemon-Can-200mL", selling_price: 18.00 },
   ];
 
-  const tax = selectedOrder.orderItems.reduce((acc, item) => {
+  const tax = (selectedOrder.orderItems || []).reduce((acc, item) => {
+    if (!item) return acc;
     const itemTax = item.taxPercentagePerProduct
       ? (item.itemSubtotal * item.taxPercentagePerProduct) / 100
       : 0;
@@ -50,7 +51,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
     <div className="pt-2.5 px-5 pb-2 flex flex-col h-full border-l border-gray-200">
       <div className="text-xl flex items-center justify-between  gap-2 pb-2.5">
         <div className="bg-gradient-to-b from-secondary to-primary text-white font-bold py-1.5 px-2  rounded-md">
-          {`Invoice ${selectedOrder.orderId}`}
+          {`Invoice ${selectedOrder.display_id}`}
         </div>
         {/* {selectedOrder.cartData?.table && (
           <div className="ml-auto">
@@ -99,14 +100,18 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
       </div>
 
       <div className="flex flex-col mt-2 overflow-auto no-scrollbar text-[#888888] font-bold text-sm">
-        {selectedOrder.orderItems.map((item, index) => (
+        {(selectedOrder.orderItems || []).map((item, index) => (
           <div
             key={item.productId}
             className={`flex items-center justify-between py-1 px-2 rounded-md ${index % 2 === 0 ? "bg-white" : "bg-[#f8f8f8] "}`}
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 flex items-center justify-center rounded-md ">
-                <img src={bottleImage} alt="Product Image" />
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.productName} className="w-full h-full object-cover" />
+                ) : (
+                  <img src={defaultImg} alt={item.productName} className="w-full h-full object-cover" />
+                )}
               </div>
 
               <div className="flex flex-col gap-0.5">
@@ -114,13 +119,13 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
                   {item.productName}
                 </p>
                 <div className="flex gap-2">
-                  P{item.unitAmount} × {item.quantity}
+                  P{item.unitPrice} × {item.quantity}
 
                   {/* --- REFUND HISTORY SECTION --- */}
                   {selectedOrder.totalAmountRefunded > 0 && (
                     <div>
                       {(() => {
-                        const totalReturned = selectedOrder?.refundHistory?.reduce((acc, refund) => {
+                        const totalReturned = (selectedOrder.refundHistory || []).reduce((acc, refund) => {
                           const match = refund.items?.find(ri => ri.orderItemId === item.productId);
                           return acc + (match ? match.quantity : 0);
                         }, 0);
@@ -149,7 +154,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
             </div>
 
             <div>
-              P{item.itemSubtotal}
+              P{item.subtotal}
             </div>
           </div>
         ))}
@@ -164,19 +169,19 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
                 </h3>
                 {/* 1. RETURNS LIST (RED) */}
                 <div >
-                  {exchange.returnItems.map((ri, i) => {
+                  {(exchange.returnItems || []).map((ri, i) => {
                     // Find name from original items to display here
-                    const originalItem = selectedOrder.orderItems.find(oi => oi.productId === ri.orderItemId);
+                    const originalItem = (selectedOrder.orderItems || []).find(oi => oi.productId === ri.orderItemId);
                     return (
                       <div key={i} className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold text-red-500 border-b-1 border-dashed border-gray-300 ${i % 2 === 0 ? "bg-white" : "bg-[#f8f8f8] "}`}>
                         <div className="flex gap-2">
-                          <img src={bottleImage} alt="img" className="w-12 h-12" />
+                          <img src={defaultImg} alt="img" className="w-12 h-12" />
                           <div className="flex flex-col gap-1 text-sm ">
                             <span className="text-[#e74c3c]">{originalItem?.productName || "Item"}</span>
                             <span className="text-gray-500">{originalItem?.unitAmount} X {ri.quantity} (Old Item)</span>
                           </div>
                         </div>
-                        <span>-P{originalItem.unitAmount}</span>
+                        <span>-P{originalItem?.unitAmount}</span>
                       </div>
                     );
                   })}
@@ -184,12 +189,12 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
 
                 {/* 2. NEW ITEMS LIST (GREEN #15b71a) */}
                 <div>
-                  {exchange.newItems.map((ni, i) => {
+                  {(exchange.newItems || []).map((ni, i) => {
                     const item = testProductList.find(oi => oi.id == ni.productId);
                     return (
                       <div key={i} className={`flex my-1 px-1 py-2 rounded-lg justify-between items-center text-sm font-bold text-red-500 border-b-1 border-dashed border-gray-300 ${i % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"}`}>
                         <div className="flex gap-2">
-                          <img src={bottleImage} alt="img" className="w-12 h-12" />
+                          <img src={defaultImg} alt="img" className="w-12 h-12" />
                           <div className="flex flex-col gap-1 text-sm ">
                             <span className="text-[#15b71a]">{item?.product_name || "Item"}</span>
                             <span className="text-gray-500">{item?.selling_price} X {ni.quantity} (New Item)</span>
@@ -213,31 +218,31 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
           </div>
           <div className="flex justify-between">
             <p>Tax</p>
-            <span>P{tax}</span>
+            <span>P{selectedOrder?.taxAmount}</span>
           </div>
           <div className="flex justify-between">
             <p>Discount</p>
-            <span>P{selectedOrder.discount}</span>
+            <span>P{selectedOrder.discountAmount}</span>
           </div>
           <div className="flex justify-between text-secondary font-bold text-xl">
             <p>Total</p>
-            <span>P{selectedOrder.amount}</span>
+            <span>P{selectedOrder.totalAmount}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Refunded</p>
-            <span>P{selectedOrder.totalAmountRefunded}</span>
+            <span>P{selectedOrder.refunded}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Exchanged</p>
             <span>P0</span>
           </div>
           <div className="flex justify-between">
-            <p>Cash (tendered Amount)</p>
-            <span>P{selectedOrder.tenderedAmount}</span>
+            <p className="capitalize">{selectedOrder?.payments?.[0]?.paymentMethod} (tendered Amount)</p>
+            <span>P{selectedOrder?.transactions?.[0]?.tenderedAmount}</span>
           </div>
           <div className="flex justify-between">
             <p>Change</p>
-            <span>P{selectedOrder.change}</span>
+            <span>P{selectedOrder?.transactions?.[0]?.cashReturned}</span>
           </div>
         </div>
 

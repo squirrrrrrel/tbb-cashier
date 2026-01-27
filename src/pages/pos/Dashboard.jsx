@@ -201,7 +201,7 @@ const Dashboard = () => {
         orderId={orderId}
         isPrinting={isPrinting}
         setIsPrinting={setIsPrinting}
-        orderData={orderData}
+        orderData={cartData}
         customerDetails={customerDetails}
         setCustomerDetails={setCustomerDetails}
         handleCustomerChange={handleCustomerChange}

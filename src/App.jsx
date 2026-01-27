@@ -16,6 +16,7 @@ import { useNetworkStore } from "./store/useNetworkStore";
 import { usePosStore } from "./store/usePosStore";
 import { usePaymentMethodStore } from "./store/usePaymentMethodStore";
 
+
 const App = () => {
   const authHydrate = useAuthStore((s) => s.hydrate);
   const posHydrate = usePosStore((s) => s.hydrate);

@@ -19,7 +19,7 @@ export const useProductStore = create((set, get) => ({
     // 1️⃣ Load from IndexedDB
     const local = await getProductsDB();
     set({
-      products: local.filter(p => p.outletId === outletId),
+      products: local.filter(p => p.outletId === outletId && p.stock > 0),
       hydrated: true,
     });
 
@@ -47,7 +47,7 @@ export const useProductStore = create((set, get) => ({
         if (!orderedItem) return product;
 
         const newStock = Math.max(
-          0,
+          -1,
           product.stock - orderedItem.quantity
         );
 
@@ -56,7 +56,7 @@ export const useProductStore = create((set, get) => ({
         return { ...product, stock: newStock };
       });
 
-      return { products: updatedProducts };
+      return { products: updatedProducts};
     });
   },
 
@@ -75,7 +75,7 @@ export const useProductStore = create((set, get) => ({
 
     const local = await getProductsDB();
     set({
-      products: local.filter(p => p.outletId === outletId),
+      products: local.filter(p => p.outletId === outletId && p.stock > 0),
     });
   },
 }));

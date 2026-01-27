@@ -1,298 +1,14 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import InvoiceList from "../../components/pos/invoice/InvoiceList";
 import InvoiceForm from "../../components/pos/invoice/InvoiceForm";
 import HoldInvoiceList from "../../components/pos/invoice/HoldInvoiceList";
 import HoldInvoiceFrom from "../../components/pos/invoice/HoldInvoiceForm";
-
+import { useOrderStore } from "../../store/useOrderStore";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
 
 
-  const ordersData = [
-    {
-      orderId: "ORD-1001",
-      userId: "USR-01",
-      customerId: "CUST-01",
-      tableId: "T-01",
-      amount: "450",
-      subtotal: 420,
-      discount: 20,
-      totalAmountRefunded: 0,
-      paymentMethodId: "CASH",
-      tenderedAmount: 500,
-      change: 50,
-      orderItems: [
-        {
-          productId: 1,
-          productName: "Milk",
-          unitAmount: 50,
-          taxPercentagePerProduct: 5,
-          quantity: 4,
-          itemSubtotal: 200,
-        },
-        {
-          productId: 2,
-          productName: "Bread",
-          unitAmount: 40,
-          quantity: 2,
-          itemSubtotal: 80,
-        },
-        {
-          productId: 3,
-          productName: "Eggs",
-          unitAmount: 70,
-          quantity: 2,
-          itemSubtotal: 140,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1002",
-      userId: "USR-02",
-      customerId: "CUST-02",
-      tableId: "T-03",
-      amount: "820",
-      subtotal: 800,
-      discount: 0,
-      totalAmountRefunded: 0,
-      paymentMethodId: "UPI",
-      tenderedAmount: 820,
-      change: 0,
-      orderItems: [
-        {
-          productId: 4,
-          productName: "Rice 5kg",
-          unitAmount: 350,
-          taxPercentagePerProduct: 5,
-          quantity: 2,
-          itemSubtotal: 700,
-        },
-        {
-          productId: 5,
-          productName: "Cooking Oil",
-          unitAmount: 120,
-          quantity: 1,
-          itemSubtotal: 120,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1003",
-      userId: "USR-03",
-      customerId: "CUST-03",
-      amount: "260",
-      subtotal: 260,
-      discount: 0,
-      totalAmountRefunded: 0,
-      paymentMethodId: "CARD",
-      tenderedAmount: 260,
-      change: 0,
-      orderItems: [
-        {
-          productId: 6,
-          productName: "Biscuits",
-          unitAmount: 40,
-          quantity: 4,
-          itemSubtotal: 160,
-        },
-        {
-          productId: 7,
-          productName: "Juice",
-          unitAmount: 50,
-          quantity: 2,
-          itemSubtotal: 100,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1004",
-      userId: "USR-01",
-      customerId: "CUST-04",
-      tableId: "T-05",
-      amount: "1250",
-      subtotal: 1250,
-      discount: 50,
-      totalAmountRefunded: 0,
-      paymentMethodId: "CASH",
-      tenderedAmount: 1300,
-      change: 50,
-      orderItems: [
-        {
-          productId: 8,
-          productName: "Atta 10kg",
-          unitAmount: 520,
-          quantity: 1,
-          itemSubtotal: 520,
-        },
-        {
-          productId: 9,
-          productName: "Ghee",
-          unitAmount: 480,
-          quantity: 1,
-          itemSubtotal: 480,
-        },
-        {
-          productId: 10,
-          productName: "Dry Fruits Pack",
-          unitAmount: 300,
-          quantity: 1,
-          itemSubtotal: 300,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1005",
-      userId: "USR-04",
-      customerId: "CUST-05",
-      amount: "150",
-      subtotal: 150,
-      discount: 0,
-      totalAmountRefunded: 0,
-      paymentMethodId: "UPI",
-      tenderedAmount: 150,
-      change: 0,
-      orderItems: [
-        {
-          productId: 11,
-          productName: "Cold Drink",
-          unitAmount: 50,
-          quantity: 3,
-          itemSubtotal: 150,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1006",
-      userId: "USR-02",
-      customerId: "CUST-06",
-      tableId: "T-02",
-      amount: "980",
-      subtotal: 980,
-      discount: 80,
-      totalAmountRefunded: 0,
-      paymentMethodId: "CARD",
-      tenderedAmount: 1000,
-      change: 20,
-      orderItems: [
-        {
-          productId: 12,
-          productName: "Paneer",
-          unitAmount: 320,
-          quantity: 2,
-          itemSubtotal: 640,
-        },
-        {
-          productId: 13,
-          productName: "Butter",
-          unitAmount: 170,
-          quantity: 2,
-          itemSubtotal: 340,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1007",
-      userId: "USR-05",
-      customerId: "CUST-07",
-      amount: "560",
-      subtotal: 560,
-      discount: 0,
-      totalAmountRefunded: 100,
-      paymentMethodId: "CASH",
-      tenderedAmount: 600,
-      change: 40,
-      orderItems: [
-        {
-          productId: 14,
-          productName: "Tea Powder",
-          unitAmount: 280,
-          quantity: 2,
-          itemSubtotal: 560,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1008",
-      userId: "USR-06",
-      customerId: "CUST-08",
-      tableId: "T-06",
-      amount: "330",
-      subtotal: 330,
-      discount: 30,
-      totalAmountRefunded: 0,
-      paymentMethodId: "UPI",
-      tenderedAmount: 350,
-      change: 20,
-      orderItems: [
-        {
-          productId: 15,
-          productName: "Chips",
-          unitAmount: 30,
-          quantity: 5,
-          itemSubtotal: 150,
-        },
-        {
-          productId: 16,
-          productName: "Chocolate",
-          unitAmount: 60,
-          quantity: 3,
-          itemSubtotal: 180,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1009",
-      userId: "USR-01",
-      customerId: "CUST-09",
-      amount: "199",
-      subtotal: 199,
-      discount: 0,
-      totalAmountRefunded: 0,
-      paymentMethodId: "CARD",
-      tenderedAmount: 199,
-      change: 0,
-      orderItems: [
-        {
-          productId: 17,
-          productName: "Ice Cream",
-          unitAmount: 199,
-          quantity: 1,
-          itemSubtotal: 199,
-        },
-      ],
-    },
-
-    {
-      orderId: "ORD-1010",
-      userId: "USR-03",
-      customerId: "CUST-10",
-      tableId: "T-08",
-      amount: "720",
-      subtotal: 720,
-      discount: 20,
-      totalAmountRefunded: 0,
-      paymentMethodId: "UPI",
-      tenderedAmount: 750,
-      change: 30,
-      orderItems: [
-        {
-          productId: 18,
-          productName: "Veg Thali",
-          unitAmount: 180,
-          quantity: 4,
-          itemSubtotal: 720,
-        },
-      ],
-    },
-  ];
+  
 
   const holdOrders = [
     {
@@ -526,11 +242,37 @@ const Invoices = () => {
     },
   ];
 
-  const [orders, setOrders] = useState(ordersData);
-  const [selectedOrder, setSelectedOrder] = useState(orders[0]);
+ const orders = useOrderStore(state => state.orders);
+  const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+console.log("Orders in Invoices page:", orders);
+  useEffect(() => {
+    loadOrdersFromDB(); // IndexedDB → Zustand
+  }, []);
+
+   useEffect(() => {
+    if (orders.length && !selectedOrderId) {
+      setSelectedOrderId(orders[0].localId);
+    }
+  }, [orders]);
+  console.log("Orders in Invoices page:", orders);
+  // const uiOrders = orders.map(order => ({
+  //   id: order.localId,
+  //   orderId: order.serverOrderId || order.localId,
+  //   customerId: order.customerId,
+  //   tableId: order.tableId,
+  //   amount: order.totals?.total || 0,
+  //   subtotal: order.totals?.subtotal || 0,
+  //   paymentMethod: order.paymentMethods?.[0]?.method || "N/A",
+  //   orderItems: order.cartData || [],
+  //   status: order.isSynced ? "SYNCED" : "OFFLINE",
+  //   createdAt: order.createdAt,
+  // }));
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedHoldOrder, setSelectedHoldOrder] = useState(holdOrders[0]);
 
-  const selectedOrderData = orders.find(o => o.orderId === selectedOrder?.orderId) || orders[0];
+  const selectedOrderData = orders.find(o => o?.localId === selectedOrder?.localId) || orders.find(o => o) || null;
+
 
   const isHoldInvoice = activeBtn !== "invoiceBTN";
 
@@ -547,23 +289,29 @@ const Invoices = () => {
   const currentOrders = activeBtn === "invoiceBTN" ? orders : holdOrders;
 
   const filteredOrders = currentOrders.filter((order) => {
-
+    if (!order) return false;
     const search = searchTerm.trim().toLowerCase();
     const holdSearch = holdSearchTerm.trim().toLowerCase();
     if (isHoldInvoice) {
+      const firstName = order?.cartData?.customer?.firstName;
+      const phoneNumber = order?.cartData?.customer?.phoneNumber;
+      const note = order?.note;
+
       return (
-        order?.orderId?.toLowerCase().includes(holdSearch) ||
-        order?.cartData?.customer?.firstName?.toLowerCase().includes(holdSearch) ||
-        order?.cartData?.customer?.phoneNumber?.includes(holdSearch) ||
-        order?.note?.toLowerCase().includes(holdSearch)
-      )
+        (firstName && String(firstName).toLowerCase().includes(holdSearch)) ||
+        (phoneNumber && String(phoneNumber).includes(holdSearch)) ||
+        (note && String(note).toLowerCase().includes(holdSearch))
+      );
     } else {
+      const customerId = order?.customerName;
+      const customerPhone = order?.customerPhone;
+      const userId = order?.userId;
+
       return (
-        order?.orderId?.toLowerCase().includes(search) ||
-        order?.customerId?.toLowerCase().includes(search) ||
-        order?.customerPhone?.includes(search) ||
-        order?.userId?.toLowerCase().includes(search)
-      )
+        (customerId && String(customerId).toLowerCase().includes(search)) ||
+        (customerPhone && String(customerPhone).includes(search)) ||
+        (userId && String(userId).toLowerCase().includes(search))
+      );
     }
   });
 
@@ -576,7 +324,7 @@ const Invoices = () => {
           totalAmountRefunded: (Number(order.totalAmountRefunded) || 0) + refundValue,
           // Add the history field
           refundHistory: [...(order.refundHistory || []), refundData],
-          subtotal: order.subtotal-totalRefundSubtotal
+          subtotal: (Number(order.subtotal) || 0) - totalRefundSubtotal
         };
       }
       return order;

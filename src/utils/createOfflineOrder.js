@@ -40,7 +40,7 @@ export const createOfflineOrder = async ({
     taxAmount: totals.taxAmount || totals.tax || 0,
     discount: totals.discount || 0,
     discountAmount: totals.discountAmount || totals.discount || 0,
-    discount_percentage: discount_percentage || totals.discount_percentage || null,
+    discount_percentage: Number(discount_percentage || totals.discount_percentage || 0),
     total: totals.total || 0,
     amount: totals.amount || totals.total || 0,
     

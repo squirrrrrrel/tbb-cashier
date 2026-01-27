@@ -71,7 +71,7 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
       </div>
 
       <div className="flex flex-col mt-2 overflow-auto no-scrollbar text-[#888888] font-bold text-sm">
-        {selectedHoldOrder?.cartData?.orderItems.map((item, index) => (
+        {selectedHoldOrder?.cartData?.orderItems?.map((item, index) => (
           <div
             key={item.orderId}
             className={`flex items-center justify-between py-2 px-2 rounded-md ${index % 2 === 0 ? "bg-white" : "bg-[#f8f8f8] "}`}

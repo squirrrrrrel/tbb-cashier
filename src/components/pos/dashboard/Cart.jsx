@@ -5,6 +5,7 @@ import keyup from "../../../assets/icons/keyup.svg";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
+import defaultImg from "../../../assets/images/Default_Product_Img.png";
 
 /* ---------------- CART ITEM ---------------- */
 
@@ -14,6 +15,7 @@ const CartProdctComponent = ({
   onQuantityChange,
   isExpanded,
   onToggle,
+  notifyError
 }) => {
   const price = Number(product.price) || 0;
   const quantity = Number(product.quantity) || 0;
@@ -22,6 +24,9 @@ const CartProdctComponent = ({
   const totalPrice = (price * quantity).toFixed(2);
 
   const [qty, setQty] = useState(quantity);
+ useEffect(() => {
+    setQty(quantity);
+  }, [quantity]);
 
   const onUpdateHandler = () => {
     onQuantityChange(product.id, qty);
@@ -34,11 +39,19 @@ const CartProdctComponent = ({
         <div className="product-detail flex gap-2 items-center">
           {/* <img src={keyup} alt="arrow-down" onClick={()=> setIsChnage(false)}/> */}
           <img src={isExpanded ? keyup : arrowDownIcon} alt="arrow-down" onClick={onToggle} />
-          <img
+          {product.img ? ( 
+            <img
             className="w-14 h-14 object-cover rounded"
             src={product.img}
             alt={product.name}
           />
+        ) : (
+            <img
+            className="w-14 h-14 object-cover rounded"
+            src={defaultImg}
+            alt={defaultImg}
+          />    
+          )}
           <div className="product_heading">
             <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
             <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.quantity}pcs</h3>
@@ -67,14 +80,23 @@ const CartProdctComponent = ({
             <p className="text-sm font-semibold text-[#555555]">Quantity</p>
             <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden  border border-gray-200">
               <div
-                onClick={() => setQty(Math.max(0, qty - 1))}
+                onClick={() => setQty(Math.max(1, qty - 1))}
                 className="w-10 pb-0.5 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
               >
                 -
               </div>
               <span className="flex-1 text-center  text-sm">{qty}</span>
               <div
-                onClick={() => setQty(qty + 1)}
+                onClick={() =>{if (qty >= product.stock+ product.stockQueue) {
+                   notifyError(<>
+    Only <span style={{ color: "red" }}>{product.stock + product.stockQueue}</span> items available in
+    <br />
+    stock for {product.name} 
+  </>);;
+                    return;
+                  }
+                 setQty(qty  + 1);
+                }}
                 className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
               >
                 +
@@ -199,7 +221,7 @@ const handleToggleExpand = (id) => {
               <path d="M922.9 701.9H327.4l29.9-60.9 496.8-.9c16.8 0 31.2-12 34.2-28.6l68.8-385.1c1.8-10.1-.9-20.5-7.5-28.4a34.99 34.99 0 00-26.6-12.5l-632-2.1-5.4-25.4c-3.4-16.2-18-28-34.6-28H96.5a35.3 35.3 0 100 70.6h125.9L246 312.8l58.1 281.3-74.8 122.1a34.96 34.96 0 00-3 36.8c6 11.9 18.1 19.4 31.5 19.4h62.8a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7h161.1a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7H923c19.4 0 35.3-15.8 35.3-35.3a35.42 35.42 0 00-35.4-35.2zM305.7 253l575.8 1.9-56.4 315.8-452.3.8L305.7 253zm96.9 612.7c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6zm325.1 0c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6z"></path>
             </svg>
           </div>
-          <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={removeFromCart}>
+          <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={resetCart}>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -278,6 +300,7 @@ const handleToggleExpand = (id) => {
                   onToggle={() => handleToggleExpand(p.id)}
                   onRemove={() => removeFromCart(p.id)}
                   onQuantityChange={updateQuantity}
+                   notifyError={notifyError}
                 />
                 <div ref={cartEndRef} />
               </>

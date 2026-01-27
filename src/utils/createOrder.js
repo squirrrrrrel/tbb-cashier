@@ -2,6 +2,10 @@ import api from "../utils/api";
 import { createOfflineOrder } from "./createOfflineOrder";
 import { useProductStore } from "../store/useProductStore";
 import { useAuthStore } from "../store/useAuthStore";
+import { saveOrderDB,markOrderSyncedDB } from "../db/ordersDB";
+import { v4 as uuid } from "uuid";
+import { fetchOrdersFromAPI } from "./fetchOrdersFromAPI";
+
 
 export const createOrder = async ({
   cartData,
@@ -14,6 +18,23 @@ export const createOrder = async ({
 }) => {
   const productStore = useProductStore.getState();
   const outletId = useAuthStore.getState().user?.outlet_id;
+
+   const localOrder = {
+    localId: uuid(),
+    isSynced: false,
+    source: navigator.onLine ? "ONLINE" : "OFFLINE",
+    createdAt: Date.now(),
+    outletId,
+
+    customerId: customer?.serverId || null,
+    tableId: table?.serverId || null,
+    cartData,
+    totals,
+    paymentMethods,
+    tenderedAmount,
+    cashReturned,
+  };
+ // await saveOrderDB(localOrder);
   // 🟢 ONLINE FLOW
   if (navigator.onLine) {
     try {
@@ -23,7 +44,7 @@ export const createOrder = async ({
         subtotal: totals.subtotal,
         outlet_id: outletId || null,
         discountAmount: 0,
-        discount_percentage:  null,
+        discount_percentage:  0,
         taxAmount: totals.taxAmount || totals.tax || 0,
         amount: totals.amount || totals.total || 0,
         paymentMethods,
@@ -39,16 +60,22 @@ export const createOrder = async ({
       
         })),
       };
-
+     
       const res = await api.post("/outlet/order", payload);
 
       // 🔄 refresh stock from server
       await productStore.fetchProductsFromAPI();
+      await fetchOrdersFromAPI();
+      const serverOrderId = res.data?.data?.orderId;
+      if (serverOrderId) {
+        await markOrderSyncedDB(localOrder.localId, serverOrderId);
+      }
 
+      await productStore.fetchProductsFromAPI();
       return {
         mode: "online",
         orderId: res.data?.data?.orderId,
-        order: res.data?.data,
+        order: localOrder,
       };
     } catch (err) {
       console.warn("⚠️ Online order failed → falling back to offline");

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import bottleImage from "./../../../assets/images/bottle.jpg";
+import defaultImg from "./../../../assets/images/Default_Product_Img.png";
 import { useNotification } from "./../../../hooks/useNotification"
 
 const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) => {
@@ -38,7 +38,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     };
 
     const refundSubtotal = refundItems.reduce(
-        (sum, i) => sum + i.refundQty * i.unitAmount,
+        (sum, i) => sum + i.refundQty * i.unitPrice,
         0
     );
 
@@ -72,7 +72,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
         };
         // Calculate total value for this specific refund event
         const totalRefundValue = refundItems.reduce(
-            (sum, i) => sum + i.refundQty * i.unitAmount,
+            (sum, i) => sum + i.refundQty * i.unitPrice,
             0
         );
 
@@ -82,7 +82,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
         );
 
         const totalRefundSubtotal = refundItems.reduce(
-            (sum, i) => sum + i.refundQty * i.unitAmount,
+            (sum, i) => sum + i.refundQty * i.unitPrice,
             0
         );
 
@@ -128,11 +128,15 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                             className="flex justify-between items-center px-3 py-2 "
                         >
                             <div className="flex gap-2">
-                                <img src={bottleImage} alt="product img" className="h-10" />
+                               { item.imageUrl ? (
+                                     <img src={item.imageUrl} alt="product img" className="h-10" />
+                                ) : (
+                                     <img src={defaultImg} alt="product img" className="h-10" />
+                                )}
                                 <div>
                                     <p className="text-md text-[#555555]">{item.productName}</p>
                                     <p className="text-sm text-[#555555] font-bold">
-                                        P{item.unitAmount} X {item.quantity}
+                                        P{item.unitPrice} X {item.quantity}
                                     </p>
                                 </div>
 
