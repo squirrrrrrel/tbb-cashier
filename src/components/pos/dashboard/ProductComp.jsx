@@ -1,7 +1,9 @@
 import React from "react";
 import { useCartStore } from "../../../store/useCartStore";
-import defaultImg from   "./../../../assets/images/Default_Product_Img.png";
+import defaultImg from "./../../../assets/images/Default_Product_Img.png";
 import { useNotification } from "../../../hooks/useNotification";
+import PriceSelectionPopup from "./priceSelectionPopup";
+import { useState } from "react";
 
 const { notifyError } = useNotification();
 const ProductComp = ({
@@ -27,31 +29,35 @@ const ProductComp = ({
       console.warn("Sound is on mute");
     }
   };
+  const [selectPriceFor, setSelectPriceFor] = useState("");
 
   const handleAddToCart = () => {
-    const result = useCartStore.getState().addToCart({
-    id,
-    img,
-    name,
-    price,
-    unit,
-    stock,
-    stockQueue
-  });
-
-  if (result?.success === false) {
-    if (result.reason === "OUT_OF_STOCK") {
-      notifyError(<>
-    Only <span style={{ color: "red" }}>{stock + stockQueue}</span> items available in
-    <br />
-    stock for {name}
-  </>);
+    if (name.toLowerCase().includes("shots")) {
+      setIsShots(true);
     }
-     playBeepSound();
-    return; 
-  }
+    const result = useCartStore.getState().addToCart({
+      id,
+      img,
+      name,
+      price,
+      unit,
+      stock,
+      stockQueue
+    });
 
-  playBeepSound(); 
+    if (result?.success === false) {
+      if (result.reason === "OUT_OF_STOCK") {
+        notifyError(<>
+          Only <span style={{ color: "red" }}>{stock + stockQueue}</span> items available in
+          <br />
+          stock for {name}
+        </>);
+      }
+      playBeepSound();
+      return;
+    }
+
+    playBeepSound();
   };
 
   return (
@@ -116,6 +122,13 @@ const ProductComp = ({
           </div>
         </div>
       )}
+      
+      {selectPriceFor &&
+        <PriceSelectionPopup
+          selectPriceFor={selectPriceFor}
+          setSelectPriceFor={setSelectPriceFor}
+        />
+      }
     </div>
   );
 };

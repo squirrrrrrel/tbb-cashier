@@ -12,8 +12,9 @@ import { useCartStore } from "../../store/useCartStore";
 import PrintOrder from "../../components/pos/dashboard/PrintOrder";
 import PhoneInputWithCode from "../../components/phoneCodeInput/PhoneInputWithCode";
 import DashboardPopup from "../../components/pos/dashboard/dashboardPopup";
-import  {createOfflineOrder}  from "../../utils/createOfflineOrder";
+import { createOfflineOrder } from "../../utils/createOfflineOrder";
 import { createOrder } from "../../utils/createOrder";
+import Retail from "./retail";
 
 const Dashboard = () => {
   const { products, hydrate, hydrated } = useProductStore();
@@ -34,6 +35,7 @@ const Dashboard = () => {
   const { orderData, setOrderData } = useCartStore();
   const [isPrinting, setIsPrinting] = useState(false);
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable } = useCartStore();
+  const [ isRetail, setIsRetail ] = useState(false);
 
   // // 1️⃣ Restore from store
   // useEffect(() => {
@@ -79,7 +81,7 @@ const Dashboard = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [filters,products,hydrate]);
+  }, [filters, products, hydrate]);
   useEffect(() => {
     hydrate();
   }, [hydrate]);
@@ -100,36 +102,36 @@ const Dashboard = () => {
     }));
   };
 
- const handlePay = async (finalOrderData) => {
-  
-  try {
-     const result = await createOrder({
-      cartData,
-      customer: selectedCustomer || null,
-      table: selectedTable || null,
-      totals: { subtotal, tax, discount, total },
-      paymentMethods: finalOrderData?.paymentMethods || [],
-      tenderedAmount: finalOrderData?.tenderedAmount || 0,
-      cashReturned: finalOrderData?.cashReturned || 0,
-    });
+  const handlePay = async (finalOrderData) => {
 
-    setOrderData(result.order);
-    openPaySuccess(result.orderId);
+    try {
+      const result = await createOrder({
+        cartData,
+        customer: selectedCustomer || null,
+        table: selectedTable || null,
+        totals: { subtotal, tax, discount, total },
+        paymentMethods: finalOrderData?.paymentMethods || [],
+        tenderedAmount: finalOrderData?.tenderedAmount || 0,
+        cashReturned: finalOrderData?.cashReturned || 0,
+      });
 
-    notifySuccess(
-      result.mode === "online"
-        ? "Order created successfully"
-        : "Order saved offline"
-    );
-    resetCart();
-    //setPayToProceed(false);
-  } catch (err) {
-    notifyError("Order failed");
-    console.error("Error creating order:", err);
-  }
-};
+      setOrderData(result.order);
+      openPaySuccess(result.orderId);
 
- const subtotal = cartData.reduce(
+      notifySuccess(
+        result.mode === "online"
+          ? "Order created successfully"
+          : "Order saved offline"
+      );
+      resetCart();
+      //setPayToProceed(false);
+    } catch (err) {
+      notifyError("Order failed");
+      console.error("Error creating order:", err);
+    }
+  };
+
+  const subtotal = cartData.reduce(
     (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0),
     0
   );
@@ -186,13 +188,15 @@ const Dashboard = () => {
       </div>
       <div className="w-2/5 h-screen">
         {/* <Cart cartProducts={cartProducts} setCartProducts={setCartProducts} onHoldOrder={saveHoldOrder} setPayToProceed={setPayToProceed} subtotal={subtotal} tax={tax} discount={discount} total={total} /> */}
-      <Cart
+        <Cart
           onHoldOrder={saveHoldOrder}
           setPayToProceed={setPayToProceed}
           subtotal={subtotal}
           tax={tax}
           discount={discount}
           total={total}
+          isRetail={isRetail}
+          setIsRetail={setIsRetail}
         />
       </div>
       <DashboardPopup
@@ -209,6 +213,11 @@ const Dashboard = () => {
         setCartProducts={setCartProducts}
         setPayToProceed={setPayToProceed}
       />
+      {isRetail &&
+        <Retail
+          setIsRetail={setIsRetail}
+        />
+      }
     </div>
   );
 };
