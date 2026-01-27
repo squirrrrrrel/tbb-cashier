@@ -19,7 +19,7 @@ export const aggregateInventoryToProducts = (apiData, outletId) => {
         unit: item.unit,
 
         stock: Number(item.quantity),
-        stockQueue: Number(item.stock_queue || 0),
+        stockQueue: Number(item.remaining_quantity || 0),
 
         lowStockThreshold: item.low_stock_threshold || 5,
         sellingPrice: Number(item.selling_price),

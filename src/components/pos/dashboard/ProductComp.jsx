@@ -41,10 +41,14 @@ const ProductComp = ({
 
   if (result?.success === false) {
     if (result.reason === "OUT_OF_STOCK") {
-      notifyError(`only ${stock} items available is the stock for ${name}`);
+      notifyError(<>
+    Only <span style={{ color: "red" }}>{stock + stockQueue}</span> items available in
+    <br />
+    stock for {name}
+  </>);
     }
      playBeepSound();
-    return; // ⛔ do not play beep
+    return; 
   }
 
   playBeepSound(); 

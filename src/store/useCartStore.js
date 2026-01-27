@@ -16,7 +16,7 @@ export const useCartStore = create(
   const existing = state.cartData.find(p => p.id === product.id);
 
   // ⛔ OUT OF STOCK CHECK
-  if (existing && existing.quantity >= product.stock) {
+  if (existing && existing.quantity >= product.stock+product.stockQueue) {
     return { success: false, reason: "OUT_OF_STOCK" };
   }
 
@@ -60,7 +60,7 @@ updateQuantity: (id, quantity) =>
         // ⛔ STOCK GUARD
         const safeQty = Math.min(
           Math.max(1, quantity), // minimum 1
-          p.stock                // maximum stock
+          p.stock + p.stockQueue               // maximum stock
         );
 
         return { ...p, quantity: safeQty };
