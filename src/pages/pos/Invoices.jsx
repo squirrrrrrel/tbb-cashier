@@ -4,6 +4,8 @@ import InvoiceForm from "../../components/pos/invoice/InvoiceForm";
 import HoldInvoiceList from "../../components/pos/invoice/HoldInvoiceList";
 import HoldInvoiceFrom from "../../components/pos/invoice/HoldInvoiceForm";
 import { useOrderStore } from "../../store/useOrderStore";
+import { fetchOrdersFromAPI } from "../../utils/fetchOrdersFromAPI";
+import { refundOrderAPI } from "../../api/refundApi";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
 
@@ -315,21 +317,44 @@ console.log("Orders in Invoices page:", orders);
     }
   });
 
-  const handleRefundAction = (refundData, refundValue, totalRefundSubtotal) => {
-    setOrders(prevOrders => prevOrders.map(order => {
-      if (order.orderId === refundData.orderId) {
-        return {
-          ...order,
-          // Update the amount field
-          totalAmountRefunded: (Number(order.totalAmountRefunded) || 0) + refundValue,
-          // Add the history field
-          refundHistory: [...(order.refundHistory || []), refundData],
-          subtotal: (Number(order.subtotal) || 0) - totalRefundSubtotal
-        };
-      }
-      return order;
-    }));
-  };
+  // const handleRefundAction = (refundData, refundValue, totalRefundSubtotal) => {
+  //   setOrders(prevOrders => prevOrders.map(order => {
+  //     if (order.orderId === refundData.orderId) {
+  //       return {
+  //         ...order,
+  //         // Update the amount field
+  //         totalAmountRefunded: (Number(order.totalAmountRefunded) || 0) + refundValue,
+  //         // Add the history field
+  //         refundHistory: [...(order.refundHistory || []), refundData],
+  //         subtotal: (Number(order.subtotal) || 0) - totalRefundSubtotal
+  //       };
+  //     }
+  //     return order;
+  //   }));
+  // };
+
+  const handleRefundAction = async (
+  refundData,
+  refundValue,
+  totalRefundSubtotal
+) => {
+  if (!refundData?.order_id) {
+    throw new Error("Missing order_id for refund");
+  }
+ try {
+    // 1️⃣ Call backend refund API
+    await refundOrderAPI(refundData);
+
+    // 2️⃣ Sync fresh data from server
+    await fetchOrdersFromAPI();
+
+    // 3️⃣ Reload orders from IndexedDB → Zustand
+    await loadOrdersFromDB();
+  } catch (error) {
+    // 🔴 Let RefundPopup handle error message
+    throw error;
+  }
+}
 
   const handleExchangeAction = (newExchangeData) => {
     if (newExchangeData.length === 0) return;

@@ -12,8 +12,8 @@ export const fetchOrdersFromAPI = async () => {
   const localOrders = await getAllOrdersDB();
   const byServerId = new Map(
     localOrders
-      .filter(o => o.serverOrderId)
-      .map(o => [o.serverOrderId, o])
+      .filter(o => o.localId.startsWith("order-"))
+      .map(o => [o.localId, o])
   );
  //  console.log("API ORDERS:", apiOrders);
   for (const apiOrder of apiOrders) {
@@ -25,6 +25,7 @@ export const fetchOrdersFromAPI = async () => {
         ...existing,
        // ...apiOrder,
         status: apiOrder.status,
+        refundedAmount: apiOrder.refundedAmount,
         invoiceNo: apiOrder.invoice_no,
         updatedAt: Date.now(),
       });
