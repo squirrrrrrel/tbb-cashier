@@ -11,7 +11,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     useEffect(() => {
         if (open) {
             setRefundItems(
-                items.map(item => ({
+                items.filter(item => item.category_name !== "Shots" || item.category_name === "Butchery").map(item => ({
                     ...item,
                     refundQty: 0,
                 }))
@@ -29,7 +29,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                 if (i !== index) return item;
 
                 let qty = item.refundQty;
-                if (type === "inc" && qty < item.quantity) qty++;
+                if (type === "inc" && qty < item.quantity-item.refundQuantity) qty++;
                 if (type === "dec" && qty > 0) qty--;
 
                 return { ...item, refundQty: qty };
@@ -52,20 +52,25 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
         onClose();
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         // Filter items where quantity > 0
         const itemsToRefund = refundItems
             .filter(item => item.refundQty > 0)
             .map(item => ({
-                orderItemId: item.productId, // mapping your productId to orderItemId
-                quantity: item.refundQty
+                order_item_id: item.orderItemId, // mapping your productId to orderItemId
+                quantity: item.refundQty,
+                refund_subtotal: refundSubtotal,
+                refund_tax: refundTax,
+                refund_total: refundAmount,
+                discount_percentage: 0,
+                tax_percentage: 0
             }));
 
         if (itemsToRefund.length === 0) return onClose();
 
         // Construct the RefundData interface
         const refundData = {
-            orderId: orderId,
+            order_id: orderId,
             items: itemsToRefund,
             restock: restock,
             reason: reason
@@ -88,14 +93,17 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
 
         // Send back to Invoices.jsx
         try {
-            onProcessRefund(refundData, totalRefundValue + totalRefundTax, totalRefundSubtotal);
-            notifySuccess("Product Refunded Successfully")
-        } catch (error) {
-            console.log(error);
-            notifyError("Something went wrong while refunding products")
-        } finally {
-            onClose();
-        }
+   await  onProcessRefund(
+      refundData,
+      totalRefundValue + totalRefundTax,
+      totalRefundSubtotal
+    );
+    notifySuccess("Product Refunded Successfully");
+    onClose();
+  } catch (error) {
+    console.error("Refund failed:", error);
+    notifyError("Something went wrong while refunding products");
+  }
 
     };
 
@@ -122,7 +130,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                         </p>
                     )}
 
-                    {refundItems.map((item, index) => (
+                    {refundItems.filter(item => item.productId && item.category_name).map((item, index) => (
                         <div
                             key={item.id || index}
                             className="flex justify-between items-center px-3 py-2 "
@@ -136,7 +144,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                                 <div>
                                     <p className="text-md text-[#555555]">{item.productName}</p>
                                     <p className="text-sm text-[#555555] font-bold">
-                                        P{item.unitPrice} X {item.quantity}
+                                        P{item.unitPrice} X {item.quantity-(item.refundQuantity)} {item.unit}
                                     </p>
                                 </div>
 
