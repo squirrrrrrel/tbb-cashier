@@ -6,6 +6,7 @@ import { useProductStore } from "./useProductStore";
 import { syncPendingOrders } from "../utils/syncOrders";
 import { fetchOrdersFromAPI } from "../utils/fetchOrdersFromAPI";
 import { useOrderStore } from "./useOrderStore";
+import { usePromotionStore } from "./usePromotionStore";
 
 let initialized = false;
 
@@ -24,6 +25,7 @@ export const useNetworkStore = create((set) => ({
         // 🔼 PUSH: master data first
         await useCustomerStore.getState().syncCustomers();
         await useTableStore.getState().syncTables();
+        await usePromotionStore.getState().syncPromotions();
 
         // 🔼 PUSH: transactions
         await syncPendingOrders();

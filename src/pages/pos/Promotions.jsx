@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
+import { usePromotionStore } from "../../store/usePromotionStore";
+import OfflineLoader from "../../components/OfflineLoader";
 const products = [
   { label: "Product 1", value: "Product 1" },
   { label: "Product 2", value: "Product 2" },
@@ -44,6 +46,7 @@ const promotionsData = [
 ];
 
 const Promotions = () => {
+  const { promotions, hydrated, hydrate, addPromotion, editPromotion, deletePromotion, fetchPromotionFromAPI, SyncPromotions } = usePromotionStore();
   const [filters, setFilters] = useState({
     id: "",
     promotion: "",
@@ -55,9 +58,13 @@ const Promotions = () => {
   const [filteredPromotions, setFilteredPromotions] = useState([]);
 
   useEffect(() => {
-    let filtered = [...promotionsData];
+    hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    let filtered = [...promotions];
     if (filters.id) {
-      filtered = filtered.filter((p) => p.id === filters.id);
+      filtered = filtered.filter((p) => p.promotion_id === filters.id);
     }
 
     // if (filters.type) {
@@ -77,7 +84,10 @@ const Promotions = () => {
     }
 
     setFilteredPromotions(filtered);
-  }, [filters]);
+  }, [filters, promotions]);
+
+  if (!hydrated) return <OfflineLoader />;
+  console.log(promotions, "Promotions")
 
   return (
     <div className="bg-background w-full h-full p-4">
@@ -85,18 +95,18 @@ const Promotions = () => {
       <div className="filters grid grid-cols-4 gap-2 mt-4">
         <Select
           options={[
-            ...(promotionsData ?? [])
+            ...(promotions ?? [])
               .slice()
               .sort((a, b) =>
-                String(a?.promotion ?? "").localeCompare(
-                  String(b?.promotion ?? ""),
+                String(a?.promotion_name ?? "").localeCompare(
+                  String(b?.promotion_name ?? ""),
                   undefined,
                   { sensitivity: "base" }
                 )
               )
               .map((p) => ({
-                label: p.promotion,
-                value: p.id,
+                label: p.promotion_name,
+                value: p.promotion_id,
               })),
           ]}
           onChange={(option) => {
@@ -180,16 +190,16 @@ const Promotions = () => {
                 </td>
               </tr>
             )}
-            {filteredPromotions.map((promotion) => (
-              <tr key={promotion.id} className="even:bg-button-background">
-                <td className="p-2">{promotion.promotion}</td>
-                <td className="p-2">{promotion.startDate}</td>
-                <td className="p-2">{promotion.endDate}</td>
-                <td className="p-2">{promotion.category}</td>
-                <td className="p-2">{promotion.product}</td>
-                <td className="p-2">{promotion.discount}</td>
-                <td className="p-2">{promotion.discountedPrice}</td>
-                <td className="p-2">{promotion.outlet}</td>
+            {filteredPromotions.map((p) => (
+              <tr key={p.promotion_id} className="even:bg-button-background">
+                <td className="p-2">{p.promotion_name}</td>
+                <td className="p-2">{p.start_date}</td>
+                <td className="p-2">{p.end_date}</td>
+                <td className="p-2">{p.category}</td>
+                <td className="p-2">{p.product}</td>
+                <td className="p-2">{p.discount}</td>
+                <td className="p-2">{p.discountedPrice}</td>
+                <td className="p-2">{p.outlet}</td>
               </tr>
             ))}
           </tbody>
