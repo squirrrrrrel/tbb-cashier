@@ -27,6 +27,7 @@ export const useNetworkStore = create((set) => ({
         await useTableStore.getState().syncTables();
         await usePromotionStore.getState().syncPromotions();
 
+
         // 🔼 PUSH: transactions
         await syncPendingOrders();
       } catch (err) {

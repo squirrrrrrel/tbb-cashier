@@ -3,50 +3,29 @@ import Select from "react-select";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
 import { usePromotionStore } from "../../store/usePromotionStore";
 import OfflineLoader from "../../components/OfflineLoader";
-const products = [
-  { label: "Product 1", value: "Product 1" },
-  { label: "Product 2", value: "Product 2" },
-  { label: "Product 3", value: "Product 3" },
-];
-const categories = [
-  { label: "Category 1", value: "Category 1" },
-  { label: "Category 2", value: "Category 2" },
-  { label: "Category 3", value: "Category 3" },
-];
+import { useProductStore } from "../../store/useProductStore";
+import { useCategoryStore } from "../../store/useCategoryStore";
+import api from "../../utils/api";
+import { useOutletStore } from "../../store/useOutletStore";
+// const categories = [
+//   { label: "Category 1", value: "Category 1" },
+//   { label: "Category 2", value: "Category 2" },
+//   { label: "Category 3", value: "Category 3" },
+// ];
 const outlets = [
   { label: "Outlet 1", value: "Outlet 1" },
   { label: "Outlet 2", value: "Outlet 2" },
   { label: "Outlet 3", value: "Outlet 3" },
 ];
-const promotionsData = [
-  {
-    id: "1",
-    promotion: "Promotion 1",
-    startDate: "2026-01-01",
-    endDate: "2026-01-02",
-    category: "Category 1",
-    product: "Product 1",
-    discount: "10%",
-    discountedPrice: "100",
-    outlet: "Outlet 1",
-    type: "Fixed",
-  },
-  {
-    id: "2",
-    promotion: "Promotion 2",
-    startDate: "2026-01-01",
-    endDate: "2026-01-02",
-    category: "Category 2",
-    product: "Product 2",
-    discount: "20%",
-    discountedPrice: "200",
-    outlet: "Outlet 2",
-    type: "Periodic",
-  },
-];
 
 const Promotions = () => {
-  const { promotions, hydrated, hydrate, addPromotion, editPromotion, deletePromotion, fetchPromotionFromAPI, SyncPromotions } = usePromotionStore();
+  //using stores
+  const { promotions, hydrated: promoHydrated, hydrate: promoHydrate, addPromotion, editPromotion, deletePromotion, fetchPromotionFromAPI, SyncPromotions } = usePromotionStore();
+  const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
+  const { categories, hydrate: categoriesHydrate, hydrated: categoriesHydrated } = useCategoryStore();
+  const { outlets, hydrate: outletHydrate, hydrated: outletHydrated } = useOutletStore();
+
+  //Variables
   const [filters, setFilters] = useState({
     id: "",
     promotion: "",
@@ -57,9 +36,41 @@ const Promotions = () => {
   });
   const [filteredPromotions, setFilteredPromotions] = useState([]);
 
+
+  //Options
+  const productOptions = products.map((p) => (
+    {
+      label: p.name,
+      value: p.serverId,
+    }
+  ))
+
+  const categoryOptions = categories.map((c) => (
+    {
+      label: c.category_name,
+      value: c.id,
+    }
+  ))
+
+  const fetchOutlet = async () => {
+    try {
+      const res = await api.get('/tenant/outlet');
+      console.log(res, "Outlet Response")
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   useEffect(() => {
-    hydrate();
-  }, [hydrate]);
+    fetchOutlet();
+  }, [])
+
+  useEffect(() => {
+    promoHydrate();
+    productsHydrate();
+    categoriesHydrate();
+    outletHydrate();
+  }, [promoHydrate, productsHydrate, categoriesHydrate, outletHydrate]);
 
   useEffect(() => {
     let filtered = [...promotions];
@@ -80,14 +91,17 @@ const Promotions = () => {
     }
 
     if (filters.product) {
-      filtered = filtered.filter((p) => p.product === filters.product);
+      filtered = filtered.filter((p) => p.serverId === filters.product);
     }
 
     setFilteredPromotions(filtered);
   }, [filters, promotions]);
 
-  if (!hydrated) return <OfflineLoader />;
-  console.log(promotions, "Promotions")
+  if (!productsHydrated || !promoHydrated || !categoriesHydrated || !outletHydrated) return <OfflineLoader />;
+  // console.log(promotions, "Promotions")
+  // console.log(products, "Products")
+  // console.log(categories, "Categories")
+  // console.log(outlets, "Outlets")
 
   return (
     <div className="bg-background w-full h-full p-4">
@@ -123,7 +137,7 @@ const Promotions = () => {
           styles={commonSelectStyles}
         />
         <Select
-          options={products}
+          options={productOptions}
           onChange={(option) => {
             setFilters((prev) => ({
               ...prev,
@@ -138,7 +152,7 @@ const Promotions = () => {
           styles={commonSelectStyles}
         />
         <Select
-          options={categories}
+          options={categoryOptions}
           onChange={(option) => {
             setFilters((prev) => ({
               ...prev,
