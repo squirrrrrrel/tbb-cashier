@@ -26,7 +26,7 @@ const category = [
   },
 ];
 
-const ProductCategoryComp = ({ category, filters, setFilters}) => {
+const ProductCategoryComp = ({ category, filters, setFilters }) => {
   return (
     <div
       onClick={() =>
@@ -35,11 +35,10 @@ const ProductCategoryComp = ({ category, filters, setFilters}) => {
           category: category ? category.name : "all",
         }))
       }
-      className={`p-2 bg-transparent rounded-2xl border border-gray-200 hover:outline-2 hover:outline-secondary cursor-pointer flex items-center ${
-        filters.category.toLowerCase() === category.name.toLowerCase()
-          ? "outline-2 outline-secondary"
-          : ""
-      }`}
+      className={`p-2 bg-transparent rounded-2xl border border-gray-200 hover:outline-2 hover:outline-secondary cursor-pointer flex items-center ${filters.category.toLowerCase() === category.name.toLowerCase()
+        ? "outline-2 outline-secondary"
+        : ""
+        }`}
     >
       <img src={category.image} alt={category.name} className="w-14" />
     </div>
@@ -47,6 +46,8 @@ const ProductCategoryComp = ({ category, filters, setFilters}) => {
 };
 
 const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
+  const [isTransferProductOpen, setIsTransferProductOpen] = useState(false);
+  const [selectedTransferProduct, setSelectedTransferProduct] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(
     !!document.fullscreenElement
   );
@@ -116,6 +117,9 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
                 <path d="M7 3h6a4.5 4.5 0 010 9H9v9H7V3zm2 2v5h4a2.5 2.5 0 000-5H9z" />
               </svg>
             </div>
+            {filters.category.toLowerCase() === "shots" &&
+              <div onClick={() => setIsTransferProductOpen(true)} className="text-2xl p-1 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer"><p className="px-2">T</p></div>
+            }
             <div
               onClick={toggleFullscreen}
               className="full-screen-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer"
@@ -137,6 +141,40 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
           <h2 className="text-sm">{productListLength} Results</h2>
         </div>
       </div>
+      {isTransferProductOpen &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={() => setIsTransferProductOpen(false)}>
+          <div className="bg-white rounded-md shadow-2xl w-[450px] py-5 px-6 animate-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-6  text-[#555555] text-2xl font-bold">Transfer Product</div>
+            <div className="grid grid-cols-1 gap-4 text-sm">
+              <div>
+                <label className="font-medium">Product Name</label>
+                <select
+                  value={selectedTransferProduct}
+                  onChange={(e) => setSelectedTransferProduct(e.target.value)}
+                  className="w-full mt-1 rounded-md px-3 py-2 shadow-[0_0_3px_#00000026] outline-none text-[#555555]"
+                >
+                  <option value="">Select Product</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-4 mt-6 text-sm">
+              <button
+                disabled={!selectedTransferProduct}
+                className={`flex-1 py-2 font-bold text-white rounded-md bg-gradient-to-b from-secondary to-primary 
+                ${!selectedTransferProduct
+                    ? "opacity-70"
+                    : "cursor-pointer"
+                  }`}
+              >
+                Transfer
+              </button>
+              <button className=" text-[#555555] cursor-pointer flex-1 py-2 font-bold rounded-md flex gap-1 justify-center shadow-[0_0_3px_#00000026]" onClick={() => setIsTransferProductOpen(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   );
 };

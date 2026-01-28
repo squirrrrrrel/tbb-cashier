@@ -130,7 +130,7 @@ const CartProdctComponent = ({
 
 /* ---------------- CART ---------------- */
 
-const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total }) => {
+const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, setIsRetail, isRetail }) => {
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
   const [loginData, setLoginData] = useState({ username: '', password: '' });
@@ -208,7 +208,7 @@ const handleToggleExpand = (id) => {
       <div className="h-screen border-l border-gray-200">
       <div className="cart-header flex items-center justify-between p-4 border-b border-gray-200">
         <div className="icons flex gap-2 fill-gray-600">
-          <div className="cart-icons p-2 border border-gray-300 rounded-md">
+          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={()=> setIsRetail(true)}>
             <svg
               viewBox="0 0 1024 1024"
               focusable="false"
