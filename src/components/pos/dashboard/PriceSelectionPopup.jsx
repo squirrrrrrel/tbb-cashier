@@ -1,12 +1,60 @@
 import React, { useState } from "react";
-
+import { useCartStore } from "../../../store/useCartStore";
+import { useNotification } from "../../../hooks/useNotification";
 const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => {
+const addToCart = useCartStore((state) => state.addToCart);
   const isShots = selectPriceFor?.toLowerCase() === "shots";
+  const { notifyError } = useNotification();
 
   const [unit, setUnit] = useState("");
   const [quantity, setQuantity] = useState("");
   const [shots, setShots] = useState("");
   const [mlQuantity, setMlQuantity] = useState("");
+
+  const unitPrice = Number(product?.price || 0);
+  const quantityValue = isShots ? Number(mlQuantity || 0) : unit === "kg" ? Number(quantity || 0) : Number(quantity || 0)/1000;
+  const totalPrice = isShots
+    ? Number(quantityValue || 0) * unitPrice
+    : Number(quantityValue || 0) * unitPrice;
+
+
+  const handleAdd = () => {
+  if (!product) return;
+
+  // SHOTS FLOW
+  if (isShots) {
+    if (!shots || !mlQuantity) return;
+
+    addToCart({
+      ...product,
+      unit: "ml",
+      quantity: Number(mlQuantity),
+      shots: Number(shots),
+      totalPrice: Number(totalPrice)
+    });
+  } 
+  // BUTCHERY FLOW
+  else {
+    if (!unit || !quantity) return;
+    const result = addToCart({
+      ...product,
+      unit,
+      quantity: Number(quantityValue),
+      totalPrice: Number(totalPrice)
+    });
+
+    if(result.success === false && result.reason === "OUT_OF_STOCK") {
+      notifyError(<>
+        Only <span style={{ color: "red" }}>{product.stock + product.stockQueue} {product.unit}</span> items available in
+        <br /> stock for {product.name}
+      </>);
+      return;
+    }
+  }
+
+  // Close popup after add
+  setSelectPriceFor("");
+};
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={()=> setSelectPriceFor("")}>
@@ -98,7 +146,7 @@ const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => 
             <input
               type="text"
               readOnly
-              value=" 0.00"
+              value={`${totalPrice.toFixed(2)}`}
               className="w-full mt-1 rounded-md px-3 py-2 shadow-[0_0_3px_#00000026]  outline-none"
             />
           </div>
@@ -106,11 +154,11 @@ const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => 
 
         {/* Buttons */}
         <div className="flex gap-4 mt-6 text-sm">
-          <button className="flex-1 py-2 font-bold text-white bg-gradient-to-b from-secondary to-primary rounded-md">
+          <button className="flex-1 py-2 font-bold text-white bg-gradient-to-b from-secondary to-primary rounded-md" onClick={handleAdd}>
             + ADD
           </button>
 
-          <button className=" text-[#555555] flex-1 py-2 font-bold rounded-md flex gap-1 justify-center shadow-[0_0_3px_#00000026]">
+          <button className=" text-[#555555] flex-1 py-2 font-bold rounded-md flex gap-1 justify-center shadow-[0_0_3px_#00000026]" onClick={() => setSelectPriceFor("")}>
             <p className="font-light">X</p> Cancel
           </button>
         </div>

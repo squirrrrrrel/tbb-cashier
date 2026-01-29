@@ -16,23 +16,28 @@ export const useCartStore = create(
   const existing = state.cartData.find(p => p.id === product.id);
 
   // ⛔ OUT OF STOCK CHECK
-  if (existing && existing.quantity >= product.stock+product.stockQueue) {
+  if(product.categoryName === "Butchery") {
+    if (existing && existing.quantity + product.quantity > product.stock + product.stockQueue) {
+    return { success: false, reason: "OUT_OF_STOCK" };
+    }
+  }else{
+    if (existing && existing.quantity >= product.stock + product.stockQueue) {
     return { success: false, reason: "OUT_OF_STOCK" };
   }
-
+  }
   set(() => {
     if (existing) {
       return {
         cartData: state.cartData.map(p =>
           p.id === product.id
-            ? { ...p, quantity: p.quantity + 1 }
+            ? { ...p, quantity: p.categoryName === "Butchery" ? product.quantity + p.quantity : p.quantity + 1 }
             : p
         ),
       };
     }
 
     return {
-      cartData: [...state.cartData, { ...product, quantity: 1 }],
+      cartData: [...state.cartData, { ...product, quantity: product.quantity || 1 }],
     };
   });
 

@@ -247,36 +247,57 @@ export const useTableStore = create((set, get) => ({
   },
 
   // 🔹 SYNC WHEN ONLINE
-  syncTables: async () => {
-    if (!navigator.onLine) return;
+ syncTables: async () => {
+  if (!navigator.onLine) return;
 
-    const outletId = useAuthStore.getState().user?.outlet_id;
-    if (!outletId) return;
+  const outletId = useAuthStore.getState().user?.outlet_id;
+  if (!outletId) return;
 
-    const tables = await getTablesDB();
-    const outletTables = tables.filter(t => t.outletId === outletId);
-    // Only sync tables that don't have a serverId yet (truly new local tables)
-    const unsynced = outletTables.filter(t => !t.isSynced && !t.isDeleted && !t.serverId);
+  const tables = await getTablesDB();
+  const outletTables = tables.filter(t => t.outletId === outletId);
 
-    for (const table of unsynced) {
-      try {
-        const res = await api.post(`/outlet/table?outlet_id=${outletId}`, 
-          mapTableToApiPayload(table),
-          { headers: { "Content-Type": "application/json" } }
-        );
+  // 🔥 1️⃣ SYNC DELETED TABLES
+  const deletedTables = outletTables.filter(
+    t => t.isDeleted && t.serverId && !t.isSynced
+  );
 
-        const serverTable = res.data?.data || res.data;
-        table.serverId = serverTable.id || serverTable.table_id || serverTable._id;
-        table.isSynced = true;
-
-        await updateTableDB(table);
-      } catch (err) {
-        console.warn("⚠️ Table sync failed:", err);
-        // Don't return - continue with other tables
-        continue;
-      }
+  for (const table of deletedTables) {
+    try {
+      await api.delete(
+        `/outlet/table/${table.serverId}?outlet_id=${outletId}`
+      );
+      table.isSynced = true;
+      await updateTableDB(table);
+    } catch (err) {
+      console.warn("⚠️ Table delete sync failed:", err);
     }
+  }
 
-    await get().hydrate();
-  },
+  // 🔥 2️⃣ SYNC NEW TABLES
+  const newTables = outletTables.filter(
+    t => !t.isDeleted && !t.serverId && !t.isSynced
+  );
+
+  for (const table of newTables) {
+    try {
+      const res = await api.post(
+        `/outlet/table?outlet_id=${outletId}`,
+        mapTableToApiPayload(table),
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const serverTable = res.data?.data || res.data;
+      table.serverId =
+        serverTable.id || serverTable.table_id || serverTable._id;
+      table.isSynced = true;
+
+      await updateTableDB(table);
+    } catch (err) {
+      console.warn("⚠️ Table create sync failed:", err);
+    }
+  }
+
+  await get().hydrate();
+},
+
 }));

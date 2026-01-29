@@ -32,7 +32,7 @@ export const updateProductStockDB = async (serverId, newStock) => {
 
   product.stock = Math.max(-1, Number(newStock));
   product.updatedAt = Date.now();
-  product.isSynced = false; // 👈 important for later reconciliation
+  product.isSynced = false; 
 
   await store.put(product);
   await tx.done;

@@ -2,7 +2,7 @@ import React from "react";
 import { useCartStore } from "../../../store/useCartStore";
 import defaultImg from "./../../../assets/images/Default_Product_Img.png";
 import { useNotification } from "../../../hooks/useNotification";
-import PriceSelectionPopup from "./priceSelectionPopup";
+import PriceSelectionPopup from "../dashboard/PriceSelectionPopup.jsx";
 import { useState } from "react";
 
 const { notifyError } = useNotification();
@@ -15,6 +15,7 @@ const ProductComp = ({
   stock,
   stockQueue,
   isLowStock,
+  categoryName,
   setCartProducts,
   mute
 }) => {
@@ -30,8 +31,36 @@ const ProductComp = ({
     }
   };
   const [selectPriceFor, setSelectPriceFor] = useState("");
+const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const handleAddToCart = () => {
+const handleAddToCart = () => {
+  // Butchery or Shots → open popup
+  if (
+    categoryName?.toLowerCase() === "butchery" ||
+    name.toLowerCase().includes("shots")
+  ) {
+    setSelectedProduct({
+      id,
+      img,
+      name,
+      price,
+      unit: name.toLowerCase().includes("shots") ? "ml" : unit,
+      stock,
+      stockQueue,
+      categoryName
+    });
+
+    setSelectPriceFor(
+      name.toLowerCase().includes("shots") ? "shots" : "butchery"
+    );
+    return;
+  }
+
+  // Other products → directly add
+  addDirectlyToCart();
+};
+
+  const addDirectlyToCart = () => {
     if (name.toLowerCase().includes("shots")) {
       setIsShots(true);
     }
@@ -123,12 +152,13 @@ const ProductComp = ({
         </div>
       )}
       
-      {selectPriceFor &&
-        <PriceSelectionPopup
-          selectPriceFor={selectPriceFor}
-          setSelectPriceFor={setSelectPriceFor}
-        />
-      }
+      {selectPriceFor && selectedProduct && (
+  <PriceSelectionPopup
+    product={selectedProduct}
+    selectPriceFor={selectPriceFor}
+    setSelectPriceFor={setSelectPriceFor}
+  />
+)}
     </div>
   );
 };

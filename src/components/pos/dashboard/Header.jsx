@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import allProductsImage from "../../../assets/images/all-product.png";
 import shotsImage from "../../../assets/images/shots.png";
 import butcheryImage from "../../../assets/images/butchery.png";
@@ -7,7 +7,7 @@ import fullScreenIcon from "../../../assets/icons/full-screen.svg";
 import exitFullScreenIcon from "../../../assets/icons/close-full-screen.svg";
 import speakerIcon from "../../../assets/icons/speaker.svg";
 import muteIcon from "../../../assets/icons/mute.svg";
-
+import { useProductStore } from "../../../store/useProductStore";
 const category = [
   {
     id: 1,
@@ -60,6 +60,30 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
       setIsFullScreen(false);
     }
   };
+  const { products, ready, hydrate } = useProductStore();
+useEffect(() => {
+  if (isTransferProductOpen && !ready) {
+    hydrate();
+  }
+}, [isTransferProductOpen, ready, hydrate]);
+
+const transferableProducts = products.filter(
+  (p) => p.stock > 0
+);
+const handleTransfer = () => {
+  if (!selectedTransferProduct) return;
+
+  const product = products.find(
+    (p) => p.serverId === selectedTransferProduct
+  );
+
+  console.log("Transfer product:", product);
+
+  // 👉 call transfer API / logic here
+
+  setIsTransferProductOpen(false);
+};
+
 
   return (
     <div className="header">
@@ -153,13 +177,21 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
                   onChange={(e) => setSelectedTransferProduct(e.target.value)}
                   className="w-full mt-1 rounded-md px-3 py-2 shadow-[0_0_3px_#00000026] outline-none text-[#555555]"
                 >
-                  <option value="">Select Product</option>
+                 <option value="">Select Product</option>
+
+                {ready &&
+                   transferableProducts.filter(product => product.categoryName === "Shots" && product.unit == "btl").map((product) => (
+                   <option key={product.serverId} value={product.serverId}>
+                    {product.name}
+                 </option>
+                 ))}
                 </select>
               </div>
             </div>
             <div className="flex gap-4 mt-6 text-sm">
               <button
                 disabled={!selectedTransferProduct}
+                onClick={handleTransfer}
                 className={`flex-1 py-2 font-bold text-white rounded-md bg-gradient-to-b from-secondary to-primary 
                 ${!selectedTransferProduct
                     ? "opacity-70"

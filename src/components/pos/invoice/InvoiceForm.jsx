@@ -126,7 +126,7 @@ const shouldDisableRefund = () => {
                   {item.productName}
                 </p>
                 <div className="flex gap-2">
-                  P{item.unitPrice} × {item.quantity}
+                  P{item.unitPrice} × {item.quantity} {item.category_name === "Butchery" ? "kg" : "pcs"}
 
                   {/* --- REFUND HISTORY SECTION --- */}
                   {selectedOrder.refunded > 0 && (

@@ -176,6 +176,7 @@ const Dashboard = () => {
                     price={p.sellingPrice}
                     unit={p.unit}
                     stock={p.stock}
+                    categoryName={p.categoryName}
                     stockQueue={p.stockQueue}
                     isLowStock={p.isLowStock}
                     mute={mute}
