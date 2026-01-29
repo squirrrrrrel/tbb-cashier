@@ -98,10 +98,69 @@ const Promotions = () => {
   }, [filters, promotions]);
 
   if (!productsHydrated || !promoHydrated || !categoriesHydrated || !outletHydrated) return <OfflineLoader />;
-  // console.log(promotions, "Promotions")
-  // console.log(products, "Products")
+  console.log(promotions, "Promotions")
+  console.log(products, "Products")
   // console.log(categories, "Categories")
   // console.log(outlets, "Outlets")
+
+  const DAY_MAP = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const formatDate = (date) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+    });
+  };
+
+  const formatPromotionSchedule = (promo) => {
+    const parts = [];
+
+    /* ---------- DATE RANGE ---------- */
+    if (promo.schedule_type === "DATE_RANGE") {
+      if (promo.schedule_start_date && promo.schedule_end_date) {
+        parts.push(
+          `📅 ${formatDate(promo.schedule_start_date)} – ${formatDate(
+            promo.schedule_end_date
+          )}`
+        );
+      }
+    }
+
+    /* ---------- WEEKLY ---------- */
+    if (promo.schedule_type === "WEEKLY") {
+      if (
+        promo.schedule_start_day !== null &&
+        promo.schedule_end_day !== null
+      ) {
+        parts.push(
+          `📆 ${DAY_MAP[promo.schedule_start_day]} – ${DAY_MAP[promo.schedule_end_day]
+          }`
+        );
+      }
+    }
+
+    /* ---------- DAILY ---------- */
+    if (promo.schedule_type === "DAILY") {
+      parts.push("🔁 Daily");
+    }
+
+    /* ---------- TIME ---------- */
+    if (promo.schedule_mode === "FULL_DAY") {
+      parts.push("🕒 Full Day");
+    }
+
+    if (promo.schedule_mode === "TIME_RANGE") {
+      if (promo.schedule_start_time && promo.schedule_end_time) {
+        parts.push(
+          `🕒 ${promo.schedule_start_time} – ${promo.schedule_end_time}`
+        );
+      }
+    }
+
+    return parts.length ? parts.join(" • ") : "-";
+  };
+
 
   return (
     <div className="bg-background w-full h-full p-4">
@@ -187,13 +246,12 @@ const Promotions = () => {
           <thead className="bg-linear-to-r from-primary to-secondary text-center">
             <tr>
               <th className="text-center p-2 text-white">Promotion</th>
-              <th className="text-center p-2 text-white">Start Date</th>
-              <th className="text-center p-2 text-white">End Date</th>
-              <th className="text-center p-2 text-white">Category</th>
-              <th className="text-center p-2 text-white">Product</th>
-              <th className="text-center p-2 text-white">Discount (%)</th>
-              <th className="text-center p-2 text-white">Discounted Price</th>
-              <th className="text-center p-2 text-white">Outlet</th>
+              <th className="text-center p-2 text-white">Type</th>
+              <th className="text-center p-2 text-white">Benefit</th>
+              <th className="text-center p-2 text-white">Scope</th>
+              <th className="text-center p-2 text-white">Condition</th>
+              <th className="text-center p-2 text-white">Schedule</th>
+              <th className="text-center p-2 text-white">Priority</th>
             </tr>
           </thead>
           <tbody className="text-center text-sm text-gray-600 p-2">
@@ -207,13 +265,14 @@ const Promotions = () => {
             {filteredPromotions.map((p) => (
               <tr key={p.promotion_id} className="even:bg-button-background">
                 <td className="p-2">{p.promotion_name}</td>
-                <td className="p-2">{p.start_date}</td>
-                <td className="p-2">{p.end_date}</td>
-                <td className="p-2">{p.category}</td>
-                <td className="p-2">{p.product}</td>
-                <td className="p-2">{p.discount}</td>
-                <td className="p-2">{p.discountedPrice}</td>
-                <td className="p-2">{p.outlet}</td>
+                <td className="p-2">{p.type}</td>
+                <td className="p-2">{p.mode} {p.value}</td>
+                <td className="p-2">{p.promo_on}</td>
+                <td className="p-2">{p.condition_trigger ?? "-"}{p.condition_value}</td>
+                <td className="p-2 whitespace-nowrap">
+                  {formatPromotionSchedule(p)}
+                </td>
+                <td className="p-2">{p.priority}</td>
               </tr>
             ))}
           </tbody>
