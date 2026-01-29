@@ -12,8 +12,8 @@ export const useCartStore = create(
 
       // ===== CART ACTIONS =====
       addToCart: (product) => {
-  const state = get();
-  const existing = state.cartData.find(p => p.id === product.id);
+        const state = get();
+        const existing = state.cartData.find(p => p.id === product.id);
 
   // ⛔ OUT OF STOCK CHECK
   if(product.categoryName === "Butchery") {
@@ -41,8 +41,8 @@ export const useCartStore = create(
     };
   });
 
-  return { success: true };
-},
+        return { success: true };
+      },
 
 
       removeFromCart: (id) =>
@@ -56,22 +56,22 @@ export const useCartStore = create(
       //       p.id === id ? { ...p, quantity } : p
       //     ),
       //   })),
-updateQuantity: (id, quantity) =>
-  set((state) => {
-    return {
-      cartData: state.cartData.map(p => {
-        if (p.id !== id) return p;
+      updateQuantity: (id, quantity) =>
+        set((state) => {
+          return {
+            cartData: state.cartData.map(p => {
+              if (p.id !== id) return p;
 
-        // ⛔ STOCK GUARD
-        const safeQty = Math.min(
-          Math.max(1, quantity), // minimum 1
-          p.stock + p.stockQueue               // maximum stock
-        );
+              // ⛔ STOCK GUARD
+              const safeQty = Math.min(
+                Math.max(1, quantity), // minimum 1
+                p.stock + p.stockQueue               // maximum stock
+              );
 
-        return { ...p, quantity: safeQty };
-      }),
-    };
-  }),
+              return { ...p, quantity: safeQty };
+            }),
+          };
+        }),
       // ===== OTHER =====
       setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),
       setSelectedTable: (table) => set({ selectedTable: table }),

@@ -17,7 +17,8 @@ const ProductComp = ({
   isLowStock,
   categoryName,
   setCartProducts,
-  mute
+  mute,
+  originalPrice
 }) => {
   const playBeepSound = () => {
     const audio = new Audio("/sounds/add-to-cart.mp3");
@@ -130,9 +131,23 @@ const handleAddToCart = () => {
           >
             {name}
           </h2>
-          <span className="text-sm text-secondary">
-            P{price} / {unit}
-          </span>
+          {price === originalPrice ? (
+            <span className="text-sm text-secondary">
+              P{price} / {unit}
+            </span>
+          ) : (
+            <span className="text-sm text-secondary flex items-center gap-1">
+              <span className="line-through text-gray-400">
+                P{originalPrice}
+              </span>
+              <span>
+                P{price}
+              </span>
+              <span>
+                / {unit}
+              </span>
+            </span>
+          )}
           <span className="text-xs text-pos-green">
             In Stock ({stock} {unit})
           </span>
