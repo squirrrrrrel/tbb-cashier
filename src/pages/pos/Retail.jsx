@@ -1,7 +1,7 @@
 import React from "react";
 import LeftPanel from "../../components/pos/retail/LeftPanel";
 import RightPanel from "../../components/pos/retail/RightPanel";
-import qKartLogo from "../../assets/images/qKarts-logo.png";
+import qKartLogo from "../../assets/images/qkarts-logo.png";
 
 const Retail = ({ setIsRetail }) => {
 
