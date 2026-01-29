@@ -38,7 +38,12 @@ const CartProdctComponent = ({
       <div className="cart-product w-full odd:bg-gray-50 p-2 flex justify-between items-center">
         <div className="product-detail flex gap-2 items-center">
           {/* <img src={keyup} alt="arrow-down" onClick={()=> setIsChnage(false)}/> */}
+          {product.categoryName === "Butchery" ? ( 
+           <span className="w-6"></span>
+          ) :(
           <img src={isExpanded ? keyup : arrowDownIcon} alt="arrow-down" onClick={onToggle} />
+        ) 
+          }
           {product.img ? ( 
             <img
             className="w-14 h-14 object-cover rounded"
@@ -54,7 +59,7 @@ const CartProdctComponent = ({
           )}
           <div className="product_heading">
             <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
-            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.quantity}pcs</h3>
+            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.quantity} {product.categoryName === "Butchery" ? "kg" : product.unit}</h3>
           </div>
         </div>
         <div className="product-amount flex items-center gap-4">
@@ -74,7 +79,7 @@ const CartProdctComponent = ({
           </div>
         </div>
       </div>
-      {isExpanded &&
+      {isExpanded && product.categoryName !== "Butchery" &&
         <div className="flex justify-between gap-4 odd:bg-gray-50 items-end px-2 bg-white">
           <div className="flex flex-col gap-1 flex-1">
             <p className="text-sm font-semibold text-[#555555]">Quantity</p>

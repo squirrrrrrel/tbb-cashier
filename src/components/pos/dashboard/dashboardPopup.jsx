@@ -1,8 +1,9 @@
 
 import React from "react";
+import { useEffect } from "react";
 import PrintOrder from "./PrintOrder";
 import PhoneInputWithCode from "../../phoneCodeInput/PhoneInputWithCode";
-
+import { useOrderStore } from "../../../store/useOrderStore";
 const DashboardPopup = ({
   activePopup,
   setActivePopup,
@@ -17,6 +18,16 @@ const DashboardPopup = ({
   setCartProducts,
   setPayToProceed,
 }) => {
+  const order = useOrderStore(state =>
+  state.orders.find(o =>
+    o.orderId === orderId ||
+    o.serverOrderId === orderId ||
+    o.localId === orderId
+  )
+);
+
+
+  console.log("DashboardPopup Order Data:", orderId); // Debugging line
   return (
     <>
       {/* ---------- RECEIPT POPUP ---------- */}

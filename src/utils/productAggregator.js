@@ -20,7 +20,14 @@ export const aggregateInventoryToProducts = (apiData, outletId) => {
 
         stock: Number(item.quantity),
         stockQueue: Number(item.remaining_quantity || 0),
-
+        isautoFillVolumeDetails: item.is_auto_fill_volume_details || false,
+        bottleVolumeML: item.bottle_volume_ml || null,
+        pricePerML: item.price_per_ml || null,
+        shotsperbottel: item.shots_per_bottle || null,
+        shotsvolumeml: item.shot_volume_ml || null,
+        purchasePricePerShot: item.purchase_price_per_shot || null,
+        sellingPricePerShotMarkupPercentage: item.selling_price_per_shot_markup_percentage || null,
+        sellingPricePerShot: item.selling_price_per_shot || null,
         lowStockThreshold: item.low_stock_threshold || 5,
         sellingPrice: Number(item.selling_price),
 
@@ -37,3 +44,4 @@ export const aggregateInventoryToProducts = (apiData, outletId) => {
     isLowStock: p.stock <= p.lowStockThreshold,
   }));
 };
+
