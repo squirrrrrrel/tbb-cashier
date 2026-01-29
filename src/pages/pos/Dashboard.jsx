@@ -36,8 +36,42 @@ const Dashboard = () => {
   const [customerDetails, setCustomerDetails] = useState({ name: '', phoneCode: { value: "+91" }, phone: '' });
   const { orderData, setOrderData } = useCartStore();
   const [isPrinting, setIsPrinting] = useState(false);
-  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable } = useCartStore();
+  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart } = useCartStore();
   const [isRetail, setIsRetail] = useState(false);
+
+  const scanToCart = (barcode) => {
+    const trimmed = (barcode || "").trim();
+    if (!trimmed) return;
+    const product = products.find((p) => (p.barcode || "").toString() === trimmed);
+    if (!product) {
+      setFilters((prev) => ({ ...prev, product: "" }));
+      console.log("No product Added using Barcode");
+      return;
+    }
+    if (
+      product.categoryName?.toLowerCase() === "shots" ||
+      product.categoryName?.toLowerCase() === "butchery"
+    ) {
+      return;
+    }
+    const price = getFinalProductPrice({
+      product,
+      promotions,
+      outletId,
+    });
+    addToCart({
+      id: product.serverId,
+      img: product.img,
+      name: product.name,
+      price,
+      unit: product.unit,
+      stock: product.stock,
+      stockQueue: product.stockQueue ?? 0,
+      categoryName: product.categoryName,
+      quantity: 1,
+    });
+    setFilters((prev) => ({ ...prev, product: "" }));
+  };
 
   //promotions
   const outletId = useAuthStore.getState().user?.outlet_id;
@@ -81,8 +115,12 @@ const Dashboard = () => {
     // }
 
     if (filters.product) {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(filters.product.toLowerCase())
+      const q = filters.product.toLowerCase().trim();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.barcode != null &&
+            p.barcode.toString().toLowerCase().includes(q))
       );
     }
 
@@ -325,6 +363,7 @@ const Dashboard = () => {
                 productListLength={productListLength}
                 mute={mute}
                 setMute={setMute}
+                scanToCart={scanToCart}
               />
             </div>
             <div className="product-list-container p-4">

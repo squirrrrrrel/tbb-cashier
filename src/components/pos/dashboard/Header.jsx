@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import allProductsImage from "../../../assets/images/all-product.png";
 import shotsImage from "../../../assets/images/shots.png";
 import butcheryImage from "../../../assets/images/butchery.png";
@@ -45,7 +45,7 @@ const ProductCategoryComp = ({ category, filters, setFilters }) => {
   );
 };
 
-const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
+const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToCart }) => {
   const [isTransferProductOpen, setIsTransferProductOpen] = useState(false);
   const [selectedTransferProduct, setSelectedTransferProduct] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(
@@ -61,28 +61,28 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute }) => {
     }
   };
   const { products, ready, hydrate } = useProductStore();
-useEffect(() => {
-  if (isTransferProductOpen && !ready) {
-    hydrate();
-  }
-}, [isTransferProductOpen, ready, hydrate]);
+  useEffect(() => {
+    if (isTransferProductOpen && !ready) {
+      hydrate();
+    }
+  }, [isTransferProductOpen, ready, hydrate]);
 
-const transferableProducts = products.filter(
-  (p) => p.stock > 0
-);
-const handleTransfer = () => {
-  if (!selectedTransferProduct) return;
-
-  const product = products.find(
-    (p) => p.serverId === selectedTransferProduct
+  const transferableProducts = products.filter(
+    (p) => p.stock > 0
   );
+  const handleTransfer = () => {
+    if (!selectedTransferProduct) return;
 
-  console.log("Transfer product:", product);
+    const product = products.find(
+      (p) => p.serverId === selectedTransferProduct
+    );
 
-  // 👉 call transfer API / logic here
+    console.log("Transfer product:", product);
 
-  setIsTransferProductOpen(false);
-};
+    // 👉 call transfer API / logic here
+
+    setIsTransferProductOpen(false);
+  };
 
 
   return (
@@ -122,12 +122,18 @@ const handleTransfer = () => {
               type="text"
               placeholder="Search By Product Name, Barcode Number"
               className="p-2 pl-10 border border-gray-200 bg-white rounded-md w-full outline-0 cursor-text"
+              value={filters.product ?? ""}
               onChange={(e) =>
                 setFilters((prev) => ({
                   ...prev,
                   product: e.target.value,
                 }))
               }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  scanToCart?.(e.target.value);
+                }
+              }}
             />
           </div>
           <div className="button-group flex gap-2">
@@ -177,14 +183,14 @@ const handleTransfer = () => {
                   onChange={(e) => setSelectedTransferProduct(e.target.value)}
                   className="w-full mt-1 rounded-md px-3 py-2 shadow-[0_0_3px_#00000026] outline-none text-[#555555]"
                 >
-                 <option value="">Select Product</option>
+                  <option value="">Select Product</option>
 
-                {ready &&
-                   transferableProducts.filter(product => product.categoryName === "Shots" && product.unit == "btl").map((product) => (
-                   <option key={product.serverId} value={product.serverId}>
-                    {product.name}
-                 </option>
-                 ))}
+                  {ready &&
+                    transferableProducts.filter(product => product.categoryName === "Shots" && product.unit == "btl").map((product) => (
+                      <option key={product.serverId} value={product.serverId}>
+                        {product.name}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>
