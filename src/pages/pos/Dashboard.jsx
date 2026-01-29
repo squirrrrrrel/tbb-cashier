@@ -356,6 +356,7 @@ const Dashboard = () => {
                       stock={p.stock}
                       stockQueue={p.stockQueue}
                       isLowStock={p.isLowStock}
+                      categoryName={p.categoryName}
                       mute={mute}
                       originalPrice={p.sellingPrice}
                     />

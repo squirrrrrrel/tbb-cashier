@@ -167,7 +167,7 @@ const handleAddToCart = () => {
         </div>
       )}
       
-      {selectPriceFor && selectedProduct && (
+      {selectPriceFor && selectedProduct &&  (
   <PriceSelectionPopup
     product={selectedProduct}
     selectPriceFor={selectPriceFor}
