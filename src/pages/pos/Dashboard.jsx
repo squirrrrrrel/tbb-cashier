@@ -17,6 +17,7 @@ import { createOrder } from "../../utils/createOrder";
 import Retail from "./Retail";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePromotionStore } from "../../store/usePromotionStore";
+import PettyCash from "../../components/pos/dashboard/PettyCash";
 
 const Dashboard = () => {
   const { products, hydrate, hydrated } = useProductStore();
@@ -38,6 +39,7 @@ const Dashboard = () => {
   const [isPrinting, setIsPrinting] = useState(false);
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart } = useCartStore();
   const [isRetail, setIsRetail] = useState(false);
+  const [isPettyClicked, setIsPettyClicked] = useState(false)
 
   const scanToCart = (barcode) => {
     const trimmed = (barcode || "").trim();
@@ -364,6 +366,8 @@ const Dashboard = () => {
                 mute={mute}
                 setMute={setMute}
                 scanToCart={scanToCart}
+                isPettyClicked={isPettyClicked}
+                setIsPettyClicked={setIsPettyClicked}
               />
             </div>
             <div className="product-list-container p-4">
@@ -438,6 +442,7 @@ const Dashboard = () => {
           setIsRetail={setIsRetail}
         />
       }
+      {isPettyClicked && <PettyCash setIsPettyClicked={setIsPettyClicked} />}
     </div>
   );
 };

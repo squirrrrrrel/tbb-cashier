@@ -45,7 +45,7 @@ const ProductCategoryComp = ({ category, filters, setFilters }) => {
   );
 };
 
-const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToCart }) => {
+const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToCart, isPettyClicked, setIsPettyClicked }) => {
   const [isTransferProductOpen, setIsTransferProductOpen] = useState(false);
   const [selectedTransferProduct, setSelectedTransferProduct] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(
@@ -137,7 +137,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
             />
           </div>
           <div className="button-group flex gap-2">
-            <div className="reset-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer ">
+            <div onClick={() => setIsPettyClicked(true)} className="reset-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer ">
               <svg
                 className="w-6 h-6"
                 viewBox="0 0 24 24"
