@@ -11,7 +11,7 @@ const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
 
 
-  
+
 
   const holdOrders = [
     {
@@ -245,15 +245,15 @@ const Invoices = () => {
     },
   ];
 
- const orders = useOrderStore(state => state.orders);
+  const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-console.log("Orders in Invoices page:", orders);
+  console.log("Orders in Invoices page:", orders);
   useEffect(() => {
     loadOrdersFromDB(); // IndexedDB → Zustand
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
     if (orders.length && !selectedOrderId) {
       setSelectedOrderId(orders[0].localId);
     }
@@ -335,27 +335,27 @@ console.log("Orders in Invoices page:", orders);
   // };
 
   const handleRefundAction = async (
-  refundData,
-  refundValue,
-  totalRefundSubtotal
-) => {
-  if (!refundData?.order_id) {
-    throw new Error("Missing order_id for refund");
-  }
- try {
-    // 1️⃣ Call backend refund API
-    await refundOrderAPI(refundData);
+    refundData,
+    refundValue,
+    totalRefundSubtotal
+  ) => {
+    if (!refundData?.order_id) {
+      throw new Error("Missing order_id for refund");
+    }
+    try {
+      // 1️⃣ Call backend refund API
+      await refundOrderAPI(refundData);
 
-    // 2️⃣ Sync fresh data from server
-    await fetchOrdersFromAPI();
+      // 2️⃣ Sync fresh data from server
+      await fetchOrdersFromAPI();
 
-    // 3️⃣ Reload orders from IndexedDB → Zustand
-    await loadOrdersFromDB();
-  } catch (error) {
-    // 🔴 Let RefundPopup handle error message
-    throw error;
+      // 3️⃣ Reload orders from IndexedDB → Zustand
+      await loadOrdersFromDB();
+    } catch (error) {
+      // 🔴 Let RefundPopup handle error message
+      throw error;
+    }
   }
-}
 
   const handleExchangeAction = async(newExchangeData) => {
   if (!newExchangeData?.order_id) {
