@@ -5,8 +5,8 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
     useEffect(() => {
         if (!selectedOrder && orders.length > 0) {
             const sortedOrders = [...orders].sort((a, b) => {
-                const dateA = new Date(a.orderDate || 0).getTime();
-                const dateB = new Date(b.orderDate || 0).getTime();
+                const dateA = new Date(a.orderDate || a.createdAt || 0).getTime();
+                const dateB = new Date(b.orderDate || b.createdAt || 0).getTime();
                 return dateB - dateA;
             });
 
@@ -37,14 +37,15 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                 <ul className="py-0.5 p-1 flex-grow overflow-y-auto no-scrollbar min-h-0 text-secondary">
                     {[...orders]
                         .sort((a, b) => {
-                            const dateA = new Date(a.orderDate || 0).getTime();
-                            const dateB = new Date(b.orderDate || 0).getTime();
+                            const dateA = new Date(a.orderDate || a.createdAt || 0).getTime();
+                            const dateB = new Date(b.orderDate || b.createdAt || 0).getTime();
                             return dateB - dateA;
                         }).map((order) => {
-                            const isActive = order?.orderId === selectedOrder?.orderId;
+                            const orderKey = order?.localId || order?.serverOrderId || order?.orderId;
+                            const isActive = orderKey === (selectedOrder?.localId || selectedOrder?.serverOrderId || selectedOrder?.orderId);
                             return (
                                 <li
-                                    key={order?.orderId}
+                                    key={orderKey}
                                     onClick={() => setSelectedOrder(order)}
                                     className={`flex justify-between items-center gap-2 mb-2 px-2 py-0.5 rounded-md cursor-pointer relative bg-white shadow-[0_0_3px_#00000028] border${isActive ? " border border-primary" : " border-white"}`}
                                 >
@@ -66,8 +67,11 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                                         </span>
 
                                         <div>
-                                            <h3 className="text-lg font-semibold flex gap-4">
-                                                Invoice #{order?.display_id || "-"} {order?.isSynced === false && (<svg className="animate-spin duration-[3000]" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e73636"><path d="M482-160q-134 0-228-93t-94-227v-7l-64 64-56-56 160-160 160 160-56 56-64-64v7q0 100 70.5 170T482-240q26 0 51-6t49-18l60 60q-38 22-78 33t-82 11Zm278-161L600-481l56-56 64 64v-7q0-100-70.5-170T478-720q-26 0-51 6t-49 18l-60-60q38-22 78-33t82-11q134 0 228 93t94 227v7l64-64 56 56-160 160Z" /></svg>)}
+                                            <h3 className="text-lg font-semibold flex gap-4 items-center">
+                                                Invoice #{order?.display_id || order?.invoiceNo || order?.serverOrderId || order?.localId?.slice(0, 8) || "-"}
+                                                {order?.isSynced === false && (
+                                                    <svg className="animate-spin duration-[3000] flex-shrink-0" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e73636" title="Not synced"><path d="M482-160q-134 0-228-93t-94-227v-7l-64 64-56-56 160-160 160 160-56 56-64-64v7q0 100 70.5 170T482-240q26 0 51-6t49-18l60 60q-38 22-78 33t-82 11Zm278-161L600-481l56-56 64 64v-7q0-100-70.5-170T478-720q-26 0-51 6t-49 18l-60-60q38-22 78-33t82-11q134 0 228 93t94 227v7l64-64 56 56-160 160Z" /></svg>
+                                                )}
                                             </h3>
 
                                             <p className="text-sm text-gray-500 flex items-center gap-1">
@@ -89,8 +93,8 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                                                     </svg>
                                                 </span>
                                                 <span>
-                                                    {order?.orderDate
-                                                        ? new Date(order.orderDate).toLocaleString("en-US", {
+                                                    {(order?.orderDate || order?.createdAt)
+                                                        ? new Date(order.orderDate || order.createdAt).toLocaleString("en-US", {
                                                             month: "long",
                                                             day: "2-digit",
                                                             year: "numeric",
@@ -148,7 +152,7 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                                             P{order?.subtotal}
                                         </h3>
                                         <small className="text-sm text-gray-500">
-                                            {order?.orderItems?.length} Items
+                                            {(order?.orderItems?.length ?? order?.items?.length ?? 0)} Items
                                         </small>
                                     </div>
                                 </li>
