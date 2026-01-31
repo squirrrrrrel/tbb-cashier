@@ -5,21 +5,25 @@ import { useProductStore } from "../../store/useProductStore";
 import OfflineLoader from "../../components/OfflineLoader";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
 import defaultImg from   "./../../assets/images/Default_Product_Img.png";
+import { useCategoryStore } from "../../store/useCategoryStore";
+
 const LowStock = () => {
-  const { lowStock, hydrate, hydrated } = useLowStockStore();
-  const { products } = useProductStore();
+  const { lowStock, hydrate: lowStockHydrate, hydrated: lowStockHydrated } = useLowStockStore();
+  const { products,hydrate: productHydrate ,hydrated: productsHydrated } = useProductStore();
+  const { categories, hydrate: categoriesHydrate, hydrated: categoriesHydrated } = useCategoryStore();
 
   const [filters, setFilters] = useState({
     product: "",
     category: "",
     outlet: "",
   });
-
+  
   useEffect(() => {
-    hydrate();
-  }, [hydrate]);
-
-  if (!hydrated) return <OfflineLoader />;
+    productHydrate();
+    categoriesHydrate();
+    lowStockHydrate();
+  }, [productHydrate, categoriesHydrate, lowStockHydrate]);
+  if (!productsHydrated && !categoriesHydrated && !lowStockHydrated) return <OfflineLoader />;
 
 
   const productOptions = [
@@ -27,7 +31,7 @@ const LowStock = () => {
   ].map((v) => ({ label: v, value: v }));
 
   const categoryOptions = [
-    ...new Set(lowStock.map((i) => i.categoryName).filter(Boolean)),
+    ...new Set(categories.map((i) => i.category_name).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
   const outletOptions = [
@@ -47,7 +51,7 @@ const LowStock = () => {
       <h1 className="text-2xl font-bold text-gray-700">Low Stock List</h1>
 
       {/* Filters */}
-      <div className="filters grid grid-cols-3 gap-2 mt-4">
+      <div className="filters grid grid-cols-3 gap-2 mt-4 color-#117f9c">
         <Select
           options={outletOptions}
           isClearable

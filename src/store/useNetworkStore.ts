@@ -22,20 +22,18 @@ export const useNetworkStore = create((set) => ({
       set({ online: true });
 
       try {
+        await syncPendingOrders();
         // 🔼 PUSH: master data first
         await useCustomerStore.getState().syncCustomers();
         await useTableStore.getState().syncTables();
         await usePromotionStore.getState().syncPromotions();
-
-
-        // 🔼 PUSH: transactions
-        await syncPendingOrders();
       } catch (err) {
         console.warn("⚠️ Push sync failed:", err);
       }
 
       try {
         // 🔽 PULL: master data
+        await syncPendingOrders();
         await useCustomerStore.getState().fetchCustomersFromAPI();
         await useTableStore.getState().fetchTablesFromAPI();
         await usePaymentMethodStore.getState().fetchPaymentMethodsFromAPI();

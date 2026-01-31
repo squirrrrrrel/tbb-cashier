@@ -11,8 +11,11 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
 
     useEffect(() => {
         if (open) {
+             const exchangeableItems = items.filter(
+    (item) => item.type !== "RETURN" && item.quantity - item.refundQuantity > 0
+  );
             setExchangeRows(
-                items.map((item) => ({
+                exchangeableItems.map((item) => ({
                     ...item,
                     selectedNewProductId: "",
                     returnQty: 0,      // <--- Added: Number of old items returned
@@ -25,24 +28,46 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     }, [open, items]);
 
     if (!open) return null;
+    // const handleRowChange = (index, field, value) => {
+    //     const updated = [...exchangeRows];
 
+    //     if (field === "selectedNewProductId") {
+    //         const prod = products.find((p) => (p.id || p.serverId).toString() === value.toString());
+    //         updated[index].selectedNewProductId = value;
+    //         // Store the product name/price inside the row so the parent doesn't have to look it up
+    //         updated[index].newProductName = prod ? prod.product_name : "";
+    //         updated[index].newUnitValue = prod ? (prod.selling_price || prod.price) : 0;
+
+    //     } else {
+    //         updated[index][field] = value;
+    //     }
+
+    //     setExchangeRows(updated);
+    // };
     const handleRowChange = (index, field, value) => {
-        const updated = [...exchangeRows];
+  setExchangeRows(prev => {
+    const updated = [...prev];
 
-        if (field === "selectedNewProductId") {
-            const prod = products.find((p) => (p.id || p.product_id).toString() === value.toString());
-            updated[index].selectedNewProductId = value;
-            // Store the product name/price inside the row so the parent doesn't have to look it up
-            updated[index].newProductName = prod ? prod.product_name : "";
-            updated[index].newUnitValue = prod ? (prod.selling_price || prod.price) : 0;
+    if (field === "selectedNewProductId") {
+      const prod = products.find(
+        p => String(p.id || p.serverId) === String(value)
+      );
 
-        } else {
-            updated[index][field] = value;
-        }
+      updated[index].selectedNewProductId = value;
+      updated[index].newProductName = prod?.name|| "";
+      updated[index].newUnitValue = Number(
+        prod?.sellingPrice ?? prod?.price ?? 0
+      );
+    } else {
+      updated[index][field] = value;
+    }
 
-        setExchangeRows(updated);
-    };
-
+    return updated;
+  });
+};
+const prevtotalOldValue = exchangeRows.reduce((sum, row) =>
+    sum + (Number(row.quantity) * Number(row.unitPrice)), 0
+);
     // Calculations
     const totalOldValue = exchangeRows.reduce((sum, row) =>
         sum + (Number(row.returnQty) * Number(row.unitPrice)), 0
@@ -58,45 +83,52 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     const receiveAmount = diff > 0 ? diff : 0;
 
 
-    const handleFinalSubmit = () => {
+const handleFinalSubmit = async () => {
+  try {
+    // 1️⃣ Build backend-compatible items array
+    const items = exchangeRows
+      .filter(row => row.returnQty > 0 )
+      .map(row => {
+        const newItem = exchangeRows.find(
+          r =>
+            r.selectedNewProductId &&
+            r.newQty > 0
+        );
 
-        try {
+        const oldTotal = row.returnQty * row.unitPrice;
+        const newTotal =
+          (newItem?.newQty || 0) * (newItem?.newUnitValue || 0);
 
+        const diff = newTotal - oldTotal;
+        return {
+          old_product_id: row.productId,
+          old_product_quantity: row.returnQty,
+          new_product_id: newItem?.selectedNewProductId,
+          new_product_quantity: newItem?.newQty || 0,
+          refundAmount: diff < 0 ? Math.abs(diff) : 0,
+          receiveAmount: diff > 0 ? diff : 0,
+          reason: "Customer Exchange",
+        };
+      });
 
-
-            // 1. Get all items being returned
-            const returnItems = exchangeRows
-                .filter(row => row.returnQty > 0)
-                .map(row => ({
-                    orderItemId: row.productId, // The ID of the original item
-                    quantity: row.returnQty
-                }));
-
-            // 2. Get all new items being taken
-            const newItems = exchangeRows
-                .filter(row => row.selectedNewProductId && row.newQty > 0)
-                .map(row => ({
-                    productId: row.selectedNewProductId,
-                    quantity: row.newQty,
-                    productName: row.newProductName // Useful for the InvoiceForm display
-                }));
-
-            // Construct the structured object
-            const finalExchangeData = {
-                orderId: orderId, // Assumes items belong to the same order
-                returnItems: returnItems,
-                newItems: newItems,
-                reason: "Customer Exchange"
-            };
-            onExchange(finalExchangeData);
-            notifySuccess("Product exchanged successfully");
-        } catch (error) {
-            console.log(error);
-            notifyError("something went wrong while Exchanging product")
-        } finally {
-            onClose();
-        }
+    // 2️⃣ Final API payload
+    const apiPayload = {
+      order_id: orderId,
+      items,
     };
+
+    // 3️⃣ Call backend
+    await onExchange(apiPayload);
+
+    notifySuccess("Product exchanged successfully");
+    onClose();
+  } catch (error) {
+    console.error(error);
+    notifyError("Something went wrong while exchanging product");
+  }
+};
+
+
     const isExchangeDisabled = exchangeRows.length === 0 || !exchangeRows.every(row => {
     // If the user hasn't touched this row (returnQty is 0 or empty), it's technically "valid" to skip
     if (!row.returnQty || row.returnQty <= 0) {
@@ -133,7 +165,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
                                    )}
                                     <div className="min-w-0">
                                         <p className="text-md text-gray-500 font-bold">{item.productName}</p>
-                                        <p className="text-sm text-gray-500 ">P{item.unitPrice} x {item.quantity} = {item.unitPrice * item.quantity}</p>
+                                        <p className="text-sm text-gray-500 ">P{item.unitPrice} x {item.quantity-item.refundQuantity} = {item.unitPrice * item.quantity}</p>
                                     </div>
                                 </div>
 
@@ -169,8 +201,8 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
                                     onChange={(e) => handleRowChange(index, "selectedNewProductId", e.target.value)}
                                 >
                                     <option value="">Select Product</option>
-                                    {products.map((p) => (
-                                        <option key={p.id} value={p.id}>{p.product_name}</option>
+                                    {products.filter(p => p.categoryName === "All").map((p) => (
+                                        <option key={p.id||p.serverId} value={p.id||p.serverId}>{p.name}</option>
                                     ))}
                                 </select>
                                 <input
@@ -234,7 +266,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
                                 <span>Receive:</span>
                             </div>
                             <div className="flex flex-col text-right">
-                                <span>P{totalOldValue.toFixed(2)}</span>
+                                <span>P{prevtotalOldValue.toFixed(2)}</span>
                                 <span>P{totalOldValue.toFixed(2)}</span>
                                 <span>P{totalNewValue.toFixed(2)}</span>
                                 <span>P{refundAmount.toFixed(2)}</span>

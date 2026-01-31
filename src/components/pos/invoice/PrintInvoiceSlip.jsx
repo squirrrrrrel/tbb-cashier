@@ -263,7 +263,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
             <tbody>
               {(() => {
                 const originalItems = orderDetails?.orderItems || [];
-                const exchangeGroups = orderDetails?.exchangeData || [];
+                const exchangeGroups = orderDetails?.orderItems || [];
 
                 return (
                   <>
@@ -279,7 +279,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                           <tr key={`orig-${idx}`}>
                             <td>{item.productName}</td>
                             <td>{`P${parseFloat(item.unitPrice || 0).toFixed(2)}`}</td>
-                            <td className="inputvalue">{item.quantity}{item.category_name === "Butchery" ? "kg" : "pcs"}</td>
+                            <td className="inputvalue">{item.quantity}{item.category_name === "Butchery" ? " kg" : " pcs"}</td>
                             <td className="inputvalue">{`P${parseFloat(item.subtotal || 0).toFixed(2)}`}</td>
                           </tr>
                         ))}
@@ -294,43 +294,36 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                             EXCHANGES
                           </td>
                         </tr>
-                        {exchangeGroups.map((exchange, exIdx) => (
+                        {exchangeGroups.map((ri, exIdx) => (
                           <React.Fragment key={`ex-group-${exIdx}`}>
                             {/* Render Returns */}
-                            {exchange.returnItems?.map((ri, i) => {
-                              // Find the original item to get the price and name
-                              const prod = originalItems.find(p => String(p.productId) === String(ri.orderItemId));
+                           
 
-                              // Calculate pricing based on the original unit amount
-                              const unitPrice = parseFloat(prod?.unitAmount || 0);
-                              const totalReturnVal = unitPrice * ri.quantity;
-
-                              return (
-                                <tr key={`ret-${i}`}>
-                                  <td>{prod?.productName || "Returned Item"} (Ret)</td>
-                                  <td>P{unitPrice.toFixed(2)}</td>
-                                  <td className="inputvalue">-{ri.quantity}</td>
-                                  <td className="inputvalue">P-{totalReturnVal.toFixed(2)}</td>
+                              {ri.type === "RETURN" && (
+                               <>
+                                return (
+                                <tr key={`ret-${exIdx}`}>
+                                  <td>{ri.productName || "Returned Item"} (Ret)</td>
+                                  <td>P{ri.unitPrice}</td>
+                                  <td className="inputvalue">{ri.quantity}{ri.category_name === "Butchery" ? " kg" : " pcs"}</td>
+                                  <td className="inputvalue">-P{Math.abs(ri.subtotal)}</td>
                                 </tr>
                               );
-                            })}
-
-                            {/* Render New Items */}
-                            {exchange.newItems?.map((ni, i) => {
-                              // 1. Fixed syntax: we need the {} and return() here to use .find
-                              const productDetails = productList.find(p => String(p.id) === String(ni.productId));
-                              const price = ni.selling_price || productDetails?.selling_price || 0;
-                              const subtotal = ni.quantity * price;
-
-                              return (
-                                <tr key={`new-${i}`}>
-                                  <td>{ni.productName || productDetails?.product_name} (New)</td>
-                                  <td>P{parseFloat(price).toFixed(2)}</td>
-                                  <td className="inputvalue">{ni.quantity}</td>
-                                  <td className="inputvalue">P{parseFloat(subtotal).toFixed(2)}</td>
+                               </>                             
+                               )}
+                               {ri.type === "EXCHANGE_NEW" && (
+                               <>
+                                return (
+                                <tr key={`new-${exIdx}`}>
+                                  <td>{ri.productName || "Returned Item"} (New)</td>
+                                  <td>P{ri.unitPrice}</td>
+                                  <td className="inputvalue">{ri.quantity}{ri.category_name === "Butchery" ? " kg" : " pcs"}</td>
+                                  <td className="inputvalue">P{Math.abs(ri.subtotal)}</td>
                                 </tr>
                               );
-                            })}
+                               </>                             
+                               )}
+                          
                           </React.Fragment>
                         ))}
                       </>

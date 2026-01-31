@@ -11,7 +11,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     useEffect(() => {
         if (open) {
             setRefundItems(
-                items.filter(item => item.category_name !== "Shots" || item.category_name === "Butchery").map(item => ({
+                items.map(item => ({
                     ...item,
                     refundQty: 0,
                 }))
@@ -102,7 +102,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     onClose();
   } catch (error) {
     console.error("Refund failed:", error);
-    notifyError("Something went wrong while refunding products");
+    notifyError("Refund failed:", error.message || error);
   }
 
     };

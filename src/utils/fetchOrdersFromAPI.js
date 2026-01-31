@@ -1,10 +1,11 @@
 import api from "../utils/api";
 import { saveOrderDB, getAllOrdersDB } from "../db/ordersDB";
 import { useAuthStore } from "../store/useAuthStore";
+import { deleteLocalUnsyncedOrdersDB } from "../db/ordersDB";
 
 export const fetchOrdersFromAPI = async () => {
   if (!navigator.onLine) return;
-
+ await deleteLocalUnsyncedOrdersDB();
   const outletId = useAuthStore.getState().user?.outlet_id;
   const res = await api.get("/outlet/order?outletId=" + outletId);
   const apiOrders = res.data.data;
