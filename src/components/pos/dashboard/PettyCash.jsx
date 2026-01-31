@@ -5,9 +5,9 @@ import { useNotification } from '../../../hooks/useNotification'
 const PettyCash = ({ setIsPettyClicked }) => {
 
     const [pettyPayload, setPettyPayload] = useState({
-        type: "OUT",
+        transaction_type: "OUT",
         amount: "",
-        referrence: ""
+        reference: ""
     })
     const { notifySuccess, notifyError } = useNotification();
 
@@ -29,7 +29,7 @@ const PettyCash = ({ setIsPettyClicked }) => {
                     <h2 className='text-xl text-gray-700'>Select Transction Type</h2>
                     <div className="button flex gap-2 justify-center">
                         <button disabled className="button p-2 text-base bg-white w-20 text-center rounded-md cursor-not-allowed">IN</button>
-                        <button className={`button p-2 text-base w-20 text-center rounded-md ${pettyPayload.type === "OUT" ? "bg-linear-to-b from-primary to-secondary text-white" : "bg-white text-gray-700"}`}>OUT</button>
+                        <button className={`button p-2 text-base w-20 text-center rounded-md ${pettyPayload.transaction_type === "OUT" ? "bg-linear-to-b from-primary to-secondary text-white" : "bg-white text-gray-700"}`}>OUT</button>
                     </div>
 
                 </div>
@@ -40,8 +40,8 @@ const PettyCash = ({ setIsPettyClicked }) => {
                     className='w-full p-2 outline outline-gray-200 bg-white rounded-md mt-5'
                 />
                 <input
-                    value={pettyPayload.referrence}
-                    onChange={e => setPettyPayload(prev => ({ ...prev, referrence: e.target.value }))}
+                    value={pettyPayload.reference}
+                    onChange={e => setPettyPayload(prev => ({ ...prev, reference: e.target.value }))}
                     placeholder='Enter Referrence (Optional)'
                     className='w-full p-2 outline outline-gray-200 bg-white rounded-md mt-5'
                 />
