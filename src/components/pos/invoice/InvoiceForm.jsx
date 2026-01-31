@@ -340,8 +340,9 @@ const shouldDisableRefund = () => {
           <div className="w-1/2">
             <button className={`bg-[#15b71a] w-full text-white font-bold py-2.75 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
             
-              disabled={shouldDisableRefund()}
-              onClick={() => setShowExchange(true)}
+              // disabled={shouldDisableRefund()}
+              disabled={true}
+              onClick={() => shouldDisableRefund() ? "" : setShowExchange(true) }
             >
               <span
                 role="img"

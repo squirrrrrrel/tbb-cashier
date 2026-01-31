@@ -262,8 +262,8 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
             </tbody> */}
             <tbody>
               {(() => {
-                const originalItems = orderDetails?.orderItems.filter(item => !item.type || item.type === "ORIGINAL") || [];
-                const exchangeGroups = orderDetails?.orderItems.filter(e => e.type === "EXCHANGE_NEW" || e.type === "RETURN") || [];
+                const originalItems = orderDetails?.orderItems || [];
+                const exchangeGroups = orderDetails?.orderItems || [];
 
                 return (
                   <>
