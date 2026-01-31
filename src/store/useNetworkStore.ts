@@ -29,6 +29,7 @@ export const useNetworkStore = create((set) => ({
 
 
         // 🔼 PUSH: transactions
+        await fetchOrdersFromAPI();
         await syncPendingOrders();
       } catch (err) {
         console.warn("⚠️ Push sync failed:", err);

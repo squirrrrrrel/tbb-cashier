@@ -6,6 +6,7 @@ import HoldInvoiceFrom from "../../components/pos/invoice/HoldInvoiceForm";
 import { useOrderStore } from "../../store/useOrderStore";
 import { fetchOrdersFromAPI } from "../../utils/fetchOrdersFromAPI";
 import { refundOrderAPI } from "../../api/refundApi";
+import { exchangeOrderAPI } from "../../api/exchangeApi";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
 
@@ -356,21 +357,24 @@ console.log("Orders in Invoices page:", orders);
   }
 }
 
-  const handleExchangeAction = (newExchangeData) => {
-    if (newExchangeData.length === 0) return;
+  const handleExchangeAction = async(newExchangeData) => {
+  if (!newExchangeData?.order_id) {
+    throw new Error("Missing order_id for exchange");
+  }
+ try {
+    // 1️⃣ Call backend exchange API
+    await exchangeOrderAPI(newExchangeData);
 
-    setOrders(prevOrders => prevOrders.map(order => {
-      if (order.orderId === selectedOrderData.orderId) {
-        return {
-          ...order,
-          // Store in the structure you requested
-          exchangeData: [...(order.exchangeData || []), newExchangeData]
-        };
-      }
+    // 2️⃣ Sync fresh data from server
+    await fetchOrdersFromAPI();
 
-      return order;
-    }));
-  };
+    // 3️⃣ Reload orders from IndexedDB → Zustand
+    await loadOrdersFromDB();
+  } catch (error) {
+    // 🔴 Let RefundPopup handle error message
+    throw error;
+  }
+}
 
   return (
     <div className="flex w-full h-screen">
