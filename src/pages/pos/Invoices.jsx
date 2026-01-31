@@ -247,8 +247,8 @@ const Invoices = () => {
 
   const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
+  const setOrders = useOrderStore(state => state.setOrders);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  console.log("Orders in Invoices page:", orders);
   useEffect(() => {
     loadOrdersFromDB(); // IndexedDB → Zustand
   }, []);
@@ -258,7 +258,6 @@ const Invoices = () => {
       setSelectedOrderId(orders[0].localId);
     }
   }, [orders]);
-  console.log("Orders in Invoices page:", orders);
   // const uiOrders = orders.map(order => ({
   //   id: order.localId,
   //   orderId: order.serverOrderId || order.localId,
@@ -274,7 +273,8 @@ const Invoices = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedHoldOrder, setSelectedHoldOrder] = useState(holdOrders[0]);
 
-  const selectedOrderData = orders.find(o => o?.localId === selectedOrder?.localId) || orders.find(o => o) || null;
+  const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
+  const selectedOrderData = orders.find(o => orderKey(o) === orderKey(selectedOrder)) || orders.find(o => o) || null;
 
 
   const isHoldInvoice = activeBtn !== "invoiceBTN";
@@ -306,12 +306,13 @@ const Invoices = () => {
         (note && String(note).toLowerCase().includes(holdSearch))
       );
     } else {
-      const customerId = order?.customerName;
+      if (search === "") return true; // Include all orders when no search
+      const customerName = order?.customerName;
       const customerPhone = order?.customerPhone;
       const userId = order?.userId;
 
       return (
-        (customerId && String(customerId).toLowerCase().includes(search)) ||
+        (customerName && String(customerName).toLowerCase().includes(search)) ||
         (customerPhone && String(customerPhone).includes(search)) ||
         (userId && String(userId).toLowerCase().includes(search))
       );
