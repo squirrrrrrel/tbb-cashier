@@ -44,4 +44,30 @@ export const markOrderSyncedDB = async (localId, serverOrderId) => {
 
   await db.put(STORE, order);
 };
-// DELETE ORDER};
+// DELETE ORDER
+// DELETE local-only orders if a server order already exists
+export const deleteLocalUnsyncedOrdersDB = async () => {
+  const db = await dbPromise;
+  const tx = db.transaction(STORE, "readwrite");
+  const store = tx.objectStore(STORE);
+
+  // ✅ CORRECT way to read all records
+  const allOrders = await store.getAll();
+  console.log("🧪 Before cleanup:", allOrders.map(o => o.localId));
+
+  for (const order of allOrders) {
+    // ❌ delete everything that is NOT server-backed
+    if (!order.localId?.startsWith("server-")) {
+      console.log("🗑️ Deleting:", order.localId);
+      await store.delete(order.localId);
+    }
+  }
+
+  await tx.done;
+
+  const remaining = await db.getAll(STORE);
+  console.log("✅ After cleanup:", remaining.map(o => o.localId));
+};
+
+
+

@@ -161,7 +161,7 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-
+console.log("Order creation result:", result);
       setOrderData(result.order);
       openPaySuccess(result.orderId);
 
@@ -429,7 +429,7 @@ const Dashboard = () => {
         orderId={orderId}
         isPrinting={isPrinting}
         setIsPrinting={setIsPrinting}
-        orderData={cartData}
+        orderData={orderData}
         customerDetails={customerDetails}
         setCustomerDetails={setCustomerDetails}
         handleCustomerChange={handleCustomerChange}

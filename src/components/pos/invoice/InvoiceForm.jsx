@@ -5,7 +5,7 @@ import PrintInvoiceSlip from "./PrintInvoiceSlip";
 import RefundPopup from "./RefundPopup";
 import ExchangePopup from "./ExchangePopup";
 import { useProductStore } from "../../../store/useProductStore";
-import { normalizeOrderItemsForExchange } from "../../../normalization/orderExchangeNormalizer";
+import { normalizeOrderItemsForExchange } from "../../../helper/orderExchangeNormalizer";
 const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
 
 
@@ -115,7 +115,7 @@ const shouldDisableRefund = () => {
       </div>
 
       <div className="flex flex-col mt-2 overflow-auto no-scrollbar text-[#888888] font-bold text-sm">
-        {(selectedOrder.orderItems || []).filter(item => item.type !== "EXCHANGE_NEW" && item.type !== "RETURN").map((item, index) => (
+        {(selectedOrder.orderItems || selectedOrder.items || []).filter(item => item.type !== "EXCHANGE_NEW" && item.type !== "RETURN").map((item, index) => (
           <div
             key={item.productId}
             className={`flex items-center justify-between py-1 px-2 rounded-md ${index % 2 === 0 ? "bg-white" : "bg-[#f8f8f8] "}`}
@@ -131,10 +131,10 @@ const shouldDisableRefund = () => {
 
               <div className="flex flex-col gap-0.5">
                 <p className=" text-[#6f6f6f]">
-                  {item.productName}
+                  {item.productName || item.name}
                 </p>
                 <div className="flex gap-2">
-                  P{item.unitPrice} × {item.quantity} {item.category_name === "Butchery" ? "kg" : "pcs"}
+                  P{item.unitPrice || item.price} × {item.quantity} {item.category_name === "Butchery" ? "kg" : "pcs"}
 
                   {/* --- REFUND HISTORY SECTION --- */}
                   {selectedOrder.refunded > 0 && (
@@ -169,7 +169,7 @@ const shouldDisableRefund = () => {
             </div>
 
             <div>
-              P{item.subtotal}
+              P{item.subtotal || item.total}
             </div>
           </div>
         ))}
@@ -249,7 +249,7 @@ const shouldDisableRefund = () => {
           </div>
           <div className="flex justify-between text-secondary font-bold text-xl">
             <p>Total</p>
-            <span>P{selectedOrder.totalAmount}</span>
+            <span>P{selectedOrder?.totalAmount}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Refunded</p>
@@ -261,7 +261,7 @@ const shouldDisableRefund = () => {
           </div>
           <div className="flex justify-between">
             <p className="capitalize">{selectedOrder?.payments?.[0]?.paymentMethod} (tendered Amount)</p>
-            <span>P{selectedOrder?.transactions?.[0]?.tenderedAmount}</span>
+            <span>P{selectedOrder?.isSynced ? selectedOrder?.transactions?.[0]?.tenderedAmount : selectedOrder?.tenderedAmount}</span>
           </div>
           <div className="flex justify-between">
             <p>Change</p>
@@ -340,9 +340,9 @@ const shouldDisableRefund = () => {
           <div className="w-1/2">
             <button className={`bg-[#15b71a] w-full text-white font-bold py-2.75 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
             
-              // disabled={shouldDisableRefund()}
-              disabled={true}
-              onClick={() => shouldDisableRefund() ? "" : setShowExchange(true) }
+              disabled={shouldDisableRefund()}
+              // disabled={true}
+              onClick={() => setShowExchange(true) }
             >
               <span
                 role="img"

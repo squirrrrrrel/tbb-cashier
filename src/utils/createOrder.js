@@ -75,7 +75,7 @@ export const createOrder = async ({
       return {
         mode: "online",
         orderId: res.data?.data?.orderId,
-        order: localOrder,
+        order: res.data?.data,
       };
     } catch (err) {
       console.warn("⚠️ Online order failed → falling back to offline");

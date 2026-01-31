@@ -11,7 +11,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     useEffect(() => {
         if (open) {
             setRefundItems(
-                items.filter(item => item.category_name !== "Shots" || item.category_name !== "Butchery").map(item => ({
+                items.map(item => ({
                     ...item,
                     refundQty: 0,
                 }))

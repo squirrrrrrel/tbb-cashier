@@ -1,5 +1,5 @@
 import api from "../utils/api";
-import { getPendingOrdersDB, markOrderSyncedDB } from "../db/ordersDB";
+import { getPendingOrdersDB, markOrderSyncedDB,deleteLocalUnsyncedOrdersDB } from "../db/ordersDB";
 import { mapOrderToApiPayload } from "./orderMapper";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -18,6 +18,7 @@ export const syncPendingOrders = async () => {
   for (const order of pending) {
     try {
       // Map local order format to API payload format
+       
       const payload = mapOrderToApiPayload(order, userId);
       
       console.log("🔄 Syncing order:", order.localId);
@@ -34,6 +35,7 @@ export const syncPendingOrders = async () => {
       
       if (serverOrderId) {
         await markOrderSyncedDB(order.localId, serverOrderId);
+       // await deleteLocalUnsyncedOrdersDB();
         console.log("✅ Order synced successfully:", order.localId, "→", serverOrderId);
       } else {
         console.warn("⚠️ No server order ID in response:", res.data);
