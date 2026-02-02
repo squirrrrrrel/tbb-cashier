@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { getTablesDB, addTableDB, updateTableDB } from "../db/tabelDB";
 import api from "../utils/api";
-import {useAuthStore} from "./useAuthStore";
+import { useAuthStore } from "./useAuthStore";
 import { mapTableToApiPayload, mapApiResponseToTable } from "../utils/tableMapper";
+import { v4 as uuidv4 } from "uuid";
 
 export const useTableStore = create((set, get) => ({
   tables: [],
@@ -25,7 +26,7 @@ export const useTableStore = create((set, get) => ({
         ),
         hydrated: true,
       });
-      
+
       // If online, also fetch from API to sync with server
       if (navigator.onLine) {
         try {
@@ -49,7 +50,7 @@ export const useTableStore = create((set, get) => ({
     }
 
     const table = {
-      localId: crypto.randomUUID(), // local ID
+      localId: uuidv4(), // local ID
       serverId: null,               // backend ID later
       tableNumber,
       outletId,
@@ -62,18 +63,18 @@ export const useTableStore = create((set, get) => ({
     // 1️⃣ Save locally
     await addTableDB(table);
     await get().hydrate();
-   
+
     if (!navigator.onLine) return;
 
     // 2️⃣ Sync with server
     try {
-      const res = await api.post(`/outlet/table?outlet_id=${outletId}`, 
+      const res = await api.post(`/outlet/table?outlet_id=${outletId}`,
         mapTableToApiPayload(table),
         { headers: { "Content-Type": "application/json" } }
-      );  
+      );
       const serverTable = res.data?.data || res.data;
       table.serverId = serverTable.id || serverTable.table_id || serverTable._id;
-      table.isSynced = true;  
+      table.isSynced = true;
       await updateTableDB(table);
       await get().hydrate();
     } catch (err) {
@@ -132,7 +133,7 @@ export const useTableStore = create((set, get) => ({
       // Fetch tables from API
       const res = await api.get(`/outlet/table?outlet_id=${outletId}`);
       console.log("📦 API Response:", res.data);
-      
+
       // Handle different possible response structures
       let apiTables = [];
       if (Array.isArray(res.data?.data)) {
@@ -148,20 +149,20 @@ export const useTableStore = create((set, get) => ({
         console.warn("⚠️ Invalid API response format:", res.data);
         return;
       }
-      
+
       console.log(`📊 Received ${apiTables.length} tables from API`);
 
       // Get ALL existing tables from IndexedDB
       const existingTables = await getTablesDB();
       console.log(`💾 Found ${existingTables.length} existing tables in IndexedDB`);
-      
+
       // Filter existing tables by outletId
       const outletTables = existingTables.filter(t => t.outletId === outletId);
-      
+
       // Create maps for quick lookup
       const existingByServerId = new Map();
       const existingByLocalId = new Map();
-      
+
       outletTables.forEach(t => {
         if (t.serverId) {
           existingByServerId.set(String(t.serverId), t);
@@ -172,27 +173,27 @@ export const useTableStore = create((set, get) => ({
       // Track processed tables to avoid duplicates
       const processedLocalIds = new Set();
       const processedTables = [];
-      
+
       // Process each table from API
       for (const apiTable of apiTables) {
         // Extract serverId from various possible fields
         const serverId = apiTable.id || apiTable.table_id || apiTable.tableId || apiTable._id;
-        
+
         if (!serverId) {
           console.warn("⚠️ Table from API missing ID:", apiTable);
           continue;
         }
-        
+
         const serverIdStr = String(serverId);
         let existing = existingByServerId.get(serverIdStr);
-        
+
         if (existing) {
           // Table exists in IndexedDB - update with server data
           const mappedTable = mapApiResponseToTable(apiTable, existing.localId, outletId);
-          
+
           // Preserve local unsaved changes if table was recently edited locally
-          if (!existing.isSynced && existing.updatedAt && 
-              existing.updatedAt > (mappedTable.updatedAt || 0)) {
+          if (!existing.isSynced && existing.updatedAt &&
+            existing.updatedAt > (mappedTable.updatedAt || 0)) {
             // Keep existing table with serverId updated
             const updated = {
               ...existing,
@@ -222,16 +223,16 @@ export const useTableStore = create((set, get) => ({
 
       // Preserve ALL local-only tables (those without serverId that aren't deleted and not processed)
       const localOnlyTables = outletTables.filter(
-        t => !t.isDeleted && 
-             !t.serverId && 
-             !processedLocalIds.has(t.localId)
+        t => !t.isDeleted &&
+          !t.serverId &&
+          !processedLocalIds.has(t.localId)
       );
-      
+
       console.log(`💾 Preserving ${localOnlyTables.length} local-only tables`);
-      
+
       // Combine server tables with local-only tables
       const allTables = [...processedTables, ...localOnlyTables];
-      
+
       // Update Zustand state (only non-deleted tables for current outlet)
       const activeTables = allTables.filter(t => !t.isDeleted && t.outletId === outletId);
       set({
@@ -247,57 +248,57 @@ export const useTableStore = create((set, get) => ({
   },
 
   // 🔹 SYNC WHEN ONLINE
- syncTables: async () => {
-  if (!navigator.onLine) return;
+  syncTables: async () => {
+    if (!navigator.onLine) return;
 
-  const outletId = useAuthStore.getState().user?.outlet_id;
-  if (!outletId) return;
+    const outletId = useAuthStore.getState().user?.outlet_id;
+    if (!outletId) return;
 
-  const tables = await getTablesDB();
-  const outletTables = tables.filter(t => t.outletId === outletId);
+    const tables = await getTablesDB();
+    const outletTables = tables.filter(t => t.outletId === outletId);
 
-  // 🔥 1️⃣ SYNC DELETED TABLES
-  const deletedTables = outletTables.filter(
-    t => t.isDeleted && t.serverId && !t.isSynced
-  );
+    // 🔥 1️⃣ SYNC DELETED TABLES
+    const deletedTables = outletTables.filter(
+      t => t.isDeleted && t.serverId && !t.isSynced
+    );
 
-  for (const table of deletedTables) {
-    try {
-      await api.delete(
-        `/outlet/table/${table.serverId}?outlet_id=${outletId}`
-      );
-      table.isSynced = true;
-      await updateTableDB(table);
-    } catch (err) {
-      console.warn("⚠️ Table delete sync failed:", err);
+    for (const table of deletedTables) {
+      try {
+        await api.delete(
+          `/outlet/table/${table.serverId}?outlet_id=${outletId}`
+        );
+        table.isSynced = true;
+        await updateTableDB(table);
+      } catch (err) {
+        console.warn("⚠️ Table delete sync failed:", err);
+      }
     }
-  }
 
-  // 🔥 2️⃣ SYNC NEW TABLES
-  const newTables = outletTables.filter(
-    t => !t.isDeleted && !t.serverId && !t.isSynced
-  );
+    // 🔥 2️⃣ SYNC NEW TABLES
+    const newTables = outletTables.filter(
+      t => !t.isDeleted && !t.serverId && !t.isSynced
+    );
 
-  for (const table of newTables) {
-    try {
-      const res = await api.post(
-        `/outlet/table?outlet_id=${outletId}`,
-        mapTableToApiPayload(table),
-        { headers: { "Content-Type": "application/json" } }
-      );
+    for (const table of newTables) {
+      try {
+        const res = await api.post(
+          `/outlet/table?outlet_id=${outletId}`,
+          mapTableToApiPayload(table),
+          { headers: { "Content-Type": "application/json" } }
+        );
 
-      const serverTable = res.data?.data || res.data;
-      table.serverId =
-        serverTable.id || serverTable.table_id || serverTable._id;
-      table.isSynced = true;
+        const serverTable = res.data?.data || res.data;
+        table.serverId =
+          serverTable.id || serverTable.table_id || serverTable._id;
+        table.isSynced = true;
 
-      await updateTableDB(table);
-    } catch (err) {
-      console.warn("⚠️ Table create sync failed:", err);
+        await updateTableDB(table);
+      } catch (err) {
+        console.warn("⚠️ Table create sync failed:", err);
+      }
     }
-  }
 
-  await get().hydrate();
-},
+    await get().hydrate();
+  },
 
 }));
