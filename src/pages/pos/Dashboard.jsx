@@ -488,10 +488,10 @@ Hope to see you again soon!
                         unit={p.unit}
                         stock={p.stock}
                         stockQueue={p.stockQueue}
-                        isLowStock={p.isLowStock}
                         categoryName={p.categoryName}
                         mute={mute}
                         originalPrice={p.sellingPrice}
+                        lowStockThreshold={p.lowStockThreshold}
                       />
                     );
                   })

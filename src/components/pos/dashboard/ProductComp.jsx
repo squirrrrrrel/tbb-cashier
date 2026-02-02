@@ -14,11 +14,11 @@ const ProductComp = ({
   unit,
   stock,
   stockQueue,
-  isLowStock,
   categoryName,
   setCartProducts,
   mute,
-  originalPrice
+  originalPrice,
+  lowStockThreshold
 }) => {
   const playBeepSound = () => {
     const audio = new Audio("/sounds/add-to-cart.mp3");
@@ -156,7 +156,7 @@ const ProductComp = ({
           </span>
         </div>
       </div>
-      {isLowStock && (
+      {lowStockThreshold >= stock && (
         <div className="relative">
           <div
             className="low-stock-badge text-xs rounded-full py-px px-2 absolute text-red-700 font-semibold"
