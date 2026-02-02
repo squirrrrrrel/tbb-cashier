@@ -28,6 +28,7 @@ const DashboardPopup = ({
 
 
   console.log("DashboardPopup Order Data:", orderId); // Debugging line
+    console.log("order data", orderData); // Debugging line
   console.log("DashboardPopup Order Data:", orderData); // Debugging line
 
   return (

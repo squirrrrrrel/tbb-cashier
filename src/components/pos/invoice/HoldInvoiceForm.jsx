@@ -1,9 +1,38 @@
-import React from "react";
-import bottleImage from "./../../../assets/images/bottle.jpg"
-const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
+
+import defaultImg from "./../../../assets/images/Default_Product_Img.png";
+import { useHoldOrderStore } from "../../../store/useHoldOrderStore";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import PrintOrder from "../dashboard/PrintOrder";
 
 
-  if (!selectedHoldOrder) {
+const HoldInvoiceFrom = ({ selectedHoldOrder , onAddToCart,onDelete}) => {
+const navigate = useNavigate();
+const [showPrintSlip, setShowPrintSlip] = useState(false);
+const [isPrinting, setIsPrinting] = useState(false);
+  // const tax = selectedHoldOrder.orderItems.reduce((acc, item) => {
+  //   const itemTax = item.taxPercentagePerProduct
+  //     ? (item.itemSubtotal * item.taxPercentagePerProduct) / 100
+  //     : 0;
+  //   return acc + itemTax;
+  // }, 0);
+  const handlePrint = async () => {
+  if (isPrinting) return;
+
+  setIsPrinting(true);
+
+  // force re-open even if already true
+  setShowPrintSlip(false);
+
+  // allow React to re-render before reopening
+  setTimeout(() => {
+    setShowPrintSlip(true);
+  }, 0);
+};
+
+const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
+
+ if (!selectedHoldOrder) {
 
     return (
       <div className="flex  h-full text-[#555555] border-l border-gray-200 px-4 py-2 text-sm">
@@ -13,14 +42,20 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
   }
 
   const tax = 0;
+ const handleAddToCart = async () => {
+    // 1️⃣ Restore cart
+    onAddToCart(selectedHoldOrder.cartData);
 
-  // const tax = selectedHoldOrder.orderItems.reduce((acc, item) => {
-  //   const itemTax = item.taxPercentagePerProduct
-  //     ? (item.itemSubtotal * item.taxPercentagePerProduct) / 100
-  //     : 0;
-  //   return acc + itemTax;
-  // }, 0);
+    // 2️⃣ Remove hold order (IndexedDB + backend)
+    await resumeHoldOrder(selectedHoldOrder);
+    navigate("/pos");
+  };
 
+  const handleDelete = async () => {
+    await resumeHoldOrder(selectedHoldOrder);
+    onDelete();
+  };
+  
   return (
     <div className="pt-2.5 px-5 pb-2 flex flex-col h-full border-l border-gray-200">
       <div className="text-xl flex items-center justify-between  gap-2 pb-2.5">
@@ -46,7 +81,7 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
                 </g>
               </g>
             </svg>
-            {selectedHoldOrder?.cartData?.table?.tableName}
+            {selectedHoldOrder?.cartData?.table?.tableNumber}
           </span>
         </div>
         <div className="flex justify-centre gap-2 align-centre ml-auto text-lg text-[#555555]">
@@ -78,21 +113,21 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 flex items-center justify-center rounded-md ">
-                <img src={bottleImage} alt="Product Image" />
+                <img src={item.img || defaultImg} alt="Product Image" />
               </div>
 
               <div className="flex flex-col gap-0.5">
                 <p className=" text-[#6f6f6f]">
-                  {item.product_name}
+                  {item.name}
                 </p>
                 <p>
-                  P{item.selling_price} × {item.quantity}
+                  P{(item.price.toFixed(2))} × {item.quantity}
                 </p>
               </div>
             </div>
 
             <div>
-              P{item.subtotal}
+              P{(item.price * item.quantity).toFixed(2)}
             </div>
           </div>
         ))}
@@ -102,7 +137,7 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
         <div className="text-[#555555] font-bold space-y-2">
           <div className="flex justify-between">
             <p>Subtotal</p>
-            <span>P{selectedHoldOrder?.cartData?.subtotal}</span>
+            <span>P{selectedHoldOrder?.cartData?.subtotal?.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <p>Tax</p>
@@ -114,7 +149,7 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
           </div>
           <div className="flex justify-between text-secondary font-bold text-xl">
             <p>Total</p>
-            <span>P{selectedHoldOrder?.cartData?.totalAmountToPay}</span>
+            <span>P{selectedHoldOrder?.cartData?.totalAmountToPay?.toFixed(2)}</span>
           </div>
         </div>
 
@@ -123,7 +158,8 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
             Waiter Name : {selectedHoldOrder?.note}
           </div>
           <button className="bg-gradient-to-b from-secondary to-primary text-white text-sm font-bold w-full py-3.5 px-2 rounded-md
-                   flex items-center justify-center gap-2 cursor-pointer">
+                   flex items-center justify-center gap-2 cursor-pointer"  disabled={isPrinting}
+  onClick={handlePrint}>
             <span
               role="img"
               aria-label="printer"
@@ -146,8 +182,9 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
         </div>
         <div className="flex gap-2 mt-2 text-sm">
           <div className="w-1/2">
-            <button className="bg-gradient-to-b from-secondary to-primary w-full text-white font-bold py-3.5 px-2 rounded-md
-                   flex items-center justify-center gap-2 cursor-pointer">
+            <button 
+            className="bg-gradient-to-b from-secondary to-primary w-full text-white font-bold py-3.5 px-2 rounded-md
+                   flex items-center justify-center gap-2 cursor-pointer" onClick={handleAddToCart}>
               <span
                 role="img"
                 aria-label="undo"
@@ -170,7 +207,7 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
           </div>
           <div className="w-1/2">
             <button className="bg-red-600 w-full text-white font-bold py-3.5 px-2 rounded-md
-                   flex items-center justify-center gap-2 cursor-pointer">
+                   flex items-center justify-center gap-2 cursor-pointer" onClick={handleDelete}>
               <span
                 role="img"
                 aria-label="undo"
@@ -193,7 +230,14 @@ const HoldInvoiceFrom = ({ selectedHoldOrder }) => {
           </div>
         </div>
       </div>
+       <PrintOrder
+          show={showPrintSlip}
+          setShow={setShowPrintSlip}
+          setIsPrinting={setIsPrinting}
+          finalOrderData={selectedHoldOrder?.cartData}
+       />
     </div>
+   
   );
 }
 

@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
 import defaultImg from "../../../assets/images/Default_Product_Img.png";
+import { useHoldOrderStore } from "../../../store/useHoldOrderStore";
+
 import { useAuthStore } from "../../../store/useAuthStore";
 
 /* ---------------- CART ITEM ---------------- */
@@ -146,6 +148,8 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
   const [showDiscount, setShowDiscount] = useState(false);
   const [discountType, setDiscountType] = useState("percentage");
   const [discountValue, setDiscountValue] = useState(0.00);
+  const [waiterName, setWaiterName] = useState("");
+
   const {
     cartData,
     removeFromCart,
@@ -162,7 +166,9 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
   const closeModal = () => {
     setActiveModal(null);
   };
-  // const [expandedId, setExpandedId] = useState(null);
+ // const [expandedId, setExpandedId] = useState(null);
+ const { createHoldOrder } = useHoldOrderStore();
+
   const cartEndRef = useRef(null);
 
   const totalItems = cartData.reduce(
@@ -213,6 +219,47 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
     setShowDiscount(false);
 
   }
+const handleHoldOrder = async () => {
+  if (!cartData.length) {
+    notifyError("Cart is empty");
+    return;
+  }
+
+  if (!waiterName.trim()) {
+    notifyError("Waiter name is required");
+    return;
+  }
+
+  const holdOrderPayload = {
+    localId: `HOLD-${Date.now()}`,
+    timestamp: Date.now(),
+    note: waiterName,
+    isSynced: false,
+    serverId: null,
+    cartData: {
+      customer: selectedCustomer,
+      table: selectedTable,
+      orderItems: cartData,
+      subtotal,
+      taxAmount: tax,
+      discount: {
+        type: "FIXED",
+        value: discount,
+      },
+      totalAmountToPay: total,
+    },
+  };
+
+  try {
+    await createHoldOrder(holdOrderPayload);
+    resetCart();
+    setWaiterName(waiterName);
+    closeModal();
+    notifySuccess("Order placed on hold");
+  } catch (err) {
+    notifyError("Failed to hold order");
+  }
+};
 
   return (
     <div className="h-screen border-l border-gray-200">
@@ -366,7 +413,7 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
               </svg>
               <p>Exchange</p>
             </div>
-            <div onClick={() => onHoldOrder('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => openModal('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -420,7 +467,7 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
               </div>
             )}
             {activeModal === 'holdOrder' && (
-              <div onClick={closeModal} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div onClick={closeModal} className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
                 <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100 animate-scale-in">
                   <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Hold Order</h2>
                   <input
