@@ -161,8 +161,8 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-      console.log("Order creation result:", result);
-      setOrderData(result.order);
+      console.log("Order details after creating it:", result);
+      setOrderData(result.fulldata);
       openPaySuccess(result.orderId);
 
       notifySuccess(

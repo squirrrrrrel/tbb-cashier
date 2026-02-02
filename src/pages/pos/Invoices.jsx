@@ -7,243 +7,254 @@ import { useOrderStore } from "../../store/useOrderStore";
 import { fetchOrdersFromAPI } from "../../utils/fetchOrdersFromAPI";
 import { refundOrderAPI } from "../../api/refundApi";
 import { exchangeOrderAPI } from "../../api/exchangeApi";
+ import { useHoldOrderStore } from "../../store/useHoldOrderStore";
+import { useCartStore } from "../../store/useCartStore";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
 
 
+const { setCartFromHold } = useCartStore();
 
 
-  const holdOrders = [
-    {
-      orderId: "HOLD-1001",
-      timestamp: Date.now(),
-      note: "Neha",
-      cartData: {
-        customer: {
-          customerId: "CUST-001",
-          firstName: "Rahul",
-          lastName: "Verma",
-          phoneNumber: "9876543210",
-        },
-        productsAdded: [
-          {
-            orderId: 1,
-            product_id: "PROD-001",
-            product_name: "Milk",
-            categoryName: "Dairy",
-            quantity: "2",
-            selling_price: "50",
-            price: "50",
-            stockQuantity: 100,
-            addTaxesToSalesPrice: true,
-            addedTaxPercentageToSalesPrice: 5,
-            discount: 0,
-          },
-          {
-            orderId: 2,
-            product_id: "PROD-002",
-            product_name: "Bread",
-            categoryName: "Bakery",
-            quantity: "1",
-            selling_price: "40",
-            price: "40",
-            stockQuantity: 50,
-            addTaxesToSalesPrice: false,
-            addedTaxPercentageToSalesPrice: null,
-            discount: 5,
-          },
-        ],
-        orderItems: [
-          {
-            orderId: 1,
-            product_id: "PROD-001",
-            product_name: "Milk",
-            categoryName: "Dairy",
-            quantity: "2",
-            selling_price: "50",
-            price: "50",
-            stockQuantity: 100,
-            addTaxesToSalesPrice: true,
-            addedTaxPercentageToSalesPrice: 5,
-            discount: 0,
-            subtotal: 100,
-            taxAmount: 5,
-          },
-          {
-            orderId: 2,
-            product_id: "PROD-002",
-            product_name: "Bread",
-            categoryName: "Bakery",
-            quantity: "1",
-            selling_price: "40",
-            price: "40",
-            stockQuantity: 50,
-            addTaxesToSalesPrice: false,
-            addedTaxPercentageToSalesPrice: null,
-            discount: 5,
-            subtotal: 35,
-            taxAmount: 0,
-          },
-        ],
-        subtotal: 135,
-        taxAmount: 5,
-        discount: {
-          type: "FIXED",
-          value: 10,
-        },
-        totalDiscount: 15,
-        totalAmountToPay: 125,
-        table: {
-          tableId: 3,
-          tableName: "Table 3",
-        },
-        serverName: "Amit Sharma",
-        __isResumedHoldOrder: false,
-        __resumedFromHoldId: null,
-      },
-    },
+  // const holdOrders = [
+  //   {
+  //     orderId: "HOLD-1001",
+  //     timestamp: Date.now(),
+  //     note: "Neha",
+  //     cartData: {
+  //       customer: {
+  //         customerId: "CUST-001",
+  //         firstName: "Rahul",
+  //         lastName: "Verma",
+  //         phoneNumber: "9876543210",
+  //       },
+  //       productsAdded: [
+  //         {
+  //           orderId: 1,
+  //           product_id: "PROD-001",
+  //           product_name: "Milk",
+  //           categoryName: "Dairy",
+  //           quantity: "2",
+  //           selling_price: "50",
+  //           price: "50",
+  //           stockQuantity: 100,
+  //           addTaxesToSalesPrice: true,
+  //           addedTaxPercentageToSalesPrice: 5,
+  //           discount: 0,
+  //         },
+  //         {
+  //           orderId: 2,
+  //           product_id: "PROD-002",
+  //           product_name: "Bread",
+  //           categoryName: "Bakery",
+  //           quantity: "1",
+  //           selling_price: "40",
+  //           price: "40",
+  //           stockQuantity: 50,
+  //           addTaxesToSalesPrice: false,
+  //           addedTaxPercentageToSalesPrice: null,
+  //           discount: 5,
+  //         },
+  //       ],
+  //       orderItems: [
+  //         {
+  //           orderId: 1,
+  //           product_id: "PROD-001",
+  //           product_name: "Milk",
+  //           categoryName: "Dairy",
+  //           quantity: "2",
+  //           selling_price: "50",
+  //           price: "50",
+  //           stockQuantity: 100,
+  //           addTaxesToSalesPrice: true,
+  //           addedTaxPercentageToSalesPrice: 5,
+  //           discount: 0,
+  //           subtotal: 100,
+  //           taxAmount: 5,
+  //         },
+  //         {
+  //           orderId: 2,
+  //           product_id: "PROD-002",
+  //           product_name: "Bread",
+  //           categoryName: "Bakery",
+  //           quantity: "1",
+  //           selling_price: "40",
+  //           price: "40",
+  //           stockQuantity: 50,
+  //           addTaxesToSalesPrice: false,
+  //           addedTaxPercentageToSalesPrice: null,
+  //           discount: 5,
+  //           subtotal: 35,
+  //           taxAmount: 0,
+  //         },
+  //       ],
+  //       subtotal: 135,
+  //       taxAmount: 5,
+  //       discount: {
+  //         type: "FIXED",
+  //         value: 10,
+  //       },
+  //       totalDiscount: 15,
+  //       totalAmountToPay: 125,
+  //       table: {
+  //         tableId: 3,
+  //         tableName: "Table 3",
+  //       },
+  //       serverName: "Amit Sharma",
+  //       __isResumedHoldOrder: false,
+  //       __resumedFromHoldId: null,
+  //     },
+  //   },
 
-    {
-      orderId: "HOLD-1002",
-      timestamp: Date.now() - 1000 * 60 * 20,
-      note: "Nimmi",
-      cartData: {
-        customer: null,
-        productsAdded: [
-          {
-            orderId: 1,
-            product_id: "PROD-003",
-            product_name: "Eggs",
-            categoryName: "Poultry",
-            quantity: "12",
-            selling_price: "6",
-            price: "6",
-            stockQuantity: 200,
-            addTaxesToSalesPrice: true,
-            addedTaxPercentageToSalesPrice: 2,
-            discount: 0,
-          },
-        ],
-        orderItems: [
-          {
-            orderId: 1,
-            product_id: "PROD-003",
-            product_name: "Eggs",
-            categoryName: "Poultry",
-            quantity: "12",
-            selling_price: "6",
-            price: "6",
-            stockQuantity: 200,
-            addTaxesToSalesPrice: true,
-            addedTaxPercentageToSalesPrice: 2,
-            discount: 0,
-            subtotal: 72,
-            taxAmount: 1.44,
-          },
-        ],
-        subtotal: 72,
-        taxAmount: 1.44,
-        discount: {
-          type: "PERCENTAGE",
-          value: 0,
-        },
-        totalDiscount: 0,
-        totalAmountToPay: 73.44,
-        serverName: "Neha Singh",
-        __isResumedHoldOrder: false,
-        __resumedFromHoldId: null,
-      },
-    },
+  //   {
+  //     orderId: "HOLD-1002",
+  //     timestamp: Date.now() - 1000 * 60 * 20,
+  //     note: "Nimmi",
+  //     cartData: {
+  //       customer: null,
+  //       productsAdded: [
+  //         {
+  //           orderId: 1,
+  //           product_id: "PROD-003",
+  //           product_name: "Eggs",
+  //           categoryName: "Poultry",
+  //           quantity: "12",
+  //           selling_price: "6",
+  //           price: "6",
+  //           stockQuantity: 200,
+  //           addTaxesToSalesPrice: true,
+  //           addedTaxPercentageToSalesPrice: 2,
+  //           discount: 0,
+  //         },
+  //       ],
+  //       orderItems: [
+  //         {
+  //           orderId: 1,
+  //           product_id: "PROD-003",
+  //           product_name: "Eggs",
+  //           categoryName: "Poultry",
+  //           quantity: "12",
+  //           selling_price: "6",
+  //           price: "6",
+  //           stockQuantity: 200,
+  //           addTaxesToSalesPrice: true,
+  //           addedTaxPercentageToSalesPrice: 2,
+  //           discount: 0,
+  //           subtotal: 72,
+  //           taxAmount: 1.44,
+  //         },
+  //       ],
+  //       subtotal: 72,
+  //       taxAmount: 1.44,
+  //       discount: {
+  //         type: "PERCENTAGE",
+  //         value: 0,
+  //       },
+  //       totalDiscount: 0,
+  //       totalAmountToPay: 73.44,
+  //       serverName: "Neha Singh",
+  //       __isResumedHoldOrder: false,
+  //       __resumedFromHoldId: null,
+  //     },
+  //   },
 
-    {
-      orderId: "HOLD-1003",
-      timestamp: Date.now() - 1000 * 60 * 45,
-      note: "Bholu",
-      cartData: {
-        customer: {
-          customerId: "CUST-002",
-          firstName: "Anjali",
-          lastName: "Mehta",
-          phoneNumber: "9988776655",
-        },
-        productsAdded: [
-          {
-            orderId: 1,
-            product_id: "PROD-004",
-            product_name: "Rice 5kg",
-            categoryName: "Grains",
-            quantity: "1",
-            selling_price: "350",
-            price: "350",
-            stockQuantity: 40,
-            addTaxesToSalesPrice: false,
-            addedTaxPercentageToSalesPrice: null,
-            discount: 20,
-          },
-          {
-            orderId: 2,
-            product_id: "PROD-005",
-            product_name: "Cooking Oil",
-            categoryName: "Grocery",
-            quantity: "1",
-            selling_price: "180",
-            price: "180",
-            stockQuantity: 60,
-            addTaxesToSalesPrice: true,
-            addedTaxPercentageToSalesPrice: 5,
-            discount: 0,
-          },
-        ],
-        orderItems: [
-          {
-            orderId: 1,
-            product_id: "PROD-004",
-            product_name: "Rice 5kg",
-            categoryName: "Grains",
-            quantity: "1",
-            selling_price: "350",
-            price: "350",
-            stockQuantity: 40,
-            addTaxesToSalesPrice: false,
-            addedTaxPercentageToSalesPrice: null,
-            discount: 20,
-            subtotal: 330,
-            taxAmount: 0,
-          },
-          {
-            orderId: 2,
-            product_id: "PROD-005",
-            product_name: "Cooking Oil",
-            categoryName: "Grocery",
-            quantity: "1",
-            selling_price: "180",
-            price: "180",
-            stockQuantity: 60,
-            addTaxesToSalesPrice: true,
-            addedTaxPercentageToSalesPrice: 5,
-            discount: 0,
-            subtotal: 180,
-            taxAmount: 9,
-          },
-        ],
-        subtotal: 510,
-        taxAmount: 9,
-        discount: {
-          type: "FIXED",
-          value: 20,
-        },
-        totalDiscount: 20,
-        totalAmountToPay: 499,
-        table: {
-          tableId: 1,
-          tableName: "Table 1",
-        },
-        serverName: "Suresh Kumar",
-        __isResumedHoldOrder: false,
-        __resumedFromHoldId: null,
-      },
-    },
-  ];
+  //   {
+  //     orderId: "HOLD-1003",
+  //     timestamp: Date.now() - 1000 * 60 * 45,
+  //     note: "Bholu",
+  //     cartData: {
+  //       customer: {
+  //         customerId: "CUST-002",
+  //         firstName: "Anjali",
+  //         lastName: "Mehta",
+  //         phoneNumber: "9988776655",
+  //       },
+  //       productsAdded: [
+  //         {
+  //           orderId: 1,
+  //           product_id: "PROD-004",
+  //           product_name: "Rice 5kg",
+  //           categoryName: "Grains",
+  //           quantity: "1",
+  //           selling_price: "350",
+  //           price: "350",
+  //           stockQuantity: 40,
+  //           addTaxesToSalesPrice: false,
+  //           addedTaxPercentageToSalesPrice: null,
+  //           discount: 20,
+  //         },
+  //         {
+  //           orderId: 2,
+  //           product_id: "PROD-005",
+  //           product_name: "Cooking Oil",
+  //           categoryName: "Grocery",
+  //           quantity: "1",
+  //           selling_price: "180",
+  //           price: "180",
+  //           stockQuantity: 60,
+  //           addTaxesToSalesPrice: true,
+  //           addedTaxPercentageToSalesPrice: 5,
+  //           discount: 0,
+  //         },
+  //       ],
+  //       orderItems: [
+  //         {
+  //           orderId: 1,
+  //           product_id: "PROD-004",
+  //           product_name: "Rice 5kg",
+  //           categoryName: "Grains",
+  //           quantity: "1",
+  //           selling_price: "350",
+  //           price: "350",
+  //           stockQuantity: 40,
+  //           addTaxesToSalesPrice: false,
+  //           addedTaxPercentageToSalesPrice: null,
+  //           discount: 20,
+  //           subtotal: 330,
+  //           taxAmount: 0,
+  //         },
+  //         {
+  //           orderId: 2,
+  //           product_id: "PROD-005",
+  //           product_name: "Cooking Oil",
+  //           categoryName: "Grocery",
+  //           quantity: "1",
+  //           selling_price: "180",
+  //           price: "180",
+  //           stockQuantity: 60,
+  //           addTaxesToSalesPrice: true,
+  //           addedTaxPercentageToSalesPrice: 5,
+  //           discount: 0,
+  //           subtotal: 180,
+  //           taxAmount: 9,
+  //         },
+  //       ],
+  //       subtotal: 510,
+  //       taxAmount: 9,
+  //       discount: {
+  //         type: "FIXED",
+  //         value: 20,
+  //       },
+  //       totalDiscount: 20,
+  //       totalAmountToPay: 499,
+  //       table: {
+  //         tableId: 1,
+  //         tableName: "Table 1",
+  //       },
+  //       serverName: "Suresh Kumar",
+  //       __isResumedHoldOrder: false,
+  //       __resumedFromHoldId: null,
+  //     },
+  //   },
+  // ];
+const holdOrders = useHoldOrderStore(state => state.holdOrders);
+const loadHoldOrdersFromDB = useHoldOrderStore(
+  state => state.loadHoldOrdersFromDB
+);
+useEffect(() => {
+  loadOrdersFromDB();
+  loadHoldOrdersFromDB();
+}, []);
 
   const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
@@ -271,7 +282,21 @@ const Invoices = () => {
   //   createdAt: order.createdAt,
   // }));
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [selectedHoldOrder, setSelectedHoldOrder] = useState(holdOrders[0]);
+  const [selectedHoldOrder, setSelectedHoldOrder] = useState(null);
+
+useEffect(() => {
+  if (!holdOrders.length) {
+    // No hold orders → clear form
+    setSelectedHoldOrder(null);
+  } else if (
+    !selectedHoldOrder ||
+    !holdOrders.find(o => o.localId === selectedHoldOrder.localId)
+  ) {
+    // Select first available hold order
+    setSelectedHoldOrder(holdOrders[0]);
+  }
+}, [holdOrders]);
+
 
   const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
   const selectedOrderData = orders.find(o => orderKey(o) === orderKey(selectedOrder)) || orders.find(o => o) || null;
@@ -318,7 +343,6 @@ const Invoices = () => {
       );
     }
   });
-
   // const handleRefundAction = (refundData, refundValue, totalRefundSubtotal) => {
   //   setOrders(prevOrders => prevOrders.map(order => {
   //     if (order.orderId === refundData.orderId) {
@@ -423,6 +447,11 @@ const Invoices = () => {
           onExchange={handleExchangeAction}
         /> : <HoldInvoiceFrom
           selectedHoldOrder={selectedHoldOrder}
+          onAddToCart={(cartData) => {
+    setCartFromHold(cartData);
+   // setActiveBtn("invoiceBTN");
+  }}
+          onDelete={() => { setSelectedHoldOrder(); }}
         />}
 
       </div>
