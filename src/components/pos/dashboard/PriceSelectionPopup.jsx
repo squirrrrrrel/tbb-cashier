@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useCartStore } from "../../../store/useCartStore";
 import { useNotification } from "../../../hooks/useNotification";
 const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => {
-const addToCart = useCartStore((state) => state.addToCart);
+  const addToCart = useCartStore((state) => state.addToCart);
   const isShots = selectPriceFor?.toLowerCase() === "shots";
   const { notifyError } = useNotification();
 
@@ -12,54 +12,54 @@ const addToCart = useCartStore((state) => state.addToCart);
   const [mlQuantity, setMlQuantity] = useState("");
 
   const unitPrice = Number(product?.price || 0);
-  const quantityValue = isShots ? Number(mlQuantity || 0) : unit === "kg" ? Number(quantity || 0) : Number(quantity || 0)/1000;
+  const quantityValue = isShots ? Number(mlQuantity || 0) : unit === "kg" ? Number(quantity || 0) : Number(quantity || 0) / 1000;
   const totalPrice = isShots
     ? Number(quantityValue || 0) * unitPrice
     : Number(quantityValue || 0) * unitPrice;
 
 
   const handleAdd = () => {
-  if (!product) return;
+    if (!product) return;
 
-  // SHOTS FLOW
-  if (isShots) {
-    if (!shots || !mlQuantity) return;
+    // SHOTS FLOW
+    if (isShots) {
+      if (!shots || !mlQuantity) return;
 
-    addToCart({
-      ...product,
-      unit: "ml",
-      quantity: Number(mlQuantity),
-      shots: Number(shots),
-      totalPrice: Number(totalPrice)
-    });
-  } 
-  // BUTCHERY FLOW
-  else {
-    if (!unit || !quantity) return;
-    const result = addToCart({
-      ...product,
-      unit,
-      quantity: Number(quantityValue),
-      totalPrice: Number(totalPrice)
-    });
-
-    if(result.success === false && result.reason === "OUT_OF_STOCK") {
-      notifyError(<>
-        Only <span style={{ color: "red" }}>{product.stock + product.stockQueue} {product.unit}</span> items available in
-        <br /> stock for {product.name}
-      </>);
-      return;
+      addToCart({
+        ...product,
+        unit: "ml",
+        quantity: Number(mlQuantity),
+        shots: Number(shots),
+        totalPrice: Number(totalPrice)
+      });
     }
-  }
+    // BUTCHERY FLOW
+    else {
+      if (!unit || !quantity) return;
+      const result = addToCart({
+        ...product,
+        unit,
+        quantity: Number(quantityValue),
+        totalPrice: Number(totalPrice)
+      });
 
-  // Close popup after add
-  setSelectPriceFor("");
-};
+      if (result.success === false && result.reason === "OUT_OF_STOCK") {
+        notifyError(<>
+          Only <span style={{ color: "red" }}>{product.stock + product.stockQueue} {product.unit}</span> items available in
+          <br /> stock for {product.name}
+        </>);
+        return;
+      }
+    }
+
+    // Close popup after add
+    setSelectPriceFor("");
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={()=> setSelectPriceFor("")}>
-      <div className="bg-white rounded-md shadow-2xl w-[450px] py-5 px-6 animate-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={() => setSelectPriceFor("")}>
+      <div className="bg-white rounded-md shadow-2xl w-[450px] py-5 px-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+
         {/* Header */}
         <div className="text-center mb-4  text-[#555555]">
           <h2 className="text-2xl font-bold">
@@ -69,7 +69,7 @@ const addToCart = useCartStore((state) => state.addToCart);
 
         {/* Form */}
         <div className="grid grid-cols-1 gap-4 text-sm">
-          
+
           {/* Product Name */}
           <div>
             <label className="font-medium">Product Name</label>
@@ -107,10 +107,10 @@ const addToCart = useCartStore((state) => state.addToCart);
               </div>
             </>
           ) : (
-            <>
-            
+            <div className="flex gap-4">
+
               {/* QUANTITY */}
-              <div>
+              <div className="w-full">
                 <label className="font-medium">Quantity</label>
                 <input
                   type="number"
@@ -124,7 +124,7 @@ const addToCart = useCartStore((state) => state.addToCart);
                 />
               </div>
               {/* UNIT DROPDOWN */}
-              <div>
+              <div className="w-full">
                 <label className="font-medium">Select Unit</label>
                 <select
                   value={unit}
@@ -137,7 +137,7 @@ const addToCart = useCartStore((state) => state.addToCart);
                 </select>
               </div>
 
-            </>
+            </div>
           )}
 
           {/* TOTAL VALUE (READ ONLY) */}

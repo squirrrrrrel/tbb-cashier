@@ -173,7 +173,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
       </div>
       {isTransferProductOpen &&
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={() => setIsTransferProductOpen(false)}>
-          <div className="bg-white rounded-md shadow-2xl w-[450px] py-5 px-6 animate-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-md shadow-2xl w-[450px] py-5 px-6 animate-scale-in" onClick={e => e.stopPropagation()}>
             <div className="text-center mb-6  text-[#555555] text-2xl font-bold">Transfer Product</div>
             <div className="grid grid-cols-1 gap-4 text-sm">
               <div>

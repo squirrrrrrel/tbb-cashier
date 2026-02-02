@@ -4,6 +4,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 const LogoutPopUp = ({ setIsLogoutClicked }) => {
   const [open, setOpen] = useState(false);
   const logout = useAuthStore((l) => l.logout);
+  const user = useAuthStore((u) => u.user);
 
   useEffect(() => {
     // trigger animation after mount
@@ -33,7 +34,7 @@ const LogoutPopUp = ({ setIsLogoutClicked }) => {
         `}
       >
         <h1 className="text-lg text-gray-700 font-semibold text-center mb-4">
-          Do you want to Logout?
+          <p className="text-xl font-bold text-secondary">{user?.first_name} {user?.last_name}</p> Do you want to Logout?
         </h1>
         <div className="button-group gap-4 flex justify-center">
           <button

@@ -6,14 +6,14 @@ import { useNotification } from "../../../hooks/useNotification";
 const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, orderId }) => {
     // We store a state that combines the old item with its new exchange details
     const [exchangeRows, setExchangeRows] = useState([]);
-    const [restock, setRestock] = useState(false);
+    const [restock, setRestock] = useState(true);
     const { notifyError, notifySuccess } = useNotification();
 
     useEffect(() => {
         if (open) {
-             const exchangeableItems = items.filter(
-    (item) => item.type !== "RETURN" && item.quantity - item.refundQuantity > 0
-  );
+            const exchangeableItems = items.filter(
+                (item) => item.type !== "RETURN" && item.quantity - item.refundQuantity > 0
+            );
             setExchangeRows(
                 exchangeableItems.map((item) => ({
                     ...item,
@@ -45,29 +45,29 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     //     setExchangeRows(updated);
     // };
     const handleRowChange = (index, field, value) => {
-  setExchangeRows(prev => {
-    const updated = [...prev];
+        setExchangeRows(prev => {
+            const updated = [...prev];
 
-    if (field === "selectedNewProductId") {
-      const prod = products.find(
-        p => String(p.id || p.serverId) === String(value)
-      );
+            if (field === "selectedNewProductId") {
+                const prod = products.find(
+                    p => String(p.id || p.serverId) === String(value)
+                );
 
-      updated[index].selectedNewProductId = value;
-      updated[index].newProductName = prod?.name|| "";
-      updated[index].newUnitValue = Number(
-        prod?.sellingPrice ?? prod?.price ?? 0
-      );
-    } else {
-      updated[index][field] = value;
-    }
+                updated[index].selectedNewProductId = value;
+                updated[index].newProductName = prod?.name || "";
+                updated[index].newUnitValue = Number(
+                    prod?.sellingPrice ?? prod?.price ?? 0
+                );
+            } else {
+                updated[index][field] = value;
+            }
 
-    return updated;
-  });
-};
-const prevtotalOldValue = exchangeRows.reduce((sum, row) =>
-    sum + (Number(row.quantity) * Number(row.unitPrice)), 0
-);
+            return updated;
+        });
+    };
+    const prevtotalOldValue = exchangeRows.reduce((sum, row) =>
+        sum + (Number(row.quantity) * Number(row.unitPrice)), 0
+    );
     // Calculations
     const totalOldValue = exchangeRows.reduce((sum, row) =>
         sum + (Number(row.returnQty) * Number(row.unitPrice)), 0
@@ -83,122 +83,122 @@ const prevtotalOldValue = exchangeRows.reduce((sum, row) =>
     const receiveAmount = diff > 0 ? diff : 0;
 
 
-// const handleFinalSubmit = async () => {
-//   try {
-//     // 1️⃣ Build backend-compatible items array
-//     const items = exchangeRows
-//       .filter(row => row.returnQty > 0 )
-//       .map(row => {
-//         const newItem = exchangeRows.find(
-//           r =>
-//             r.selectedNewProductId &&
-//             r.newQty > 0
-//         );
+    // const handleFinalSubmit = async () => {
+    //   try {
+    //     // 1️⃣ Build backend-compatible items array
+    //     const items = exchangeRows
+    //       .filter(row => row.returnQty > 0 )
+    //       .map(row => {
+    //         const newItem = exchangeRows.find(
+    //           r =>
+    //             r.selectedNewProductId &&
+    //             r.newQty > 0
+    //         );
 
-//         const oldTotal = row.returnQty * row.unitPrice;
-//         const newTotal =
-//           (newItem?.newQty || 0) * (newItem?.newUnitValue || 0);
+    //         const oldTotal = row.returnQty * row.unitPrice;
+    //         const newTotal =
+    //           (newItem?.newQty || 0) * (newItem?.newUnitValue || 0);
 
-//         const diff = newTotal - oldTotal;
-//         return {
-//           old_product_id: row.productId,
-//           old_product_quantity: row.returnQty,
-//           new_product_id: newItem?.selectedNewProductId,
-//           new_product_quantity: newItem?.newQty || 0,
-//           refundAmount: diff < 0 ? Math.abs(diff) : 0,
-//           receiveAmount: diff > 0 ? diff : 0,
-//           reason: "Customer Exchange",
-//         };
-//       });
+    //         const diff = newTotal - oldTotal;
+    //         return {
+    //           old_product_id: row.productId,
+    //           old_product_quantity: row.returnQty,
+    //           new_product_id: newItem?.selectedNewProductId,
+    //           new_product_quantity: newItem?.newQty || 0,
+    //           refundAmount: diff < 0 ? Math.abs(diff) : 0,
+    //           receiveAmount: diff > 0 ? diff : 0,
+    //           reason: "Customer Exchange",
+    //         };
+    //       });
 
-//     // 2️⃣ Final API payload
-//     const apiPayload = {
-//       order_id: orderId,
-//       items,
-//     };
+    //     // 2️⃣ Final API payload
+    //     const apiPayload = {
+    //       order_id: orderId,
+    //       items,
+    //     };
 
-//     // 3️⃣ Call backend
-//     await onExchange(apiPayload);
+    //     // 3️⃣ Call backend
+    //     await onExchange(apiPayload);
 
-//     notifySuccess("Product exchanged successfully");
-//     onClose();
-//   } catch (error) {
-//     console.error(error);
-//     notifyError("Something went wrong while exchanging product");
-//   }
-// };
-const handleFinalSubmit = async () => {
-  try {
-    // 1️⃣ Build exchange items row-by-row (CORRECT)
-    const exchangeItems = exchangeRows
-      .filter(row => row.returnQty > 0)
-      .map(row => {
-        const oldTotal = row.returnQty * row.unitPrice;
+    //     notifySuccess("Product exchanged successfully");
+    //     onClose();
+    //   } catch (error) {
+    //     console.error(error);
+    //     notifyError("Something went wrong while exchanging product");
+    //   }
+    // };
+    const handleFinalSubmit = async () => {
+        try {
+            // 1️⃣ Build exchange items row-by-row (CORRECT)
+            const exchangeItems = exchangeRows
+                .filter(row => row.returnQty > 0)
+                .map(row => {
+                    const oldTotal = row.returnQty * row.unitPrice;
 
-        const newSubtotal = row.newQty * row.newUnitValue;
-        const discountAmt =
-          (newSubtotal * (row.newDiscount || 0)) / 100;
-        const newTotal = newSubtotal - discountAmt;
+                    const newSubtotal = row.newQty * row.newUnitValue;
+                    const discountAmt =
+                        (newSubtotal * (row.newDiscount || 0)) / 100;
+                    const newTotal = newSubtotal - discountAmt;
 
-        const diff = newTotal - oldTotal;
+                    const diff = newTotal - oldTotal;
 
-        return {
-          old_product_id: row.productId,
-          old_product_quantity: row.returnQty,
+                    return {
+                        old_product_id: row.productId,
+                        old_product_quantity: row.returnQty,
 
-          new_product_id: row.selectedNewProductId,
-          new_product_quantity: row.newQty,
-         
-          refundAmount: diff < 0 ? Math.abs(diff) : 0,
-          receiveAmount: diff > 0 ? diff : 0,
+                        new_product_id: row.selectedNewProductId,
+                        new_product_quantity: row.newQty,
 
-          reason: "Customer Exchange",
-        };
-      });
+                        refundAmount: diff < 0 ? Math.abs(diff) : 0,
+                        receiveAmount: diff > 0 ? diff : 0,
 
-    // 2️⃣ FINAL FRONTEND TOTALS (IMPORTANT)
-    const finalPayload = {
-      order_id: orderId,
-      items: exchangeItems,
+                        reason: "Customer Exchange",
+                    };
+                });
 
-     // returnAmount: totalOldValue,
-     // exchangeAmount: totalNewValue,
-     //refundAmount,
-      //receivedAmount: receiveAmount,
+            // 2️⃣ FINAL FRONTEND TOTALS (IMPORTANT)
+            const finalPayload = {
+                order_id: orderId,
+                items: exchangeItems,
 
-      //restock,
+                // returnAmount: totalOldValue,
+                // exchangeAmount: totalNewValue,
+                //refundAmount,
+                //receivedAmount: receiveAmount,
+
+                //restock,
+            };
+
+            // 3️⃣ Call parent (frontend-sorted)
+            await onExchange(finalPayload, receiveAmount);
+
+            notifySuccess("Product exchanged successfully");
+            onClose();
+        } catch (error) {
+            console.error(error);
+            notifyError("Something went wrong while exchanging product");
+        }
     };
-
-    // 3️⃣ Call parent (frontend-sorted)
-    await onExchange(finalPayload,receiveAmount);
-
-    notifySuccess("Product exchanged successfully");
-    onClose();
-  } catch (error) {
-    console.error(error);
-    notifyError("Something went wrong while exchanging product");
-  }
-};
 
 
     const isExchangeDisabled = exchangeRows.length === 0 || !exchangeRows.every(row => {
-    // If the user hasn't touched this row (returnQty is 0 or empty), it's technically "valid" to skip
-    if (!row.returnQty || row.returnQty <= 0) {
-        return true; 
-    }
+        // If the user hasn't touched this row (returnQty is 0 or empty), it's technically "valid" to skip
+        if (!row.returnQty || row.returnQty <= 0) {
+            return true;
+        }
 
-    // If they ARE returning something, they MUST fulfill these requirements
-    return (
-        row.selectedNewProductId !== "" && 
-        row.newQty > 0
-    );
-}) || !exchangeRows.some(row => row.returnQty > 0);
+        // If they ARE returning something, they MUST fulfill these requirements
+        return (
+            row.selectedNewProductId !== "" &&
+            row.newQty > 0
+        );
+    }) || !exchangeRows.some(row => row.returnQty > 0);
 
 
     return (
         <div className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center px-3 sm:px-6 md:px-12 lg:px-60 py-30 sm:py-10 md:py-20 lg:py-25"
             onClick={onClose}>
-            <div className="bg-white w-full h-full rounded-lg shadow-lg p-5 flex flex-col"
+            <div className="bg-white w-full h-full rounded-lg shadow-lg p-5 flex flex-col animate-scale-in"
                 onClick={(e) => e.stopPropagation()}>
                 <h2 className="text-2xl text-center text-[#555555] font-bold mb-4">Available Items for Exchange</h2>
 
@@ -210,14 +210,14 @@ const handleFinalSubmit = async () => {
                             <div className="flex items-center gap-4 flex-[1.2] min-w-0">
                                 {/* 1. PRODUCT INFO */}
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                   { item.imageUrl ? (
-                                    <img src={item.imageUrl} className="w-12.5 object-cover rounded shadow-sm flex-shrink-0" alt="product" />
-                                   ) : (
-                                    <img src={defaultImg} className="w-12.5 object-cover rounded shadow-sm flex-shrink-0" alt="product" />
-                                   )}
+                                    {item.imageUrl ? (
+                                        <img src={item.imageUrl} className="w-12.5 object-cover rounded shadow-sm flex-shrink-0" alt="product" />
+                                    ) : (
+                                        <img src={defaultImg} className="w-12.5 object-cover rounded shadow-sm flex-shrink-0" alt="product" />
+                                    )}
                                     <div className="min-w-0">
                                         <p className="text-md text-gray-500 font-bold">{item.productName}</p>
-                                        <p className="text-sm text-gray-500 ">P{item.unitPrice} x {item.quantity-item.refundQuantity} = {item.unitPrice * item.quantity}</p>
+                                        <p className="text-sm text-gray-500 ">P{item.unitPrice} x {item.quantity - item.refundQuantity} = {item.unitPrice * item.quantity}</p>
                                     </div>
                                 </div>
 
@@ -254,7 +254,7 @@ const handleFinalSubmit = async () => {
                                 >
                                     <option value="">Select Product</option>
                                     {products.filter(p => p.categoryName === "All").map((p) => (
-                                        <option key={p.id||p.serverId} value={p.id||p.serverId}>{p.name}</option>
+                                        <option key={p.id || p.serverId} value={p.id || p.serverId}>{p.name}</option>
                                     ))}
                                 </select>
                                 <input
