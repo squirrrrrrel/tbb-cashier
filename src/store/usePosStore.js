@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getItemsDB, addItemDB } from "../utils/indexedDB";
+import { v4 as uuidv4 } from "uuid";
 
 export const usePosStore = create((set) => ({
   items: [],
@@ -19,7 +20,7 @@ export const usePosStore = create((set) => ({
   addItem: async (item) => {
     const newItem = {
       ...item,
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       createdAt: Date.now(),
     };
 
