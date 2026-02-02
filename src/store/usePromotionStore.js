@@ -9,6 +9,8 @@ import {
   mapPromotionToApiPayload,
   mapApiResponseToPromotion,
 } from "../utils/promotionMapper";
+import { v4 as uuidv4 } from "uuid";
+
 
 export const usePromotionStore = create((set, get) => ({
   promotions: [],
@@ -37,7 +39,7 @@ export const usePromotionStore = create((set, get) => ({
   addPromotion: async (payload) => {
     const promotion = {
       ...payload,
-      localId: crypto.randomUUID(),
+      localId: uuidv4(),
       serverId: null,
       isSynced: false,
       isDeleted: false,
