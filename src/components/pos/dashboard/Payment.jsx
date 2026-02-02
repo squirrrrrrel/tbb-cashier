@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCartStore } from "../../../store/useCartStore";
 import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
+import { useRetail } from "../../../hooks/useretail";
 
 export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal, cartProducts }) => {
     const { paymentMethods, hydrate, hydrated } = usePaymentMethodStore();
@@ -16,6 +17,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     const [payingAmount, setPayingAmount] = useState("");
     const defaultPaymentMethodId = paymentMethods.length > 0 ? paymentMethods[0].id : null;
     const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethodId);
+    const {isRetail, setIsRetail, isRetailOpen, setIsRetailOpen} = useRetail();
     
     // Update payment method when payment methods are loaded
     useEffect(() => {
@@ -96,6 +98,14 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
 
     const isPayDisabled = !payingAmount || parseFloat(payingAmount) < total;
 
+    const HandleGoBack = ()=>{
+        setPayToProceed(false);
+        if(isRetail||isRetailOpen){
+            setIsRetail(true);
+            setIsRetailOpen(true);
+        }
+    }
+
     return (
         <div>
             <div className="flex justify-between px-5 py-3 gap-6 text-[#555555] font-bold text-center">
@@ -117,7 +127,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                 </div>
             </div>
             <div className="flex gap-6 px-5 py-3">
-                <div onClick={() => { setPayToProceed(false) }} className="bg-gradient-to-b from-secondary to-primary h-12 w-15 text-white rounded-md flex justify-center items-center cursor-pointer">
+                <div onClick={HandleGoBack} className="bg-gradient-to-b from-secondary to-primary h-12 w-15 text-white rounded-md flex justify-center items-center cursor-pointer">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"

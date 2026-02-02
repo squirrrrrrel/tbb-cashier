@@ -1,6 +1,101 @@
 // import { ShoppingCart, RefreshCcw, Pencil, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useCustomerStore } from "../../../store/useCustomerStore";
+import { useProductStore } from "../../../store/useProductStore";
+import { useCartStore } from "../../../store/useCartStore";
+import Select from "react-select";
+import { useEffect } from "react";
+import { useRetail } from "../../../hooks/useretail";
+import { useNotification } from "../../../hooks/useNotification";
 
-const RightPanel = ({ setIsRetail }) => {
+const RightPanel = ({ total, setPayToProceed }) => {
+    const navigate = useNavigate();
+    const { customers, hydrate: customerHydrate } = useCustomerStore();
+    const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
+    const { selectedCustomer, setSelectedCustomer, addToCart, cartData, resetCart } = useCartStore();
+    const { setIsRetail, setIsRetailOpen } = useRetail();
+    const { notifyError } = useNotification();
+    // --- fatching customers and products data when component mounts ---
+    useEffect(() => {
+        customerHydrate();
+        productsHydrate();
+    }, [productsHydrate, customerHydrate])
+    useEffect(() => {
+        console.log(customers);
+        console.log(products);
+    }, [customers, products])
+
+    // --- Data Formatting for Searchable Select ---
+    const customerOptions = [
+    // The "Reset" option
+    { value: "default", label: "Select Customer", data: {} }, 
+    ...(customers?.map(c => ({
+        value: c.serverId,
+        label: `${c.firstName} ${c.lastName}`,
+        data: c
+    })) || [])
+];
+
+    const productOptions = products?.map(p => ({
+        value: p?.serverId,
+        label: p?.name || "Unknown Product",
+        data: p // Keep original object
+    }));
+
+    // --- Custom Styles to match your existing UI ---
+    const customSelectStyles = {
+        control: (base) => ({
+            ...base,
+            border: 'none',
+            boxShadow: '0 0 3px #00000028',
+            borderRadius: '0.375rem', // rounded-md
+            fontSize: '0.875rem', // text-sm
+            padding: '2px',
+            cursor: 'pointer'
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: '#555555'
+        }),
+        menuPortal: (base) => ({
+            ...base,
+            zIndex: 9999
+        })
+    };
+
+    const handleProductSelect = (data) => {
+        const addToCartData = {
+            id: data.serverId,
+            img: data.img,
+            name: data.name,
+            price: data.sellingPrice,
+            stock: data.stock,
+            stockQueue: data.stockQueue,
+            unit: data.unit,
+            barcode: data.barcode
+        }
+        const result = addToCart(addToCartData);
+        if (result?.success === false) {
+            if (result.reason === "OUT_OF_STOCK") {
+                notifyError(<>
+                    Only <span style={{ color: "red" }}>{data.stock + data.stockQueue}</span> items available in
+                    <br />
+                    stock for {data.name}
+                </>);
+            }
+            return;
+        }
+    }
+
+    const handleProceed = () => {
+        if (cartData.length === 0) {
+            notifyError("Please add items in the cart");
+            return;
+        }
+        setIsRetailOpen(false);
+        setPayToProceed(true);
+    };
+
     return (
         <div className="h-full flex flex-col bg-white rounded-md text-[#555555]">
 
@@ -10,7 +105,7 @@ const RightPanel = ({ setIsRetail }) => {
 
                     {/* Left Icons */}
                     <div className="flex gap-2">
-                        <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={() => setIsRetail(false)}>
+                        <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={() => { setIsRetail(false); setIsRetailOpen(false); }}>
                             <svg
                                 viewBox="0 0 1024 1024"
                                 focusable="false"
@@ -23,7 +118,7 @@ const RightPanel = ({ setIsRetail }) => {
                                 <path d="M922.9 701.9H327.4l29.9-60.9 496.8-.9c16.8 0 31.2-12 34.2-28.6l68.8-385.1c1.8-10.1-.9-20.5-7.5-28.4a34.99 34.99 0 00-26.6-12.5l-632-2.1-5.4-25.4c-3.4-16.2-18-28-34.6-28H96.5a35.3 35.3 0 100 70.6h125.9L246 312.8l58.1 281.3-74.8 122.1a34.96 34.96 0 00-3 36.8c6 11.9 18.1 19.4 31.5 19.4h62.8a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7h161.1a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7H923c19.4 0 35.3-15.8 35.3-35.3a35.42 35.42 0 00-35.4-35.2zM305.7 253l575.8 1.9-56.4 315.8-452.3.8L305.7 253zm96.9 612.7c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6zm325.1 0c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6z"></path>
                             </svg>
                         </div>
-                        <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer">
+                        <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={() => resetCart()}>
                             <svg
                                 viewBox="64 64 896 896"
                                 focusable="false"
@@ -40,8 +135,8 @@ const RightPanel = ({ setIsRetail }) => {
 
                     {/* Right Buttons */}
                     <div className="flex gap-2">
-                        <button className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer">
-                            <p>Select Customer</p>
+                        <button className="flex items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer">
+                            <p>{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
                             <svg
                                 viewBox="64 64 896 896"
                                 focusable="false"
@@ -65,21 +160,51 @@ const RightPanel = ({ setIsRetail }) => {
             </div>
 
             {/* SCROLLABLE MIDDLE SPACE */}
-            <div className="flex-1 overflow-y-auto px-4">
-                {/* SELECT FIELDS */}
-                <div className=" flex flex-col gap-4 mt-4">
-                    <select className="px-3 py-2  shadow-[0_0_3px_#00000028] rounded-md text-sm outline-none">
-                        <option>Select Customer</option>
-                    </select>
+            <div className="flex-1 z-10 overflow-y-auto px-4">
+                <div className="flex z-60 flex-col gap-4 mt-4">
 
-                    <select className="px-3 py-2  shadow-[0_0_3px_#00000028] rounded-md text-sm outline-none">
-                        <option>Select Product</option>
-                    </select>
+                    {/* SEARCHABLE CUSTOMER DROPDOWN */}
+                    <Select
+                        options={customerOptions}
+                        placeholder="Select Customer"
+                        styles={customSelectStyles}
+                        value={customerOptions?.find(opt => (selectedCustomer?.serverId && opt.value === selectedCustomer.serverId) || null)}
+                        onChange={(selected) => setSelectedCustomer(selected.data)}
+                        isSearchable
+                        menuPortalTarget={document.body}
+                    />
+
+                    {/* SEARCHABLE PRODUCT DROPDOWN */}
+                    <Select
+                        options={productOptions}
+                        placeholder="Select Product"
+                        styles={customSelectStyles}
+                        value={null} // Keep as null so it resets after adding to cart
+                        onChange={(selected) => handleProductSelect(selected.data)}
+                        isSearchable
+                        menuPortalTarget={document.body}
+                        formatOptionLabel={(option) => (
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <span className="text-sm font-semibold text-gray-800">{option.data.name}</span>
+                                    <div className="text-xs text-gray-400">Code: {option.data.barcode}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm font-bold text-primary">P{option.data.sellingPrice}</div>
+                                    <div className="text-xs text-gray-400">
+                                        Stock: <span className="font-semibold">{option.data.stock}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                    />
+
                 </div>
             </div>
 
             {/* FOOTER (STICKY BOTTOM) */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-300 p-4 text-sm">
+            <div className="sticky bottom-0 bg-white border-t border-gray-300 p-4 text-sm z-10">
 
                 {/* SUMMARY */}
                 <div className="space-y-2 mb-4">
@@ -100,7 +225,7 @@ const RightPanel = ({ setIsRetail }) => {
                 {/* 6 ACTION BUTTONS */}
 
                 <div className="cart-btns mt-4 flex gap-2">
-                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/invoices")}>
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -114,7 +239,7 @@ const RightPanel = ({ setIsRetail }) => {
                         </svg>
                         <p>Invoice</p>
                     </div>
-                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/promotions")}>
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -128,7 +253,7 @@ const RightPanel = ({ setIsRetail }) => {
                         </svg>
                         <p>Promotion</p>
                     </div>
-                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/lowstock")}>
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -144,7 +269,7 @@ const RightPanel = ({ setIsRetail }) => {
                     </div>
                 </div>
                 <div className="cart-btns mt-4 flex gap-2">
-                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" >
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -158,7 +283,7 @@ const RightPanel = ({ setIsRetail }) => {
                         </svg>
                         <p>Discount</p>
                     </div>
-                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/invoices")}>
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -172,7 +297,7 @@ const RightPanel = ({ setIsRetail }) => {
                         </svg>
                         <p>Exchange</p>
                     </div>
-                    <div  className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -187,13 +312,13 @@ const RightPanel = ({ setIsRetail }) => {
                         <p>Hold Order</p>
                     </div>
                 </div>
-                <div className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer">
+                <div className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer" onClick={handleProceed}>
                     <div className="proceed">
                         <h3 className="text-xl font-semibold">Proceed to Pay</h3>
-                        <h4 className="text-sm">Total Items 0</h4>
+                        <h4 className="text-sm">Total Items {cartData.length}</h4>
                     </div>
                     <div className="proceed flex gap-2 items-center">
-                        <div className="price text-xl font-semibold">P0.00</div>
+                        <div className="price text-xl font-semibold">P{total}</div>
                         <div className="icon">
                             <svg
                                 viewBox="64 64 896 896"

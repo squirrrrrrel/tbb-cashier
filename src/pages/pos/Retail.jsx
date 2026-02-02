@@ -2,9 +2,81 @@ import React from "react";
 import LeftPanel from "../../components/pos/retail/LeftPanel";
 import RightPanel from "../../components/pos/retail/RightPanel";
 import qKartLogo from "../../assets/images/qkarts-logo.png";
+import { useState } from "react";
+import { useProductStore } from "../../store/useProductStore";
+import { useCartStore } from "../../store/useCartStore";
+import { useNotification } from "../../hooks/useNotification";
 
-const Retail = ({ setIsRetail }) => {
+const Retail = ({ setPayToProceed }) => {
 
+    const { products } = useProductStore();
+
+    const [barcodeSearch, setBarcodeSearch] = useState("");
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const {addToCart} = useCartStore();
+    const [totalAmount, setTotalAmount] = useState(0);
+    const {notifyError}=useNotification();
+
+    // --- Barcode Search Logic ---
+    const handleBarcodeChange = (e) => {
+        const value = e.target.value;
+        setBarcodeSearch(value);
+
+        if (value.length > 1) {
+            const matches = products.filter((p) =>
+                p.barcode?.toLowerCase().includes(value.toLowerCase())
+            );
+            setFilteredProducts(matches);
+        } else {
+            setFilteredProducts([]);
+        }
+    };
+
+    // --- NEW: Handle Enter Key Press ---
+const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+        // Prevent form submission if this is inside a form
+        e.preventDefault();
+
+        // Find an EXACT match for the barcode
+        const exactMatch = products.find(
+            (p) => p.barcode?.toLowerCase() === barcodeSearch.toLowerCase()
+        );
+
+        if (exactMatch) {
+            selectProduct(exactMatch)
+        } else {
+            // Optional: Alert the user if no exact match found on Enter
+            console.log("No product found with this barcode");
+        }
+    }
+};
+
+    const selectProduct = (data) => {
+        const addToCartData = {
+            id: data.serverId,
+            img: data.img,
+            name: data.name,
+            price: data.sellingPrice,
+            stock: data.stock,
+            stockQueue: data.stockQueue,
+            unit: data.unit,
+            barcode: data.barcode
+        }
+        const result = addToCart(addToCartData);
+        if (result?.success === false) {
+            if (result.reason === "OUT_OF_STOCK") {
+                notifyError(<>
+                    Only <span style={{ color: "red" }}>{data.stock + data.stockQueue}</span> items available in
+                    <br />
+                    stock for {data.name}
+                </>);
+            }
+            return;
+        }
+        setBarcodeSearch("");
+        setFilteredProducts([]);
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
@@ -30,10 +102,33 @@ const Retail = ({ setIsRetail }) => {
                         </svg>
                         <input
                             type="text"
-                            placeholder="Search Barcode"
+                            placeholder="Scan or Type Barcode..."
                             className="py-2 pl-8 bg-white w-full rounded-md shadow-[0_0_3px_#00000026] outline-0 cursor-text placeholder:text-[#555555] placeholder:text-sm"
+                        value={barcodeSearch}
+                        onChange={handleBarcodeChange}
+                        onKeyDown={handleKeyDown} // Listen for the Enter key
                         />
+
+                        {/* BARCODE SEARCH POPUP */}
+                        {filteredProducts.length > 0 && (
+                            <div className="absolute left-0 right-0 top-10 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
+                                {filteredProducts.map((p) => (
+                                    <div
+                                        key={p.serverId || p.barcode}
+                                        className="p-2 hover:bg-blue-50 cursor-pointer flex justify-between items-center border-b last:border-none"
+                                        onClick={() => selectProduct(p)}
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-gray-800">{p.name}</span>
+                                            <span className="text-xs text-gray-500">SN: {p.barcode}</span>
+                                        </div>
+                                        <span className="text-sm font-semibold text-primary">P {p.sellingPrice}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
+
                     <div className="w-1/4 flex justify-between items-center text-[#555555]">
                         <div className="flex gap-3">
                             <span onClick={() => setIsRetail(false)} className="cursor-pointer rounded-md shadow-[0_0_3px_#00000026] text-3xl font-light px-2.75 py-0.5">+</span>
@@ -52,16 +147,16 @@ const Retail = ({ setIsRetail }) => {
                             </span>
                         </div>
                         <div>
-                            0 Results
+                            {filteredProducts.length} Results
                         </div>
                     </div>
                 </div>
                 <div>
-                    <LeftPanel />
+                    <LeftPanel setTotalAmount={setTotalAmount} />
                 </div>
             </div>
             <div className="w-1/3 h-full">
-                <RightPanel setIsRetail={setIsRetail} />
+                <RightPanel total={totalAmount} setPayToProceed={setPayToProceed}/>
             </div>
         </div>
     );

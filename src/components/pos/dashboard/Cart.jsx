@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
 import defaultImg from "../../../assets/images/Default_Product_Img.png";
-
+import { useRetail } from "../../../hooks/useretail";
 /* ---------------- CART ITEM ---------------- */
 
 const CartProdctComponent = ({
@@ -135,7 +135,8 @@ const CartProdctComponent = ({
 
 /* ---------------- CART ---------------- */
 
-const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, setIsRetail, isRetail }) => {
+const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total}) => {
+  
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
   const [loginData, setLoginData] = useState({ username: '', password: '' });
@@ -143,6 +144,7 @@ const [activeModal, setActiveModal] = useState(null);
 const [showDiscount, setShowDiscount] = useState(false);
  const [discountType, setDiscountType] = useState("percentage");
   const [discountValue, setDiscountValue] = useState(0.00);
+    const {setIsRetail, setIsRetailOpen} = useRetail();
   const {
     cartData,
     removeFromCart,
@@ -150,6 +152,7 @@ const [showDiscount, setShowDiscount] = useState(false);
     resetCart,
     selectedCustomer,
     selectedTable,
+    setManagerDiscount,
   } = useCartStore();
 const openModal = (modalName) => {
     setActiveModal(modalName);
@@ -200,11 +203,8 @@ const handleToggleExpand = (id) => {
     }
   }
     const saveDiscountHandler = ()=>{
-    const discountData = {
-      discountType,
-      value: discountValue
-    }
-    console.log(discountData);
+    const discountData = discountType==="percentage"? discountValue/100 : discountValue;
+    setManagerDiscount(discountData);
     setShowDiscount(false);
     
   }
@@ -213,7 +213,7 @@ const handleToggleExpand = (id) => {
       <div className="h-screen border-l border-gray-200">
       <div className="cart-header flex items-center justify-between p-4 border-b border-gray-200">
         <div className="icons flex gap-2 fill-gray-600">
-          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={()=> setIsRetail(true)}>
+          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={()=> {setIsRetail(true); setIsRetailOpen(true)}}>
             <svg
               viewBox="0 0 1024 1024"
               focusable="false"
@@ -327,11 +327,11 @@ const handleToggleExpand = (id) => {
             </div>
             <div className="subtotal flex justify-between ">
               <span>Discount</span>
-              <span>P{discount.toFixed(2)}</span>
+              <span>P{Number(discount) < 1 ?`${(subtotal + tax) * (discount)}`: `${Number(discount).toFixed(2)}`}</span>
             </div>
           </div>
           <div className="cart-btns mt-4 flex gap-2">
-            <div onClick={() => openModal('discount')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => openModal('discount')} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -345,7 +345,7 @@ const handleToggleExpand = (id) => {
               </svg>
               <p>Discount</p>
             </div>
-            <div onClick={() => navigate("/pos/invoices")} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => navigate("/pos/invoices")} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -359,7 +359,7 @@ const handleToggleExpand = (id) => {
               </svg>
               <p>Exchange</p>
             </div>
-            <div onClick={() => onHoldOrder('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => onHoldOrder('holdOrder')} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"

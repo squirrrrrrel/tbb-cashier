@@ -15,6 +15,7 @@ import { useAuthStore } from "./store/useAuthStore";
 import { useNetworkStore } from "./store/useNetworkStore";
 import { usePosStore } from "./store/usePosStore";
 import { usePaymentMethodStore } from "./store/usePaymentMethodStore";
+import { RetailProvider } from "./hooks/useretail";
 
 
 const App = () => {
@@ -42,6 +43,7 @@ const App = () => {
 
   return (
     <>
+    <RetailProvider>
       <Toaster
         position="top-right"
         reverseOrder={false}
@@ -63,6 +65,7 @@ const App = () => {
           </Route>
         </Route>
       </Routes>
+      </RetailProvider>
     </>
   );
 };

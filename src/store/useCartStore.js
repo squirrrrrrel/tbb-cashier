@@ -9,6 +9,7 @@ export const useCartStore = create(
       selectedTable: null,
       cartData: [],        // SINGLE SOURCE OF TRUTH
       orderData: {},
+      managerDiscount:0,
 
       // ===== CART ACTIONS =====
       addToCart: (product) => {
@@ -76,6 +77,7 @@ export const useCartStore = create(
       setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),
       setSelectedTable: (table) => set({ selectedTable: table }),
       setOrderData: (data) => set({ orderData: data }),
+      setManagerDiscount: (data) => set({managerDiscount: data}),
 
       resetCart: () =>
         set({
@@ -83,6 +85,7 @@ export const useCartStore = create(
           selectedTable: null,
           cartData: [],
           orderData: {},
+          managerDiscount:0
         }),
     }),
     {

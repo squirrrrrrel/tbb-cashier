@@ -13,6 +13,7 @@ const ProductComp = ({
   price,
   unit,
   stock,
+  barcode,
   stockQueue,
   isLowStock,
   categoryName,
@@ -47,6 +48,7 @@ const handleAddToCart = () => {
       price,
       unit: name.toLowerCase().includes("shots") ? "ml" : unit,
       stock,
+      barcode,
       stockQueue,
       categoryName
     });
@@ -72,6 +74,7 @@ const handleAddToCart = () => {
       price,
       unit,
       stock,
+      barcode,
       stockQueue
     });
 
