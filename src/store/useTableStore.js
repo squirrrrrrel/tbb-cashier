@@ -129,10 +129,10 @@ export const useTableStore = create((set, get) => ({
     }
 
     try {
-      console.log("🔄 Fetching tables from API...");
+     // console.log("🔄 Fetching tables from API...");
       // Fetch tables from API
       const res = await api.get(`/outlet/table?outlet_id=${outletId}`);
-      console.log("📦 API Response:", res.data);
+     // console.log("📦 API Response:", res.data);
 
       // Handle different possible response structures
       let apiTables = [];
@@ -150,11 +150,11 @@ export const useTableStore = create((set, get) => ({
         return;
       }
 
-      console.log(`📊 Received ${apiTables.length} tables from API`);
+    //  console.log(`📊 Received ${apiTables.length} tables from API`);
 
       // Get ALL existing tables from IndexedDB
       const existingTables = await getTablesDB();
-      console.log(`💾 Found ${existingTables.length} existing tables in IndexedDB`);
+    //  console.log(`💾 Found ${existingTables.length} existing tables in IndexedDB`);
 
       // Filter existing tables by outletId
       const outletTables = existingTables.filter(t => t.outletId === outletId);
@@ -228,7 +228,7 @@ export const useTableStore = create((set, get) => ({
           !processedLocalIds.has(t.localId)
       );
 
-      console.log(`💾 Preserving ${localOnlyTables.length} local-only tables`);
+     // console.log(`💾 Preserving ${localOnlyTables.length} local-only tables`);
 
       // Combine server tables with local-only tables
       const allTables = [...processedTables, ...localOnlyTables];
@@ -239,7 +239,7 @@ export const useTableStore = create((set, get) => ({
         tables: activeTables,
       });
 
-      console.log(`✅ Successfully synced ${processedTables.length} tables from API, preserved ${localOnlyTables.length} local tables. Total: ${activeTables.length} active tables`);
+    //  console.log(`✅ Successfully synced ${processedTables.length} tables from API, preserved ${localOnlyTables.length} local tables. Total: ${activeTables.length} active tables`);
     } catch (err) {
       console.error("❌ Failed to fetch tables from API:", err);
       console.error("Error details:", err.response?.data || err.message);
