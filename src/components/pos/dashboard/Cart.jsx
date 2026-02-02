@@ -467,7 +467,7 @@ const handleHoldOrder = async () => {
               </div>
             )}
             {activeModal === 'holdOrder' && (
-              <div onClick={closeModal} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div onClick={closeModal} className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
                 <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100 animate-scale-in">
                   <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Hold Order</h2>
                   <input
