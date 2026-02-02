@@ -17,6 +17,22 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
       </div>
     );
   }
+// 🔁 Exchange calculations (frontend only)
+const exchangeReturnTotal = (selectedOrder.orderItems || [])
+  .filter(item => item.type === "RETURN")
+  .reduce((sum, item) => sum + Math.abs(item.subtotal), 0);
+
+const exchangeNewTotal = (selectedOrder.orderItems || [])
+  .filter(item => item.type === "EXCHANGE_NEW")
+  .reduce((sum, item) => sum + item.subtotal, 0);
+
+const exchangeDiff = exchangeNewTotal - exchangeReturnTotal;
+
+const exchangeRefundAmount =
+  exchangeDiff < 0 ? Math.abs(exchangeDiff) : 0;
+
+const exchangeReceiveAmount =
+  exchangeDiff > 0 ? exchangeDiff : 0;
 
   const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
   useEffect(() => {
@@ -256,8 +272,8 @@ const shouldDisableRefund = () => {
             <span>P{selectedOrder.refunded}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
-            <p>Exchanged</p>
-            <span>P0</span>
+            <p>Exchanged{exchangeRefundAmount?"(Refund)": exchangeReceiveAmount?"(Receive)":""}</p>
+            <span>P{exchangeReceiveAmount ? exchangeReceiveAmount.toFixed(2) : exchangeRefundAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <p className="capitalize">{selectedOrder?.payments?.[0]?.paymentMethod} (tendered Amount)</p>
