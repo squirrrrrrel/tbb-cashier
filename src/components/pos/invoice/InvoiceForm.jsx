@@ -1,6 +1,6 @@
 import React from "react";
 import defaultImg from "./../../../assets/images/Default_Product_Img.png";
-import { useState ,useEffect} from "react";
+import { useState, useEffect } from "react";
 import PrintInvoiceSlip from "./PrintInvoiceSlip";
 import RefundPopup from "./RefundPopup";
 import ExchangePopup from "./ExchangePopup";
@@ -17,27 +17,27 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
       </div>
     );
   }
-// 🔁 Exchange calculations (frontend only)
-const exchangeReturnTotal = (selectedOrder.orderItems || [])
-  .filter(item => item.type === "RETURN")
-  .reduce((sum, item) => sum + Math.abs(item.subtotal), 0);
+  // 🔁 Exchange calculations (frontend only)
+  const exchangeReturnTotal = (selectedOrder.orderItems || [])
+    .filter(item => item.type === "RETURN")
+    .reduce((sum, item) => sum + Math.abs(item.subtotal), 0);
 
-const exchangeNewTotal = (selectedOrder.orderItems || [])
-  .filter(item => item.type === "EXCHANGE_NEW")
-  .reduce((sum, item) => sum + item.subtotal, 0);
+  const exchangeNewTotal = (selectedOrder.orderItems || [])
+    .filter(item => item.type === "EXCHANGE_NEW")
+    .reduce((sum, item) => sum + item.subtotal, 0);
 
-const exchangeDiff = exchangeNewTotal - exchangeReturnTotal;
+  const exchangeDiff = exchangeNewTotal - exchangeReturnTotal;
 
-const exchangeRefundAmount =
-  exchangeDiff < 0 ? Math.abs(exchangeDiff) : 0;
+  const exchangeRefundAmount =
+    exchangeDiff < 0 ? Math.abs(exchangeDiff) : 0;
 
-const exchangeReceiveAmount =
-  exchangeDiff > 0 ? exchangeDiff : 0;
+  const exchangeReceiveAmount =
+    exchangeDiff > 0 ? exchangeDiff : 0;
 
   const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
   useEffect(() => {
-      productsHydrate();
-    }, [productsHydrate]);
+    productsHydrate();
+  }, [productsHydrate]);
   const [showPrintSlip, setShowPrintSlip] = useState(false);
 
   const [showRefund, setShowRefund] = useState(false);
@@ -66,8 +66,8 @@ const exchangeReceiveAmount =
     return acc + itemTax;
   }, 0);
 
-  
-const shouldDisableRefund = () => {
+
+  const shouldDisableRefund = () => {
     return (
       selectedOrder?.orderItems?.filter(
         (item) =>
@@ -190,63 +190,61 @@ const shouldDisableRefund = () => {
           </div>
         ))}
         {/* --- Bottom of the Items List Section --- */}
-       {selectedOrder?.orderItems?.some(
-        item => item.type === "RETURN" || item.type === "EXCHANGE_NEW"
-      ) && (
-        <div className="mt-3">
-         <h3 className="text-md font-bold text-[#555555] uppercase pb-1 border-b border-gray-300">
-         Exchanges
-         </h3>
+        {selectedOrder?.orderItems?.some(
+          item => item.type === "RETURN" || item.type === "EXCHANGE_NEW"
+        ) && (
+            <div className="mt-3">
+              <h3 className="text-md font-bold text-[#555555] uppercase pb-1 border-b border-gray-300">
+                Exchanges
+              </h3>
 
-       {/* 🔴 RETURN ITEMS */}
-       {selectedOrder.orderItems
-      .filter(item => item.type === "RETURN")
-      .map((item, i) => (
-        <div
-          key={item.orderItemId}
-          className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold text-red-500 border-b border-dashed border-gray-300 ${
-            i % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]"
-          }`}
-        >
-          <div className="flex gap-2">
-            <img src={item.imageUrl || defaultImg} className="w-12 h-12" />
-            <div className="flex flex-col gap-1">
-              <span className="text-[#e74c3c]">{item.productName}</span>
-              <span className="text-gray-500">
-                P{item.unitPrice} × {Math.abs(item.quantity)} (Old Item)
-              </span>
-            </div>
-          </div>
-          <span>-P{Math.abs(item.subtotal)}</span>
-        </div>
-      ))}
+              {/* 🔴 RETURN ITEMS */}
+              {selectedOrder.orderItems
+                .filter(item => item.type === "RETURN")
+                .map((item, i) => (
+                  <div
+                    key={item.orderItemId}
+                    className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold text-red-500 border-b border-dashed border-gray-300 ${i % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]"
+                      }`}
+                  >
+                    <div className="flex gap-2">
+                      <img src={item.imageUrl || defaultImg} className="w-12 h-12" />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[#e74c3c]">{item.productName}</span>
+                        <span className="text-gray-500">
+                          P{item.unitPrice} × {Math.abs(item.quantity)} (Old Item)
+                        </span>
+                      </div>
+                    </div>
+                    <span>-P{Math.abs(item.subtotal)}</span>
+                  </div>
+                ))}
 
-    {/* 🟢 EXCHANGE NEW ITEMS */}
-    {selectedOrder.orderItems
-      .filter(item => item.type === "EXCHANGE_NEW")
-      .map((item, i) => (
-        <div
-          key={item.orderItemId}
-          className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold border-b border-dashed border-gray-300 ${
-            i % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"
-          }`}
-        >
-          <div className="flex gap-2">
-            <img src={item.imageUrl || defaultImg} className="w-12 h-12" />
-            <div className="flex flex-col gap-1">
-              <span className="text-[#15b71a]">{item.productName}</span>
-              <span className="text-gray-500">
-                P{item.unitPrice} × {item.quantity} (New Item)
-              </span>
+              {/* 🟢 EXCHANGE NEW ITEMS */}
+              {selectedOrder.orderItems
+                .filter(item => item.type === "EXCHANGE_NEW")
+                .map((item, i) => (
+                  <div
+                    key={item.orderItemId}
+                    className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold border-b border-dashed border-gray-300 ${i % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"
+                      }`}
+                  >
+                    <div className="flex gap-2">
+                      <img src={item.imageUrl || defaultImg} className="w-12 h-12" />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[#15b71a]">{item.productName}</span>
+                        <span className="text-gray-500">
+                          P{item.unitPrice} × {item.quantity} (New Item)
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[#15b71a]">
+                      P{item.subtotal}
+                    </span>
+                  </div>
+                ))}
             </div>
-          </div>
-          <span className="text-[#15b71a]">
-            P{item.subtotal}
-          </span>
-        </div>
-      ))}
-  </div>
-)}
+          )}
 
       </div>
       <div className="mt-auto pt-2.5 px-6 border-t border-gray-200 text-sm sticky bottom-0 bg-white">
@@ -272,7 +270,7 @@ const shouldDisableRefund = () => {
             <span>P{selectedOrder.refunded}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
-            <p>Exchanged{exchangeRefundAmount?"(Refund)": exchangeReceiveAmount?"(Receive)":""}</p>
+            <p>Exchanged{exchangeRefundAmount ? "(Refund)" : exchangeReceiveAmount ? "(Receive)" : ""}</p>
             <span>P{exchangeReceiveAmount ? exchangeReceiveAmount.toFixed(2) : exchangeRefundAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
@@ -316,22 +314,22 @@ const shouldDisableRefund = () => {
         <div className="flex gap-2 mt-2 text-sm">
           <div className="w-1/2">
             <button className={`bg-[#15b71a] w-full text-white font-bold py-4 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
-            disabled={shouldDisableRefund()&&(() => {
-                            const categories =
-                              selectedOrder?.orderItems?.map((item) =>
-                                (
-                                  item?.category_name || "undefined"
-                                ).toLowerCase()
-                              ) || [];
-                            // Disable if all are butchery or shots
-                            return (
-                              categories.length > 0 &&
-                              categories.every((cat) =>
-                                ["Butchery", "Shots"].includes(cat)
-                              )
-                            );
-                          })()}
-             onClick={() => setShowRefund(true)}
+              disabled={shouldDisableRefund() && (() => {
+                const categories =
+                  selectedOrder?.orderItems?.map((item) =>
+                    (
+                      item?.category_name || "undefined"
+                    ).toLowerCase()
+                  ) || [];
+                // Disable if all are butchery or shots
+                return (
+                  categories.length > 0 &&
+                  categories.every((cat) =>
+                    ["Butchery", "Shots"].includes(cat)
+                  )
+                );
+              })()}
+              onClick={() => setShowRefund(true)}
             >
               <span
                 role="img"
@@ -350,15 +348,15 @@ const shouldDisableRefund = () => {
                   <path d="M511.4 124C290.5 124.3 112 303 112 523.9c0 128 60.2 242 153.8 315.2l-37.5 48c-4.1 5.3-.3 13 6.3 12.9l167-.8c5.2 0 9-4.9 7.7-9.9L369.8 727a8 8 0 00-14.1-3L315 776.1c-10.2-8-20-16.7-29.3-26a318.64 318.64 0 01-68.6-101.7C200.4 609 192 567.1 192 523.9s8.4-85.1 25.1-124.5c16.1-38.1 39.2-72.3 68.6-101.7 29.4-29.4 63.6-52.5 101.7-68.6C426.9 212.4 468.8 204 512 204s85.1 8.4 124.5 25.1c38.1 16.1 72.3 39.2 101.7 68.6 29.4 29.4 52.5 63.6 68.6 101.7 16.7 39.4 25.1 81.3 25.1 124.5s-8.4 85.1-25.1 124.5a318.64 318.64 0 01-68.6 101.7c-7.5 7.5-15.3 14.5-23.4 21.2a7.93 7.93 0 00-1.2 11.1l39.4 50.5c2.8 3.5 7.9 4.1 11.4 1.3C854.5 760.8 912 649.1 912 523.9c0-221.1-179.4-400.2-400.6-399.9z"></path>
                 </svg>
               </span>
-              Return
+              Refund
             </button>
           </div>
           <div className="w-1/2">
             <button className={`bg-[#15b71a] w-full text-white font-bold py-2.75 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
-            
+
               disabled={shouldDisableRefund()}
               // disabled={true}
-              onClick={() => setShowExchange(true) }
+              onClick={() => setShowExchange(true)}
             >
               <span
                 role="img"
@@ -392,7 +390,7 @@ const shouldDisableRefund = () => {
         show={showPrintSlip}
         setShow={setShowPrintSlip}
         orderDetails={selectedOrder}
-        productList = {testProductList}
+        productList={testProductList}
       />
       <RefundPopup
         open={showRefund}

@@ -32,34 +32,34 @@ const ProductComp = ({
     }
   };
   const [selectPriceFor, setSelectPriceFor] = useState("");
-const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-const handleAddToCart = () => {
-  // Butchery or Shots → open popup
-  if (
-    categoryName?.toLowerCase() === "butchery" ||
-    name.toLowerCase().includes("shots")
-  ) {
-    setSelectedProduct({
-      id,
-      img,
-      name,
-      price,
-      unit: name.toLowerCase().includes("shots") ? "ml" : unit,
-      stock,
-      stockQueue,
-      categoryName
-    });
+  const handleAddToCart = () => {
+    // Butchery or Shots → open popup
+    if (
+      categoryName?.toLowerCase() === "butchery" ||
+      name.toLowerCase().includes("shots")
+    ) {
+      setSelectedProduct({
+        id,
+        img,
+        name,
+        price,
+        unit: name.toLowerCase().includes("shots") ? "ml" : unit,
+        stock,
+        stockQueue,
+        categoryName
+      });
 
-    setSelectPriceFor(
-      name.toLowerCase().includes("shots") ? "shots" : "butchery"
-    );
-    return;
-  }
+      setSelectPriceFor(
+        name.toLowerCase().includes("shots") ? "shots" : "butchery"
+      );
+      return;
+    }
 
-  // Other products → directly add
-  addDirectlyToCart();
-};
+    // Other products → directly add
+    addDirectlyToCart();
+  };
 
   const addDirectlyToCart = () => {
     if (name.toLowerCase().includes("shots")) {
@@ -159,21 +159,27 @@ const handleAddToCart = () => {
       {isLowStock && (
         <div className="relative">
           <div
-            className="low-stock-badge text-[8px] bg-red-100 rounded-full py-px px-2 absolute animate-pulse text-red-600"
-            style={{ right: 8, bottom: 8, position: "absolute" }}
+            className="low-stock-badge text-xs rounded-full py-px px-2 absolute text-red-700 font-semibold"
+            style={{
+              right: 8,
+              bottom: 8,
+              position: "absolute",
+              animation: "pulse 1s infinite",
+              opacity: 0 // ensure min opacity for better fade
+            }}
           >
             Low
           </div>
         </div>
       )}
-      
-      {selectPriceFor && selectedProduct &&  (
-  <PriceSelectionPopup
-    product={selectedProduct}
-    selectPriceFor={selectPriceFor}
-    setSelectPriceFor={setSelectPriceFor}
-  />
-)}
+
+      {selectPriceFor && selectedProduct && (
+        <PriceSelectionPopup
+          product={selectedProduct}
+          selectPriceFor={selectPriceFor}
+          setSelectPriceFor={setSelectPriceFor}
+        />
+      )}
     </div>
   );
 };

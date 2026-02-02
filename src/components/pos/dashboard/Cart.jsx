@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
 import defaultImg from "../../../assets/images/Default_Product_Img.png";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 /* ---------------- CART ITEM ---------------- */
 
@@ -24,7 +25,7 @@ const CartProdctComponent = ({
   const totalPrice = (price * quantity).toFixed(2);
 
   const [qty, setQty] = useState(quantity);
- useEffect(() => {
+  useEffect(() => {
     setQty(quantity);
   }, [quantity]);
 
@@ -35,27 +36,27 @@ const CartProdctComponent = ({
 
   return (
     <>
-      <div className="cart-product w-full odd:bg-gray-50 p-2 flex justify-between items-center">
+      <div className="cart-product w-full p-2 flex justify-between items-center">
         <div className="product-detail flex gap-2 items-center">
           {/* <img src={keyup} alt="arrow-down" onClick={()=> setIsChnage(false)}/> */}
-          {product.categoryName === "Butchery" ? ( 
-           <span className="w-6"></span>
-          ) :(
-          <img src={isExpanded ? keyup : arrowDownIcon} alt="arrow-down" onClick={onToggle} />
-        ) 
+          {product.categoryName === "Butchery" ? (
+            <span className="w-6"></span>
+          ) : (
+            <img src={isExpanded ? keyup : arrowDownIcon} alt="arrow-down" onClick={onToggle} />
+          )
           }
-          {product.img ? ( 
+          {product.img ? (
             <img
-            className="w-14 h-14 object-cover rounded"
-            src={product.img}
-            alt={product.name}
-          />
-        ) : (
+              className="w-14 h-14 object-cover rounded"
+              src={product.img}
+              alt={product.name}
+            />
+          ) : (
             <img
-            className="w-14 h-14 object-cover rounded"
-            src={defaultImg}
-            alt={defaultImg}
-          />    
+              className="w-14 h-14 object-cover rounded"
+              src={defaultImg}
+              alt={defaultImg}
+            />
           )}
           <div className="product_heading">
             <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
@@ -80,7 +81,7 @@ const CartProdctComponent = ({
         </div>
       </div>
       {isExpanded && product.categoryName !== "Butchery" &&
-        <div className="flex justify-between gap-4 odd:bg-gray-50 items-end px-2 bg-white">
+        <div className="flex justify-between gap-4 items-end px-2">
           <div className="flex flex-col gap-1 flex-1">
             <p className="text-sm font-semibold text-[#555555]">Quantity</p>
             <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden  border border-gray-200">
@@ -90,17 +91,19 @@ const CartProdctComponent = ({
               >
                 -
               </div>
-              <span className="flex-1 text-center  text-sm">{qty}</span>
+              {/* <span className="flex-1 text-center  text-sm">{qty}</span> */}
+              <span><input type="number" value={qty} onChange={(e) => e.target.value > product.stock + product.stockQueue ? notifyError(<>Only <span style={{ color: "red" }}>{product.stock + product.stockQueue}</span> items available in<br />stock for {product.name}</>) : setQty(e.target.value)} className="w-14 h-full text-center text-sm outline-none" /></span>
               <div
-                onClick={() =>{if (qty >= product.stock+ product.stockQueue) {
-                   notifyError(<>
-    Only <span style={{ color: "red" }}>{product.stock + product.stockQueue}</span> items available in
-    <br />
-    stock for {product.name} 
-  </>);;
+                onClick={() => {
+                  if (qty >= product.stock + product.stockQueue) {
+                    notifyError(<>
+                      Only <span style={{ color: "red" }}>{product.stock + product.stockQueue}</span> items available in
+                      <br />
+                      stock for {product.name}
+                    </>);;
                     return;
                   }
-                 setQty(qty  + 1);
+                  setQty(qty + 1);
                 }}
                 className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
               >
@@ -139,9 +142,9 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
   const [loginData, setLoginData] = useState({ username: '', password: '' });
-const [activeModal, setActiveModal] = useState(null);
-const [showDiscount, setShowDiscount] = useState(false);
- const [discountType, setDiscountType] = useState("percentage");
+  const [activeModal, setActiveModal] = useState(null);
+  const [showDiscount, setShowDiscount] = useState(false);
+  const [discountType, setDiscountType] = useState("percentage");
   const [discountValue, setDiscountValue] = useState(0.00);
   const {
     cartData,
@@ -151,24 +154,26 @@ const [showDiscount, setShowDiscount] = useState(false);
     selectedCustomer,
     selectedTable,
   } = useCartStore();
-const openModal = (modalName) => {
+  const user = useAuthStore((u) => u.user);
+
+  const openModal = (modalName) => {
     setActiveModal(modalName);
   };
   const closeModal = () => {
     setActiveModal(null);
   };
- // const [expandedId, setExpandedId] = useState(null);
+  // const [expandedId, setExpandedId] = useState(null);
   const cartEndRef = useRef(null);
 
   const totalItems = cartData.reduce(
     (sum, p) => sum + (Number(p.quantity) || 0),
     0
   );
-const [expandedProductId, setExpandedProductId] = useState(null);
+  const [expandedProductId, setExpandedProductId] = useState(null);
 
-const handleToggleExpand = (id) => {
-  setExpandedProductId(prev => (prev === id ? null : id));
-};
+  const handleToggleExpand = (id) => {
+    setExpandedProductId(prev => (prev === id ? null : id));
+  };
   useEffect(() => {
     cartEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [cartData]);
@@ -180,40 +185,40 @@ const handleToggleExpand = (id) => {
     }
     setPayToProceed(true);
   };
-   const handleLoginChange = (e) => {
-  const { placeholder, value } = e.target;
-  const field = e.target.name; 
-  setLoginData(prev => ({
-    ...prev,
-    [field]: value
-  }));
-};
- const managerLoginHandler =()=>{
-    if(!loginData.username || !loginData.password) {
+  const handleLoginChange = (e) => {
+    const { placeholder, value } = e.target;
+    const field = e.target.name;
+    setLoginData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  const managerLoginHandler = () => {
+    if (!loginData.username || !loginData.password) {
       notifyError("Username and Password is required");
       return;
-    } else{
+    } else {
       closeModal();
       setShowDiscount(true);
       setLoginData({ username: '', password: '' })
       notifySuccess("Manager loged In")
     }
   }
-    const saveDiscountHandler = ()=>{
+  const saveDiscountHandler = () => {
     const discountData = {
       discountType,
       value: discountValue
     }
     console.log(discountData);
     setShowDiscount(false);
-    
+
   }
 
   return (
-      <div className="h-screen border-l border-gray-200">
+    <div className="h-screen border-l border-gray-200">
       <div className="cart-header flex items-center justify-between p-4 border-b border-gray-200">
         <div className="icons flex gap-2 fill-gray-600">
-          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={()=> setIsRetail(true)}>
+          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={() => setIsRetail(true)}>
             <svg
               viewBox="0 0 1024 1024"
               focusable="false"
@@ -245,7 +250,7 @@ const handleToggleExpand = (id) => {
             onClick={() => navigate("/pos/customers")}
             className="select-customer cursor-pointer bg-linear-to-b justify-center from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex items-center gap-2 w-[180px]"
           >
-            <p>{selectedCustomer?.firstName? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
+            <p>{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -277,7 +282,7 @@ const handleToggleExpand = (id) => {
                 </g>
               </g>
             </svg>
-            <p>{selectedTable?.tableNumber? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
+            <p>{selectedTable?.tableNumber ? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -296,19 +301,21 @@ const handleToggleExpand = (id) => {
         {/* Cart items will be rendered here */}
         <div className="cart-products p-2 h-[calc(100vh-380px)] overflow-y-auto no-scrollbar">
           {cartData?.length > 0 ? (
-            cartData?.map((p) => (
-              <>
+            cartData?.map((p, index) => (
+              <div
+                key={p.id}
+                className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+              >
                 <CartProdctComponent
-                  key={p.id}
                   product={p}
                   isExpanded={expandedProductId === p.id}
                   onToggle={() => handleToggleExpand(p.id)}
                   onRemove={() => removeFromCart(p.id)}
                   onQuantityChange={updateQuantity}
-                   notifyError={notifyError}
+                  notifyError={notifyError}
                 />
                 <div ref={cartEndRef} />
-              </>
+              </div>
             ))
           ) : (
             <p className="text-sm text-gray-700">No Products in Cart</p>
@@ -375,7 +382,7 @@ const handleToggleExpand = (id) => {
             </div>
             {activeModal === 'discount' && (
               <div onClick={closeModal} className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-                <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100">
+                <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100 animate-scale-in">
                   <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Store Manager Login</h2>
                   <input type="text" name="username" value={loginData.username} onChange={handleLoginChange} placeholder="Enter store manager username" className="shadow-[0_0_3px_#00000028] w-full mb-6 p-2 rounded-md placeholder:text-sm outline-none text-sm" />
                   <input type="password" name="password" value={loginData.password} onChange={handleLoginChange} placeholder="Enter store manager password" className="shadow-[0_0_3px_#00000028] w-full mb-6 p-2 rounded-md placeholder:text-sm outline-none text-sm" />
@@ -389,32 +396,32 @@ const handleToggleExpand = (id) => {
 
             {/* Hold Order Popup */}
             {showDiscount && (
-              <div onClick={()=> setShowDiscount(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100">
+              <div onClick={() => setShowDiscount(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+                <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100 animate-scale-in">
                   <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Apply Discount</h2>
                   <div className="text-center text-lg font-semibold text-[#555555] py-4 space-y-2 my-6 rounded-md">
                     <p>Select Discount Type</p>
                     <div className="flex justify-center gap-2 text-sm text-white font-light">
-                      <div onClick={()=>setDiscountType("fixed")} className={`cursor-pointer py-2.5 px-4 rounded-md ${discountType=="fixed" ? "bg-gradient-to-b from-secondary to-primary text-white":"shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Fixed</div>
-                      <div onClick={()=>setDiscountType("percentage")} className={`cursor-pointer py-2.5 px-4 rounded-md ${discountType=="percentage" ? "bg-gradient-to-b from-secondary to-primary text-white":"shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Percentage</div>
+                      <div onClick={() => setDiscountType("fixed")} className={`cursor-pointer py-2.5 px-4 rounded-md ${discountType == "fixed" ? "bg-gradient-to-b from-secondary to-primary text-white" : "shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Fixed</div>
+                      <div onClick={() => setDiscountType("percentage")} className={`cursor-pointer py-2.5 px-4 rounded-md ${discountType == "percentage" ? "bg-gradient-to-b from-secondary to-primary text-white" : "shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Percentage</div>
                     </div>
                   </div>
                   <input
                     type="number"
-                    placeholder={discountType=="percentage" ? "Enter Discount Percentage":"Enter Discount value"}
+                    placeholder={discountType == "percentage" ? "Enter Discount Percentage" : "Enter Discount value"}
                     onChange={(e) => { setDiscountValue(e.target.value) }}
                     className="shadow-[0_0_3px_#00000028] w-full mb-6 p-3  font-light rounded-md placeholder:text-sm outline-none text-sm"
                   />
                   <div className="flex justify-between gap-4">
                     <button onClick={saveDiscountHandler} className="px-4 py-2.5 text-white font-bold text-sm rounded flex-1 bg-gradient-to-b from-secondary to-primary cursor-pointer">+ Add</button>
-                    <button onClick={()=> setShowDiscount(false)} className="px-4 py-2.5 text-[#555555] text-sm font-bold rounded flex-1 shadow-[0_0_3px_#00000028] cursor-pointer">X Cancel</button>
+                    <button onClick={() => setShowDiscount(false)} className="px-4 py-2.5 text-[#555555] text-sm font-bold rounded flex-1 shadow-[0_0_3px_#00000028] cursor-pointer">X Cancel</button>
                   </div>
                 </div>
               </div>
             )}
             {activeModal === 'holdOrder' && (
               <div onClick={closeModal} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100">
+                <div onClick={(e) => e.stopPropagation()} className="bg-white p-6 rounded-lg shadow-xl w-100 animate-scale-in">
                   <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Hold Order</h2>
                   <input
                     type="text"
@@ -428,9 +435,9 @@ const handleToggleExpand = (id) => {
                   </div>
                 </div>
               </div>
-            )}  
+            )}
           </div>
-          <div onClick={handleProceed} className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer">
+          <div onClick={() => user?.role?.name === "manager" ? "" : handleProceed()} className={`${user?.role?.name === "manager" ? "opacity-70 cursor-not-allowed" : "cursor-pointer"} cart-checkout flex justify-between items-center bg-linear-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg `}>
             <div className="proceed">
               <h3 className="text-xl font-semibold">Proceed to Pay</h3>
               <h4 className="text-sm">{totalItems} {totalItems === 1 ? 'Item' : 'Items'}</h4>

@@ -16,7 +16,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                     refundQty: 0,
                 }))
             );
-            setRestock(false);
+            setRestock(true);
             setReason("");
         }
     }, [open, items]);
@@ -29,7 +29,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                 if (i !== index) return item;
 
                 let qty = item.refundQty;
-                if (type === "inc" && qty < item.quantity-item.refundQuantity) qty++;
+                if (type === "inc" && qty < item.quantity - item.refundQuantity) qty++;
                 if (type === "dec" && qty > 0) qty--;
 
                 return { ...item, refundQty: qty };
@@ -93,17 +93,17 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
 
         // Send back to Invoices.jsx
         try {
-   await  onProcessRefund(
-      refundData,
-      totalRefundValue + totalRefundTax,
-      totalRefundSubtotal
-    );
-    notifySuccess("Product Refunded Successfully");
-    onClose();
-  } catch (error) {
-    console.error("Refund failed:", error);
-    notifyError("Refund failed:", error.message || error);
-  }
+            await onProcessRefund(
+                refundData,
+                totalRefundValue + totalRefundTax,
+                totalRefundSubtotal
+            );
+            notifySuccess("Product Refunded Successfully");
+            onClose();
+        } catch (error) {
+            console.error("Refund failed:", error);
+            notifyError("Refund failed:", error.message || error);
+        }
 
     };
 
@@ -114,7 +114,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
             className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center px-3 sm:px-6 md:px-12 lg:px-40 py-4 sm:py-10"
             onClick={handleClose}
         >
-            <div className="bg-white w-full max-w-[95vw] sm:max-w-[85vw] md:max-w-[720px] lg:max-w-[900px] h-full rounded-lg shadow-xl p-7 flex flex-col"
+            <div className="bg-white w-full max-w-[95vw] sm:max-w-[85vw] md:max-w-[720px] lg:max-w-[900px] h-full rounded-lg shadow-xl p-7 flex flex-col animate-scale-in"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Heading */}
@@ -136,15 +136,15 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                             className="flex justify-between items-center px-3 py-2 "
                         >
                             <div className="flex gap-2">
-                               { item.imageUrl ? (
-                                     <img src={item.imageUrl} alt="product img" className="h-10" />
+                                {item.imageUrl ? (
+                                    <img src={item.imageUrl} alt="product img" className="h-10" />
                                 ) : (
-                                     <img src={defaultImg} alt="product img" className="h-10" />
+                                    <img src={defaultImg} alt="product img" className="h-10" />
                                 )}
                                 <div>
                                     <p className="text-md text-[#555555]">{item.productName}</p>
                                     <p className="text-sm text-[#555555] font-bold">
-                                        P{item.unitPrice} X {item.quantity-(item.refundQuantity)} {item.unit}
+                                        P{item.unitPrice} X {item.quantity - (item.refundQuantity)} {item.unit}
                                     </p>
                                 </div>
 
