@@ -83,42 +83,94 @@ const prevtotalOldValue = exchangeRows.reduce((sum, row) =>
     const receiveAmount = diff > 0 ? diff : 0;
 
 
+// const handleFinalSubmit = async () => {
+//   try {
+//     // 1️⃣ Build backend-compatible items array
+//     const items = exchangeRows
+//       .filter(row => row.returnQty > 0 )
+//       .map(row => {
+//         const newItem = exchangeRows.find(
+//           r =>
+//             r.selectedNewProductId &&
+//             r.newQty > 0
+//         );
+
+//         const oldTotal = row.returnQty * row.unitPrice;
+//         const newTotal =
+//           (newItem?.newQty || 0) * (newItem?.newUnitValue || 0);
+
+//         const diff = newTotal - oldTotal;
+//         return {
+//           old_product_id: row.productId,
+//           old_product_quantity: row.returnQty,
+//           new_product_id: newItem?.selectedNewProductId,
+//           new_product_quantity: newItem?.newQty || 0,
+//           refundAmount: diff < 0 ? Math.abs(diff) : 0,
+//           receiveAmount: diff > 0 ? diff : 0,
+//           reason: "Customer Exchange",
+//         };
+//       });
+
+//     // 2️⃣ Final API payload
+//     const apiPayload = {
+//       order_id: orderId,
+//       items,
+//     };
+
+//     // 3️⃣ Call backend
+//     await onExchange(apiPayload);
+
+//     notifySuccess("Product exchanged successfully");
+//     onClose();
+//   } catch (error) {
+//     console.error(error);
+//     notifyError("Something went wrong while exchanging product");
+//   }
+// };
 const handleFinalSubmit = async () => {
   try {
-    // 1️⃣ Build backend-compatible items array
-    const items = exchangeRows
-      .filter(row => row.returnQty > 0 )
+    // 1️⃣ Build exchange items row-by-row (CORRECT)
+    const exchangeItems = exchangeRows
+      .filter(row => row.returnQty > 0)
       .map(row => {
-        const newItem = exchangeRows.find(
-          r =>
-            r.selectedNewProductId &&
-            r.newQty > 0
-        );
-
         const oldTotal = row.returnQty * row.unitPrice;
-        const newTotal =
-          (newItem?.newQty || 0) * (newItem?.newUnitValue || 0);
+
+        const newSubtotal = row.newQty * row.newUnitValue;
+        const discountAmt =
+          (newSubtotal * (row.newDiscount || 0)) / 100;
+        const newTotal = newSubtotal - discountAmt;
 
         const diff = newTotal - oldTotal;
+
         return {
           old_product_id: row.productId,
           old_product_quantity: row.returnQty,
-          new_product_id: newItem?.selectedNewProductId,
-          new_product_quantity: newItem?.newQty || 0,
+
+          new_product_id: row.selectedNewProductId,
+          new_product_quantity: row.newQty,
+         
           refundAmount: diff < 0 ? Math.abs(diff) : 0,
           receiveAmount: diff > 0 ? diff : 0,
+
           reason: "Customer Exchange",
         };
       });
 
-    // 2️⃣ Final API payload
-    const apiPayload = {
+    // 2️⃣ FINAL FRONTEND TOTALS (IMPORTANT)
+    const finalPayload = {
       order_id: orderId,
-      items,
+      items: exchangeItems,
+
+     // returnAmount: totalOldValue,
+     // exchangeAmount: totalNewValue,
+     //refundAmount,
+      //receivedAmount: receiveAmount,
+
+      //restock,
     };
 
-    // 3️⃣ Call backend
-    await onExchange(apiPayload);
+    // 3️⃣ Call parent (frontend-sorted)
+    await onExchange(finalPayload,receiveAmount);
 
     notifySuccess("Product exchanged successfully");
     onClose();

@@ -275,7 +275,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                             ORIGINAL ITEMS
                           </td>
                         </tr>
-                        {originalItems.map((item, idx) => (
+                        {originalItems.filter(item => item.type === null).map((item, idx) => (
                           <tr key={`orig-${idx}`}>
                             <td>{item.productName}</td>
                             <td>{`P${parseFloat(item.unitPrice || 0).toFixed(2)}`}</td>
