@@ -104,9 +104,9 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
       </div>
       <div className="flex justify-between px-4 items-center search-button-group gap-4 w-full">
         <div className="search-button-group flex gap-4 items-center w-full">
-          <div className="search relative w-3/5">
+          <div className="search relative flex items-center flex-1 w-full min-w-0">
             <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+              className="absolute left-3 top-3.5 w-4 text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -121,7 +121,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
             <input
               type="text"
               placeholder="Search By Product Name, Barcode Number"
-              className="p-2 pl-10 border border-gray-200 bg-white rounded-md w-full outline-0 cursor-text"
+              className="p-2 pl-10 border border-gray-200 bg-white rounded-md w-full outline-0 cursor-text placeholder:text-sm"
               value={filters.product ?? ""}
               onChange={(e) =>
                 setFilters((prev) => ({
@@ -137,15 +137,8 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
             />
           </div>
           <div className="button-group flex gap-2">
-            <div onClick={() => setIsPettyClicked(true)} className="reset-icons p-2 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer ">
-              <svg
-                className="w-6 h-6"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M7 3h6a4.5 4.5 0 010 9H9v9H7V3zm2 2v5h4a2.5 2.5 0 000-5H9z" />
-              </svg>
+            <div onClick={() => setIsPettyClicked(true)} className="reset-icons border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer ">
+              <p className="text-xl py-1.5 px-3.5">P</p>
             </div>
             {filters.category.toLowerCase() === "shots" &&
               <div onClick={() => setIsTransferProductOpen(true)} className="text-2xl p-1 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer"><p className="px-2">T</p></div>
