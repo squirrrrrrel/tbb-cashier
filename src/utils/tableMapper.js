@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 // Map table to API payload format
 export const mapTableToApiPayload = (table) => ({
   table_number: String(table.tableNumber || ""),
@@ -20,11 +21,11 @@ const dateToTimestamp = (dateValue) => {
 export const mapApiResponseToTable = (apiTable, existingLocalId = null, outletId = null) => {
   // Extract serverId from various possible fields
   const serverId = apiTable.id || apiTable.table_id || apiTable.tableId || apiTable._id;
-  
+
   return {
     serverId: serverId,
     // Use existing localId if provided, otherwise generate one based on serverId
-    localId: existingLocalId || (serverId ? `server-${serverId}` : crypto.randomUUID()),
+    localId: existingLocalId || (serverId ? `server-${serverId}` : uuidv4()),
     tableNumber: apiTable.table_number || apiTable.tableNumber || 0,
     // Map capacity from API to seats in local format
     seats: apiTable.capacity || apiTable.seats || 0,

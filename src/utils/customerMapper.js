@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 export const mapCustomerToApiPayload = (customer) => ({
   first_name: customer.firstName,
   last_name: customer.lastName,
@@ -28,11 +30,11 @@ const dateToTimestamp = (dateValue) => {
 export const mapApiResponseToCustomer = (apiCustomer, existingLocalId = null) => {
   // Extract serverId from various possible fields (check in order of likelihood)
   const serverId = apiCustomer.id || apiCustomer.customer_id || apiCustomer.customerId || apiCustomer._id;
-  
+
   return {
     serverId: serverId,
     // Use existing localId if provided, otherwise generate one based on serverId
-    localId: existingLocalId || (serverId ? `server-${serverId}` : crypto.randomUUID()),
+    localId: existingLocalId || (serverId ? `server-${serverId}` : uuidv4()),
     firstName: apiCustomer.first_name || "",
     lastName: apiCustomer.last_name || "",
     phoneCode: apiCustomer.phone_code || "",
