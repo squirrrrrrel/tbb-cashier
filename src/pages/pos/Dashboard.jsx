@@ -350,6 +350,90 @@ console.log("Order creation result:", result);
   };
 
 
+  //whats app
+  const handleWhatsApp = async () => {
+    try {
+      let finalphone = orderDetail.customerPhone || `${phoneCode}${phone}`;
+      let customerName =
+        orderDetail.customerName || `${customerNameInput}` || "Customer";
+      finalphone = finalphone.trim().replace(/\D/g, ""); // keep digits only
+
+      if (!finalphone) return;
+
+      if (finalphone.length < 10) {
+        alert("Invalid phone number. Please enter with country code.");
+        return;
+      }
+
+      const {
+        cashierName,
+        orderNumber,
+        orderId,
+        orderDate,
+        subtotal,
+        taxAmount,
+        discountAmount,
+        totalAmount,
+        orderItems = [],
+      } = orderDetail;
+
+      const formattedDate = new Date(orderDate).toLocaleString();
+      const productLines = orderItems
+        .map(
+          (item, idx) =>
+            `${idx + 1}. ${item.itemName} x ${item.quantity
+            } = ${item.totalPrice.toLocaleString("en-IN")}`
+        )
+        .join("\n");
+
+      // WhatsApp message template
+      const message = `Hello ${customerName},
+
+Thank you for shopping with us! 
+Your order has been placed successfully.
+
+*Order Invoice Details*  
+Customer: ${customerName}
+Order No: ${orderNumber} (#${orderId})  
+Date: ${formattedDate}  
+Cashier: ${cashierName}  
+
+*Items:*  
+${productLines || "No items"}  
+
+Subtotal: ${Number(subtotal).toLocaleString("en-IN")}  
+Tax: ${Number(taxAmount).toLocaleString("en-IN")}  
+Discount: ${Number(discountAmount).toLocaleString("en-IN")}  
+--------------------  
+*Total: ${Number(totalAmount).toLocaleString("en-IN")}*  
+
+We truly appreciate your trust in us.  
+Hope to see you again soon!  
+- Team Warnoc`;
+
+      // Send the message through backend
+      const res = await axiosInstance().post("/whatsapp/send", {
+        phone: finalphone,
+        message: message,
+      });
+
+      if (res?.data?.success) {
+        notifySuccess("WhatsApp message sent successfully!", "Success");
+      } else {
+        notifyError(
+          "Failed to send WhatsApp message. Please try again.",
+          "Error"
+        );
+      }
+    } catch (error) {
+      console.error("Error sending WhatsApp message:", error);
+      notifyError(
+        "Whats App is not connected or Something went wrong while sending the message!",
+        "Error"
+      );
+    }
+  };
+
 
   return (
     <div className="flex">
@@ -382,29 +466,36 @@ console.log("Order creation result:", result);
                   boxSizing: "border-box",
                 }}
               >
-                {filteredProducts.map((p) => {
-                  const price = getFinalProductPrice({
-                    product: p,
-                    promotions,
-                    outletId,
-                  });
-                  return (
-                    <ProductComp
-                      key={p.serverId ?? p.localId}
-                      id={p.serverId}
-                      img={p.img}
-                      name={p.name}
-                      price={price}
-                      unit={p.unit}
-                      stock={p.stock}
-                      stockQueue={p.stockQueue}
-                      isLowStock={p.isLowStock}
-                      categoryName={p.categoryName}
-                      mute={mute}
-                      originalPrice={p.sellingPrice}
-                    />
-                  )
-                })}
+                {filteredProducts.length === 0 ? (
+                  <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-700">
+                    <span className="text-5xl mb-3">⚠️</span>
+                    <p className="text-2xl font-medium">No product found</p>
+                  </div>
+                ) : (
+                  filteredProducts.map((p) => {
+                    const price = getFinalProductPrice({
+                      product: p,
+                      promotions,
+                      outletId,
+                    });
+                    return (
+                      <ProductComp
+                        key={p.serverId ?? p.localId}
+                        id={p.serverId}
+                        img={p.img}
+                        name={p.name}
+                        price={price}
+                        unit={p.unit}
+                        stock={p.stock}
+                        stockQueue={p.stockQueue}
+                        isLowStock={p.isLowStock}
+                        categoryName={p.categoryName}
+                        mute={mute}
+                        originalPrice={p.sellingPrice}
+                      />
+                    );
+                  })
+                )}
               </div>
             </div>
           </>
