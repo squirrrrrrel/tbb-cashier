@@ -33,12 +33,12 @@ const AddNewTable = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
       onClick={handleCancel}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg"
+        className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg animate-scale-in"
       >
         <h2 className="text-2xl font-semibold text-[#555555] mb-5 text-center">
           Add New Table

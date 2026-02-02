@@ -24,35 +24,46 @@ const FLOATING_CONFIG = {
   images: [jdImage, habikiImage, absoluteImage, zoyaImage, jbImage, bottegaImage, portofinoImage, londonImage, henikenImage, bombayImage, tullemoreImage, smrinoffImage],
 };
 
-/** Generates floating item entries from config. Spreads left %, bottom %, size, duration, delay, rotate across the whole screen. */
+/** Returns a random number in [min, max) (or [min, max] if integers). */
+function randomBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+/** Shuffles array in place (Fisher–Yates). */
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** Builds a shuffled list of image indices so each image is used roughly equally (no one image dominating). */
+function buildShuffledImageIndices(quantity, imageCount) {
+  const indices = [];
+  for (let i = 0; i < quantity; i++) {
+    indices.push(i % imageCount);
+  }
+  return shuffleArray(indices);
+}
+
+/** Generates floating item entries with full randomness: positions, size, timing, rotation. Covers entire screen; no predictable pattern. */
 function generateFloatingItems({ quantity, images }) {
   if (!quantity || !images?.length) return [];
   const items = [];
-  const sizeMin = 60;
-  const sizeRange = 100;
-  const durationMin = 10;
-  const durationRange = 15;
-  const rotateMin = -25;
-  const rotateRange = 51;
-
-  const leftMin = 2;
-  const leftMax = 92;
-  const bottomMin = 5;
-  const bottomMax = 90;
-  const spreadLeft = leftMax - leftMin;
-  const spreadBottom = bottomMax - bottomMin;
-  const leftStep = quantity > 1 ? spreadLeft / (quantity - 1) : 0;
-  const bottomStep = quantity > 1 ? spreadBottom / (quantity - 1) : 0;
+  const imageIndices = buildShuffledImageIndices(quantity, images.length);
 
   for (let i = 0; i < quantity; i++) {
-    // Spread evenly across full width and height; varied duration/delay/rotate for randomness
-    const left = leftMin + leftStep * i;
-    const bottom = bottomMin + bottomStep * i;
-    const size = sizeMin + (i * 7) % sizeRange;
-    const duration = durationMin + (i * 5) % durationRange;
-    const delay = i % 9;
-    const rotate = rotateMin + (i * 11) % rotateRange;
-    const src = images[i % images.length];
+    // Full screen: random left/bottom with margin so nothing sits exactly on 0 or edge
+    const left = randomBetween(1, 95);
+    const bottom = randomBetween(1, 95);
+    // Size: random in range for variety
+    const size = Math.round(randomBetween(80, 180));
+    // Duration & delay: random so no synced wave; no zero delay
+    const duration = randomBetween(10, 20);
+    const delay = randomBetween(-18, 10);
+    const rotate = Math.round(randomBetween(-15, 15));
+    const src = images[imageIndices[i]];
 
     items.push({
       type: "img",
@@ -81,7 +92,7 @@ const FloatingItem = ({ item, index }) => {
     // Start at animation "from" state so no diagonal flash on load/reload
     transform: `translateY(100vh) rotate(${startRotate}deg)`,
     opacity: 0.8,
-    animation: `float-up ${item.duration}s ease-in infinite`,
+    animation: `float-up ${item.duration}s ease-in-out infinite`,
     animationDelay: `${item.delay}s`,
     ["--start-rotate"]: `${startRotate}deg`,
     ["--end-rotate"]: `${endRotate}deg`,
@@ -159,6 +170,7 @@ const LoginPage = () => {
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-2 justify-center items-center font-semibold"
+          autoComplete="off"
         >
           <div className="username flex flex-col">
             <label className="text-sm text-center">Username or Email</label>
@@ -169,6 +181,7 @@ const LoginPage = () => {
               onChange={handleChange}
               autoFocus
               disabled={loading}
+              autoComplete="off"
               className="border border-primary p-2 rounded-sm text-black w-70 outline-none text-center disabled:opacity-50"
             />
           </div>
@@ -180,6 +193,7 @@ const LoginPage = () => {
               value={credentials.password}
               onChange={handleChange}
               disabled={loading}
+              autoComplete="off"
               className="border border-primary p-2 rounded-sm text-black w-70 outline-none text-center disabled:opacity-50"
             />
           </div>
@@ -188,11 +202,10 @@ const LoginPage = () => {
               {error}
             </div>
           )}
-          <div className="forget underline cursor-pointer">Forget Password</div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-primary hover:bg-secondary hover:cursor-pointer text-white p-2 rounded transition w-70 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-2 bg-primary hover:bg-secondary hover:cursor-pointer text-white p-2 rounded transition w-70 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Logging in..." : "Log In"}
           </button>

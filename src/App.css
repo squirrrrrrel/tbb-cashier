@@ -43,15 +43,31 @@ body {
   }
 }
 
-/* Login page: same animation/effect; infinite loop (100vh → -100vh) so no visible respawn/hide */
+/* Modal scale-in: smooth entry from scale 0 to 1 */
+@keyframes scale-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
+/* Login page: float-up with smooth easing; infinite loop (100vh → -100vh) so no visible respawn/hide */
 @keyframes float-up {
   from {
     transform: translateY(100vh) rotate(var(--start-rotate, 0deg));
-    opacity: 0.8;
+    opacity: 0.75;
   }
   to {
     transform: translateY(-100vh) rotate(var(--end-rotate, 15deg));
-    opacity: 0.5;
+    opacity: 0.4;
   }
 }
 
