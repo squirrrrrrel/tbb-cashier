@@ -6,11 +6,12 @@ import HoldInvoiceFrom from "../../components/pos/invoice/HoldInvoiceForm";
 import { useOrderStore } from "../../store/useOrderStore";
 import { fetchOrdersFromAPI } from "../../utils/fetchOrdersFromAPI";
 import { refundOrderAPI } from "../../api/refundApi";
+import { exchangeOrderAPI } from "../../api/exchangeApi";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
 
 
-  
+
 
   const holdOrders = [
     {
@@ -244,20 +245,19 @@ const Invoices = () => {
     },
   ];
 
- const orders = useOrderStore(state => state.orders);
+  const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
+  const setOrders = useOrderStore(state => state.setOrders);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-console.log("Orders in Invoices page:", orders);
   useEffect(() => {
     loadOrdersFromDB(); // IndexedDB → Zustand
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
     if (orders.length && !selectedOrderId) {
       setSelectedOrderId(orders[0].localId);
     }
   }, [orders]);
-  console.log("Orders in Invoices page:", orders);
   // const uiOrders = orders.map(order => ({
   //   id: order.localId,
   //   orderId: order.serverOrderId || order.localId,
@@ -273,7 +273,8 @@ console.log("Orders in Invoices page:", orders);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedHoldOrder, setSelectedHoldOrder] = useState(holdOrders[0]);
 
-  const selectedOrderData = orders.find(o => o?.localId === selectedOrder?.localId) || orders.find(o => o) || null;
+  const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
+  const selectedOrderData = orders.find(o => orderKey(o) === orderKey(selectedOrder)) || orders.find(o => o) || null;
 
 
   const isHoldInvoice = activeBtn !== "invoiceBTN";
@@ -305,12 +306,13 @@ console.log("Orders in Invoices page:", orders);
         (note && String(note).toLowerCase().includes(holdSearch))
       );
     } else {
-      const customerId = order?.customerName;
+      if (search === "") return true; // Include all orders when no search
+      const customerName = order?.customerName;
       const customerPhone = order?.customerPhone;
       const userId = order?.userId;
 
       return (
-        (customerId && String(customerId).toLowerCase().includes(search)) ||
+        (customerName && String(customerName).toLowerCase().includes(search)) ||
         (customerPhone && String(customerPhone).includes(search)) ||
         (userId && String(userId).toLowerCase().includes(search))
       );
@@ -334,16 +336,35 @@ console.log("Orders in Invoices page:", orders);
   // };
 
   const handleRefundAction = async (
-  refundData,
-  refundValue,
-  totalRefundSubtotal
-) => {
-  if (!refundData?.order_id) {
-    throw new Error("Missing order_id for refund");
+    refundData,
+    refundValue,
+    totalRefundSubtotal
+  ) => {
+    if (!refundData?.order_id) {
+      throw new Error("Missing order_id for refund");
+    }
+    try {
+      // 1️⃣ Call backend refund API
+      await refundOrderAPI(refundData);
+
+      // 2️⃣ Sync fresh data from server
+      await fetchOrdersFromAPI();
+
+      // 3️⃣ Reload orders from IndexedDB → Zustand
+      await loadOrdersFromDB();
+    } catch (error) {
+      // 🔴 Let RefundPopup handle error message
+      throw error;
+    }
+  }
+
+  const handleExchangeAction = async(newExchangeData) => {
+  if (!newExchangeData?.order_id) {
+    throw new Error("Missing order_id for exchange");
   }
  try {
-    // 1️⃣ Call backend refund API
-    await refundOrderAPI(refundData);
+    // 1️⃣ Call backend exchange API
+    await exchangeOrderAPI(newExchangeData);
 
     // 2️⃣ Sync fresh data from server
     await fetchOrdersFromAPI();
@@ -355,22 +376,6 @@ console.log("Orders in Invoices page:", orders);
     throw error;
   }
 }
-
-  const handleExchangeAction = (newExchangeData) => {
-    if (newExchangeData.length === 0) return;
-
-    setOrders(prevOrders => prevOrders.map(order => {
-      if (order.orderId === selectedOrderData.orderId) {
-        return {
-          ...order,
-          // Store in the structure you requested
-          exchangeData: [...(order.exchangeData || []), newExchangeData]
-        };
-      }
-
-      return order;
-    }));
-  };
 
   return (
     <div className="flex w-full h-screen">

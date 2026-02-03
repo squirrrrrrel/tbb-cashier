@@ -1,9 +1,11 @@
 import React from "react";
 import defaultImg from "./../../../assets/images/Default_Product_Img.png";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import PrintInvoiceSlip from "./PrintInvoiceSlip";
 import RefundPopup from "./RefundPopup";
 import ExchangePopup from "./ExchangePopup";
+import { useProductStore } from "../../../store/useProductStore";
+import { normalizeOrderItemsForExchange } from "../../../helper/orderExchangeNormalizer";
 const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
 
 
@@ -15,8 +17,27 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
       </div>
     );
   }
+// 🔁 Exchange calculations (frontend only)
+const exchangeReturnTotal = (selectedOrder.orderItems || [])
+  .filter(item => item.type === "RETURN")
+  .reduce((sum, item) => sum + Math.abs(item.subtotal), 0);
 
+const exchangeNewTotal = (selectedOrder.orderItems || [])
+  .filter(item => item.type === "EXCHANGE_NEW")
+  .reduce((sum, item) => sum + item.subtotal, 0);
 
+const exchangeDiff = exchangeNewTotal - exchangeReturnTotal;
+
+const exchangeRefundAmount =
+  exchangeDiff < 0 ? Math.abs(exchangeDiff) : 0;
+
+const exchangeReceiveAmount =
+  exchangeDiff > 0 ? exchangeDiff : 0;
+
+  const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
+  useEffect(() => {
+      productsHydrate();
+    }, [productsHydrate]);
   const [showPrintSlip, setShowPrintSlip] = useState(false);
 
   const [showRefund, setShowRefund] = useState(false);
@@ -54,6 +75,9 @@ const shouldDisableRefund = () => {
       )?.length === 0
     );
   };
+
+  const exchangeableItems =
+    normalizeOrderItemsForExchange(selectedOrder?.orderItems || []);
   return (
     <div className="pt-2.5 px-5 pb-2 flex flex-col h-full border-l border-gray-200">
       <div className="text-xl flex items-center justify-between  gap-2 pb-2.5">
@@ -107,7 +131,7 @@ const shouldDisableRefund = () => {
       </div>
 
       <div className="flex flex-col mt-2 overflow-auto no-scrollbar text-[#888888] font-bold text-sm">
-        {(selectedOrder.orderItems || []).map((item, index) => (
+        {(selectedOrder.orderItems || selectedOrder.items || []).filter(item => item.type !== "EXCHANGE_NEW" && item.type !== "RETURN").map((item, index) => (
           <div
             key={item.productId}
             className={`flex items-center justify-between py-1 px-2 rounded-md ${index % 2 === 0 ? "bg-white" : "bg-[#f8f8f8] "}`}
@@ -123,10 +147,10 @@ const shouldDisableRefund = () => {
 
               <div className="flex flex-col gap-0.5">
                 <p className=" text-[#6f6f6f]">
-                  {item.productName}
+                  {item.productName || item.name}
                 </p>
                 <div className="flex gap-2">
-                  P{item.unitPrice} × {item.quantity} {item.category_name === "Butchery" ? "kg" : "pcs"}
+                  P{item.unitPrice || item.price} × {item.quantity} {item.category_name === "Butchery" ? "kg" : "pcs"}
 
                   {/* --- REFUND HISTORY SECTION --- */}
                   {selectedOrder.refunded > 0 && (
@@ -161,61 +185,69 @@ const shouldDisableRefund = () => {
             </div>
 
             <div>
-              P{item.subtotal}
+              P{item.subtotal || item.total}
             </div>
           </div>
         ))}
         {/* --- Bottom of the Items List Section --- */}
-        {selectedOrder.exchangeData && selectedOrder.exchangeData.length > 0 && (
-          <div>
-            {selectedOrder.exchangeData.map((exchange, exIdx) => (
-              <div key={exIdx} className="p-2">
+       {selectedOrder?.orderItems?.some(
+        item => item.type === "RETURN" || item.type === "EXCHANGE_NEW"
+      ) && (
+        <div className="mt-3">
+         <h3 className="text-md font-bold text-[#555555] uppercase pb-1 border-b border-gray-300">
+         Exchanges
+         </h3>
 
-                <h3 className="text-md font-bold text-[#555555] uppercase pb-1 border-b-1 border-gray-300">
-                  Exchanges
-                </h3>
-                {/* 1. RETURNS LIST (RED) */}
-                <div >
-                  {(exchange.returnItems || []).map((ri, i) => {
-                    // Find name from original items to display here
-                    const originalItem = (selectedOrder.orderItems || []).find(oi => oi.productId === ri.orderItemId);
-                    return (
-                      <div key={i} className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold text-red-500 border-b-1 border-dashed border-gray-300 ${i % 2 === 0 ? "bg-white" : "bg-[#f8f8f8] "}`}>
-                        <div className="flex gap-2">
-                          <img src={defaultImg} alt="img" className="w-12 h-12" />
-                          <div className="flex flex-col gap-1 text-sm ">
-                            <span className="text-[#e74c3c]">{originalItem?.productName || "Item"}</span>
-                            <span className="text-gray-500">{originalItem?.unitAmount} X {ri.quantity} (Old Item)</span>
-                          </div>
-                        </div>
-                        <span>-P{originalItem?.unitAmount}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* 2. NEW ITEMS LIST (GREEN #15b71a) */}
-                <div>
-                  {(exchange.newItems || []).map((ni, i) => {
-                    const item = testProductList.find(oi => oi.id == ni.productId);
-                    return (
-                      <div key={i} className={`flex my-1 px-1 py-2 rounded-lg justify-between items-center text-sm font-bold text-red-500 border-b-1 border-dashed border-gray-300 ${i % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"}`}>
-                        <div className="flex gap-2">
-                          <img src={defaultImg} alt="img" className="w-12 h-12" />
-                          <div className="flex flex-col gap-1 text-sm ">
-                            <span className="text-[#15b71a]">{item?.product_name || "Item"}</span>
-                            <span className="text-gray-500">{item?.selling_price} X {ni.quantity} (New Item)</span>
-                          </div>
-                        </div>
-                        <span className=" text-[#15b71a]">P{item?.selling_price * ni.quantity}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+       {/* 🔴 RETURN ITEMS */}
+       {selectedOrder.orderItems
+      .filter(item => item.type === "RETURN")
+      .map((item, i) => (
+        <div
+          key={item.orderItemId}
+          className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold text-red-500 border-b border-dashed border-gray-300 ${
+            i % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]"
+          }`}
+        >
+          <div className="flex gap-2">
+            <img src={item.imageUrl || defaultImg} className="w-12 h-12" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[#e74c3c]">{item.productName}</span>
+              <span className="text-gray-500">
+                P{item.unitPrice} × {Math.abs(item.quantity)} (Old Item)
+              </span>
+            </div>
           </div>
-        )}
+          <span>-P{Math.abs(item.subtotal)}</span>
+        </div>
+      ))}
+
+    {/* 🟢 EXCHANGE NEW ITEMS */}
+    {selectedOrder.orderItems
+      .filter(item => item.type === "EXCHANGE_NEW")
+      .map((item, i) => (
+        <div
+          key={item.orderItemId}
+          className={`flex my-1 py-2 px-1 rounded-lg justify-between items-center text-sm font-bold border-b border-dashed border-gray-300 ${
+            i % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"
+          }`}
+        >
+          <div className="flex gap-2">
+            <img src={item.imageUrl || defaultImg} className="w-12 h-12" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[#15b71a]">{item.productName}</span>
+              <span className="text-gray-500">
+                P{item.unitPrice} × {item.quantity} (New Item)
+              </span>
+            </div>
+          </div>
+          <span className="text-[#15b71a]">
+            P{item.subtotal}
+          </span>
+        </div>
+      ))}
+  </div>
+)}
+
       </div>
       <div className="mt-auto pt-2.5 px-6 border-t border-gray-200 text-sm sticky bottom-0 bg-white">
         <div className="text-[#555555] font-bold space-y-2">
@@ -233,19 +265,19 @@ const shouldDisableRefund = () => {
           </div>
           <div className="flex justify-between text-secondary font-bold text-xl">
             <p>Total</p>
-            <span>P{selectedOrder.totalAmount}</span>
+            <span>P{selectedOrder?.totalAmount}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Refunded</p>
             <span>P{selectedOrder.refunded}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
-            <p>Exchanged</p>
-            <span>P0</span>
+            <p>Exchanged{exchangeRefundAmount?"(Refund)": exchangeReceiveAmount?"(Receive)":""}</p>
+            <span>P{exchangeReceiveAmount ? exchangeReceiveAmount.toFixed(2) : exchangeRefundAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <p className="capitalize">{selectedOrder?.payments?.[0]?.paymentMethod} (tendered Amount)</p>
-            <span>P{selectedOrder?.transactions?.[0]?.tenderedAmount}</span>
+            <span>P{selectedOrder?.isSynced ? selectedOrder?.transactions?.[0]?.tenderedAmount : selectedOrder?.tenderedAmount}</span>
           </div>
           <div className="flex justify-between">
             <p>Change</p>
@@ -283,8 +315,8 @@ const shouldDisableRefund = () => {
 
         <div className="flex gap-2 mt-2 text-sm">
           <div className="w-1/2">
-            <button className="bg-[#15b71a] w-full text-white font-bold py-4 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer"
-            disabled={shouldDisableRefund()||(() => {
+            <button className={`bg-[#15b71a] w-full text-white font-bold py-4 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
+            disabled={shouldDisableRefund()&&(() => {
                             const categories =
                               selectedOrder?.orderItems?.map((item) =>
                                 (
@@ -322,8 +354,11 @@ const shouldDisableRefund = () => {
             </button>
           </div>
           <div className="w-1/2">
-            <button className="bg-[#15b71a] w-full text-white font-bold py-2.75 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer"
-              onClick={() => setShowExchange(true)}
+            <button className={`bg-[#15b71a] w-full text-white font-bold py-2.75 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
+            
+              disabled={shouldDisableRefund()}
+              // disabled={true}
+              onClick={() => setShowExchange(true) }
             >
               <span
                 role="img"
@@ -361,16 +396,18 @@ const shouldDisableRefund = () => {
       />
       <RefundPopup
         open={showRefund}
+        disabled={shouldDisableRefund()}
         onClose={() => setShowRefund(false)}
-        items={selectedOrder?.orderItems}
+        items={exchangeableItems}
         orderId={selectedOrder?.orderId} // Pass the ID
         onProcessRefund={onRefund}      // Pass the function
       />
       <ExchangePopup
         open={showExchange}
         onClose={() => setShowExchange(false)}
-        items={selectedOrder?.orderItems}
-        products={testProductList} // You need to pass your master product list here
+        disabled={shouldDisableRefund()}
+        items={exchangeableItems}
+        products={products} // You need to pass your master product list here
         onExchange={onExchange}
         orderId={selectedOrder?.orderId}
       />

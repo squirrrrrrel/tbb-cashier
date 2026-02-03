@@ -16,9 +16,10 @@ import { createOfflineOrder } from "../../utils/createOfflineOrder";
 import { createOrder } from "../../utils/createOrder";
 // import Retail from "./Retail";
 import Retail from "./retail";
+import { useRetail } from "../../hooks/useretail";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePromotionStore } from "../../store/usePromotionStore";
-import { useRetail } from "../../hooks/useretail";
+import PettyCash from "../../components/pos/dashboard/PettyCash";
 
 const Dashboard = () => {
   const { products, hydrate, hydrated } = useProductStore();
@@ -38,8 +39,43 @@ const Dashboard = () => {
   const [customerDetails, setCustomerDetails] = useState({ name: '', phoneCode: { value: "+91" }, phone: '' });
   const { orderData, setOrderData, } = useCartStore();
   const [isPrinting, setIsPrinting] = useState(false);
-  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, managerDiscount } = useCartStore();
-  const { isRetail, isRetailOpen } = useRetail();
+  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
+  const {isRetail, isRetailOpen} = useRetail();
+  const [isPettyClicked, setIsPettyClicked] = useState(false)
+
+  const scanToCart = (barcode) => {
+    const trimmed = (barcode || "").trim();
+    if (!trimmed) return;
+    const product = products.find((p) => (p.barcode || "").toString() === trimmed);
+    if (!product) {
+      setFilters((prev) => ({ ...prev, product: "" }));
+      console.log("No product Added using Barcode");
+      return;
+    }
+    if (
+      product.categoryName?.toLowerCase() === "shots" ||
+      product.categoryName?.toLowerCase() === "butchery"
+    ) {
+      return;
+    }
+    const price = getFinalProductPrice({
+      product,
+      promotions,
+      outletId,
+    });
+    addToCart({
+      id: product.serverId,
+      img: product.img,
+      name: product.name,
+      price,
+      unit: product.unit,
+      stock: product.stock,
+      stockQueue: product.stockQueue ?? 0,
+      categoryName: product.categoryName,
+      quantity: 1,
+    });
+    setFilters((prev) => ({ ...prev, product: "" }));
+  };
 
   //promotions
   const outletId = useAuthStore.getState().user?.outlet_id;
@@ -87,8 +123,12 @@ const Dashboard = () => {
     // }
 
     if (filters.product) {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(filters.product.toLowerCase())
+      const q = filters.product.toLowerCase().trim();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.barcode != null &&
+            p.barcode.toString().toLowerCase().includes(q))
       );
     }
 
@@ -132,7 +172,7 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-
+console.log("Order creation result:", result);
       setOrderData(result.order);
       openPaySuccess(result.orderId);
 
@@ -321,6 +361,90 @@ const Dashboard = () => {
   };
 
 
+  //whats app
+  const handleWhatsApp = async () => {
+    try {
+      let finalphone = orderDetail.customerPhone || `${phoneCode}${phone}`;
+      let customerName =
+        orderDetail.customerName || `${customerNameInput}` || "Customer";
+      finalphone = finalphone.trim().replace(/\D/g, ""); // keep digits only
+
+      if (!finalphone) return;
+
+      if (finalphone.length < 10) {
+        alert("Invalid phone number. Please enter with country code.");
+        return;
+      }
+
+      const {
+        cashierName,
+        orderNumber,
+        orderId,
+        orderDate,
+        subtotal,
+        taxAmount,
+        discountAmount,
+        totalAmount,
+        orderItems = [],
+      } = orderDetail;
+
+      const formattedDate = new Date(orderDate).toLocaleString();
+      const productLines = orderItems
+        .map(
+          (item, idx) =>
+            `${idx + 1}. ${item.itemName} x ${item.quantity
+            } = ${item.totalPrice.toLocaleString("en-IN")}`
+        )
+        .join("\n");
+
+      // WhatsApp message template
+      const message = `Hello ${customerName},
+
+Thank you for shopping with us! 
+Your order has been placed successfully.
+
+*Order Invoice Details*  
+Customer: ${customerName}
+Order No: ${orderNumber} (#${orderId})  
+Date: ${formattedDate}  
+Cashier: ${cashierName}  
+
+*Items:*  
+${productLines || "No items"}  
+
+Subtotal: ${Number(subtotal).toLocaleString("en-IN")}  
+Tax: ${Number(taxAmount).toLocaleString("en-IN")}  
+Discount: ${Number(discountAmount).toLocaleString("en-IN")}  
+--------------------  
+*Total: ${Number(totalAmount).toLocaleString("en-IN")}*  
+
+We truly appreciate your trust in us.  
+Hope to see you again soon!  
+- Team Warnoc`;
+
+      // Send the message through backend
+      const res = await axiosInstance().post("/whatsapp/send", {
+        phone: finalphone,
+        message: message,
+      });
+
+      if (res?.data?.success) {
+        notifySuccess("WhatsApp message sent successfully!", "Success");
+      } else {
+        notifyError(
+          "Failed to send WhatsApp message. Please try again.",
+          "Error"
+        );
+      }
+    } catch (error) {
+      console.error("Error sending WhatsApp message:", error);
+      notifyError(
+        "Whats App is not connected or Something went wrong while sending the message!",
+        "Error"
+      );
+    }
+  };
+
 
   return (
     <div className="flex">
@@ -336,6 +460,9 @@ const Dashboard = () => {
                 productListLength={productListLength}
                 mute={mute}
                 setMute={setMute}
+                scanToCart={scanToCart}
+                isPettyClicked={isPettyClicked}
+                setIsPettyClicked={setIsPettyClicked}
               />
             </div>
             <div className="product-list-container p-4">
@@ -350,30 +477,37 @@ const Dashboard = () => {
                   boxSizing: "border-box",
                 }}
               >
-                {filteredProducts.map((p) => {
-                  const price = getFinalProductPrice({
-                    product: p,
-                    promotions,
-                    outletId,
-                  });
-                  return (
-                    <ProductComp
-                      key={p.serverId ?? p.localId}
-                      id={p.serverId}
-                      img={p.img}
-                      name={p.name}
-                      price={price}
-                      unit={p.unit}
-                      stock={p.stock}
-                      barcode={p.barcode}
-                      stockQueue={p.stockQueue}
-                      isLowStock={p.isLowStock}
-                      categoryName={p.categoryName}
-                      mute={mute}
-                      originalPrice={p.sellingPrice}
-                    />
-                  )
-                })}
+                {filteredProducts.length === 0 ? (
+                  <div className="col-span-full flex flex-col items-center justify-center py-16 text-gray-700">
+                    <span className="text-5xl mb-3">⚠️</span>
+                    <p className="text-2xl font-medium">No product found</p>
+                  </div>
+                ) : (
+                  filteredProducts.map((p) => {
+                    const price = getFinalProductPrice({
+                      product: p,
+                      promotions,
+                      outletId,
+                    });
+                    return (
+                      <ProductComp
+                        key={p.serverId ?? p.localId}
+                        id={p.serverId}
+                        img={p.img}
+                        name={p.name}
+                        price={price}
+                        unit={p.unit}
+                        stock={p.stock}
+                        barcode={p.barcode}
+                        stockQueue={p.stockQueue}
+                        isLowStock={p.isLowStock}
+                        categoryName={p.categoryName}
+                        mute={mute}
+                        originalPrice={p.sellingPrice}
+                      />
+                    );
+                  })
+                )}
               </div>
             </div>
           </>
@@ -396,7 +530,7 @@ const Dashboard = () => {
         orderId={orderId}
         isPrinting={isPrinting}
         setIsPrinting={setIsPrinting}
-        orderData={cartData}
+        orderData={orderData}
         customerDetails={customerDetails}
         setCustomerDetails={setCustomerDetails}
         handleCustomerChange={handleCustomerChange}
@@ -409,6 +543,7 @@ const Dashboard = () => {
           setPayToProceed={setPayToProceed}
         />
       }
+      {isPettyClicked && <PettyCash setIsPettyClicked={setIsPettyClicked} />}
     </div>
   );
 };
