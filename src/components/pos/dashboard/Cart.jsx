@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
 import defaultImg from "../../../assets/images/Default_Product_Img.png";
-import { useRetail } from "../../../hooks/useretail";
+import { useRetail } from "../../../hooks/useRetail";
 import { useHoldOrderStore } from "../../../store/useHoldOrderStore";
 
 import { useAuthStore } from "../../../store/useAuthStore";

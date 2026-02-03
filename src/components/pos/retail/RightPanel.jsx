@@ -5,7 +5,7 @@ import { useProductStore } from "../../../store/useProductStore";
 import { useCartStore } from "../../../store/useCartStore";
 import Select from "react-select";
 import { useEffect } from "react";
-import { useRetail } from "../../../hooks/useretail";
+import { useRetail } from "../../../hooks/useRetail";
 import { useNotification } from "../../../hooks/useNotification";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { usePromotionStore } from "../../../store/usePromotionStore";

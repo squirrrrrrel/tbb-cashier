@@ -16,7 +16,7 @@ import { createOfflineOrder } from "../../utils/createOfflineOrder";
 import { createOrder } from "../../utils/createOrder";
 // import Retail from "./Retail";
 import Retail from "./retail";
-import { useRetail } from "../../hooks/useretail";
+import { useRetail } from "../../hooks/useRetail";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePromotionStore } from "../../store/usePromotionStore";
 import PettyCash from "../../components/pos/dashboard/PettyCash";

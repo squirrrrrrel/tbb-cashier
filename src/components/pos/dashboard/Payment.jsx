@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useCartStore } from "../../../store/useCartStore";
 import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
-import { useRetail } from "../../../hooks/useretail";
+import { useRetail } from "../../../hooks/useRetail";
 
 export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal, cartProducts }) => {
     const { paymentMethods, hydrate, hydrated } = usePaymentMethodStore();

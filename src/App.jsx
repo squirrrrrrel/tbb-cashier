@@ -15,7 +15,7 @@ import { useAuthStore } from "./store/useAuthStore";
 import { useNetworkStore } from "./store/useNetworkStore";
 import { usePosStore } from "./store/usePosStore";
 import { usePaymentMethodStore } from "./store/usePaymentMethodStore";
-import { RetailProvider } from "./hooks/useretail";
+import  RetailProvider  from "./hooks/useRetail.jsx";
 
 
 const App = () => {
