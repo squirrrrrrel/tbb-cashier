@@ -15,7 +15,7 @@ import DashboardPopup from "../../components/pos/dashboard/dashboardPopup";
 import { createOfflineOrder } from "../../utils/createOfflineOrder";
 import { createOrder } from "../../utils/createOrder";
 // import Retail from "./Retail";
-import Retail from "./retail";
+import Retail from "./Retail";
 import { useRetail } from "../../hooks/useRetail";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePromotionStore } from "../../store/usePromotionStore";
