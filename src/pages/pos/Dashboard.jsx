@@ -14,7 +14,9 @@ import PhoneInputWithCode from "../../components/phoneCodeInput/PhoneInputWithCo
 import DashboardPopup from "../../components/pos/dashboard/dashboardPopup";
 import { createOfflineOrder } from "../../utils/createOfflineOrder";
 import { createOrder } from "../../utils/createOrder";
-import Retail from "./Retail";
+// import Retail from "./Retail";
+import Retail from "./retail";
+import { useRetail } from "../../hooks/useretail";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePromotionStore } from "../../store/usePromotionStore";
 import PettyCash from "../../components/pos/dashboard/PettyCash";
@@ -40,8 +42,8 @@ const Dashboard = () => {
 const setOrderData = useCartStore(state => state.setOrderData);
 
   const [isPrinting, setIsPrinting] = useState(false);
-  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, clearOrderData } = useCartStore();
-  const [isRetail, setIsRetail] = useState(false);
+  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
+  const { isRetail, isRetailOpen } = useRetail();
   const [isPettyClicked, setIsPettyClicked] = useState(false)
 
   const scanToCart = (barcode) => {
@@ -81,6 +83,10 @@ const setOrderData = useCartStore(state => state.setOrderData);
   //promotions
   const outletId = useAuthStore.getState().user?.outlet_id;
   const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
+
+  // condition for open the retail section
+  const whenToOpenRetail = payToProceed ? false : (isRetail || isRetailOpen);
+
 
   // // 1️⃣ Restore from store
   // useEffect(() => {
@@ -164,7 +170,12 @@ const setOrderData = useCartStore(state => state.setOrderData);
         cartData,
         customer: selectedCustomer || null,
         table: selectedTable || null,
-        totals: { subtotal, tax, discount, total },
+        totals: {
+          subtotal,
+          tax,
+          discount: discount < 1 ? (subtotal + tax) * (discount) : discount,
+          total
+        },
         paymentMethods: finalOrderData?.paymentMethods || [],
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
@@ -189,8 +200,8 @@ const setOrderData = useCartStore(state => state.setOrderData);
   );
 
   const tax = 0;
-  const discount = 0;
-  const total = subtotal + tax - discount;
+  const discount = managerDiscount;
+  const total = discount < 1 ? (subtotal + tax) * (1 - discount) : subtotal + tax - discount;
 
 
   //promotion functions
@@ -483,6 +494,7 @@ Hope to see you again soon!
                       promotions,
                       outletId,
                     });
+                    const discount = price < p.sellingPrice ? p.sellingPrice - price : 0
                     return (
                       <ProductComp
                         key={p.serverId ?? p.localId}
@@ -492,11 +504,13 @@ Hope to see you again soon!
                         price={price}
                         unit={p.unit}
                         stock={p.stock}
+                        barcode={p.barcode}
                         stockQueue={p.stockQueue}
-                        isLowStock={p.isLowStock}
                         categoryName={p.categoryName}
+                        discount={discount}
                         mute={mute}
                         originalPrice={p.sellingPrice}
+                        lowStockThreshold={p.lowStockThreshold}
                       />
                     );
                   })
@@ -515,8 +529,6 @@ Hope to see you again soon!
           tax={tax}
           discount={discount}
           total={total}
-          isRetail={isRetail}
-          setIsRetail={setIsRetail}
         />
       </div>
       <DashboardPopup
@@ -533,9 +545,10 @@ Hope to see you again soon!
         setCartProducts={setCartProducts}
         setPayToProceed={setPayToProceed}
       />
-      {isRetail &&
+      {whenToOpenRetail &&
         <Retail
-          setIsRetail={setIsRetail}
+          setPayToProceed={setPayToProceed}
+          getFinalProductPrice={getFinalProductPrice}
         />
       }
       {isPettyClicked && <PettyCash setIsPettyClicked={setIsPettyClicked} />}

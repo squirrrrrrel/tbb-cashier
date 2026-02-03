@@ -13,12 +13,14 @@ const ProductComp = ({
   price,
   unit,
   stock,
+  barcode,
   stockQueue,
-  isLowStock,
   categoryName,
   setCartProducts,
+  discount,
   mute,
-  originalPrice
+  originalPrice,
+  lowStockThreshold
 }) => {
   const playBeepSound = () => {
     const audio = new Audio("/sounds/add-to-cart.mp3");
@@ -47,8 +49,10 @@ const ProductComp = ({
         price,
         unit: name.toLowerCase().includes("shots") ? "ml" : unit,
         stock,
+        barcode,
         stockQueue,
-        categoryName
+        categoryName,
+        discount
       });
 
       setSelectPriceFor(
@@ -72,7 +76,9 @@ const ProductComp = ({
       price,
       unit,
       stock,
-      stockQueue
+      barcode,
+      stockQueue, 
+      discount
     });
 
     if (result?.success === false) {
@@ -156,7 +162,7 @@ const ProductComp = ({
           </span>
         </div>
       </div>
-      {isLowStock && (
+      {lowStockThreshold >= stock && (
         <div className="relative">
           <div
             className="low-stock-badge text-xs rounded-full py-px px-2 absolute text-red-700 font-semibold"
