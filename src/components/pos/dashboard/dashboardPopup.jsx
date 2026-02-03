@@ -19,23 +19,24 @@ const DashboardPopup = ({
   setPayToProceed,
 }) => {
   const order = useOrderStore(state =>
-  state.orders.find(o =>
-    o.orderId === orderId ||
-    o.serverOrderId === orderId ||
-    o.localId === orderId
-  )
-);
+    state.orders.find(o =>
+      o.orderId === orderId ||
+      o.serverOrderId === orderId ||
+      o.localId === orderId
+    )
+  );
 
 
   console.log("DashboardPopup Order Data:", orderId); // Debugging line
-    console.log("DashboardPopup Order Data:", orderData); // Debugging line
+    console.log("order data", orderData); // Debugging line
+  console.log("DashboardPopup Order Data:", orderData); // Debugging line
 
   return (
     <>
       {/* ---------- RECEIPT POPUP ---------- */}
       {activePopup === "receipt" && (
         <div className="fixed inset-0 z-50 flex text-[#555555] items-center justify-center bg-black/20">
-          <div className="bg-white rounded-md shadow-2xl w-150 py-4 px-5 animate-in zoom-in duration-200">
+          <div className="bg-white rounded-md shadow-2xl w-150 py-4 px-5 animate-scale-in">
             <div className="py-2 text-center">
               <h2 className="text-2xl font-bold pb-2">Print Receipt</h2>
               <p className="text-gray-500 text-sm mt-2">
@@ -77,7 +78,7 @@ const DashboardPopup = ({
       {/* ---------- CUSTOMER POPUP ---------- */}
       {activePopup === "customer" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30">
-          <div className="bg-white rounded-md shadow-2xl w-[480px] p-6 animate-in fade-in slide-in-from-bottom-4">
+          <div className="bg-white rounded-md shadow-2xl w-[480px] p-6 animate-scale-in">
             <h2 className="text-2xl font-bold mb-6 text-center">
               Add Customer Details
             </h2>

@@ -23,7 +23,7 @@ const PettyCash = ({ setIsPettyClicked }) => {
     }
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={() => setIsPettyClicked(false)}>
-            <div className="bg-white rounded-md shadow-2xl w-[400px] py-5 px-6 animate-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-md shadow-2xl w-[400px] py-5 px-6 animate-scale-in" onClick={e => e.stopPropagation()}>
                 <h1 className='text-2xl text-gray-700 text-center'>Petty Expenses</h1>
                 <div className="in-out-select-button w-full bg-gray-100 p-4 rounded-md mt-4 flex flex-col items-center gap-4">
                     <h2 className='text-xl text-gray-700'>Select Transction Type</h2>

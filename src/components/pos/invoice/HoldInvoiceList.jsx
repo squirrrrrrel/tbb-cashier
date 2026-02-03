@@ -18,7 +18,7 @@ const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, sear
             ) : (
                 <ul className="flex-grow overflow-y-auto no-scrollbar min-h-0 py-0.5 px-1">
                     {orders.map((order) => {
-                        const isActive = order?.orderId === selectedHoldOrder?.orderId;
+                        const isActive = order?.localId === selectedHoldOrder?.localId;
                         return (
                             <li
                                 key={order?.orderId}
@@ -113,7 +113,7 @@ const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, sear
                                                 </svg>
                                             </span>
                                             <span>
-                                                {`${order?.cartData?.customer?.phoneNumber || ""}`}
+                                                {`${order?.cartData?.customer?.phone || ""}`}
                                             </span>
                                         </p>
 
@@ -123,7 +123,7 @@ const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, sear
                                 {/* RIGHT */}
                                 <div className="text-right">
                                     <h3 className="text-lg font-semibold text-secondary">
-                                        P{order?.cartData?.subtotal}
+                                        P{order?.cartData?.subtotal?.toFixed(2)}
                                     </h3>
                                     <p className="text-sm text-gray-500">
                                         {order?.cartData?.orderItems?.length} Items

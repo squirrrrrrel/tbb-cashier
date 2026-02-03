@@ -172,8 +172,8 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-console.log("Order creation result:", result);
-      setOrderData(result.order);
+      console.log("Order details after creating it:", result);
+      setOrderData(result.fulldata);
       openPaySuccess(result.orderId);
 
       notifySuccess(
@@ -500,10 +500,10 @@ Hope to see you again soon!
                         stock={p.stock}
                         barcode={p.barcode}
                         stockQueue={p.stockQueue}
-                        isLowStock={p.isLowStock}
                         categoryName={p.categoryName}
                         mute={mute}
                         originalPrice={p.sellingPrice}
+                        lowStockThreshold={p.lowStockThreshold}
                       />
                     );
                   })

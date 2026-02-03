@@ -11,17 +11,15 @@ const NavButtons = ({ name, icon, target }) => {
       <div
         className={`px-1 py-3 flex flex-col justify-center items-center
           rounded-3xl cursor-pointer transition
-          group ${
-            isActive
-              ? "bg-gradient-to-b from-primary to-secondary text-white"
-              : "text-gray-700 hover:bg-gradient-to-b hover:from-primary hover:to-secondary hover:text-white"
+          group ${isActive
+            ? "bg-gradient-to-b from-primary to-secondary text-white"
+            : "text-gray-700 hover:bg-gradient-to-b hover:from-primary hover:to-secondary hover:text-white"
           }`}
       >
         {icon}
         <p
-          className={`text-sm font-semibold group-hover:text-white ${
-            isActive ? "text-white" : ""
-          }`}
+          className={`text-sm group-hover:text-white ${isActive ? "text-white" : ""
+            }`}
         >
           {name}
         </p>
@@ -43,7 +41,7 @@ const SideHeader = ({ setIsLogoutClicked }) => {
   return (
     <div className="header w-28 p-4 h-screen flex flex-col items-center justify-between gap-4 border-r border-gray-200">
       <div className="flex flex-col items-center justify-center gap-2">
-        <div className="logo mb-1">
+        <div className="logo mb-2">
           <img src={qkartsLogo} className="w-16" alt="warnoc-logo" />
         </div>
         <div className="navlinks flex flex-col gap-2">
@@ -63,7 +61,7 @@ const SideHeader = ({ setIsLogoutClicked }) => {
           className="link px-5 py-3 flex flex-col justify-center items-center bg-transparent hover:bg-linear-to-b hover:from-primary hover:to-secondary rounded-3xl cursor-pointer text-gray-700 group"
         >
           <LogoutIcon />
-          <p className="text-sm font-semibold group-hover:text-white">Logout</p>
+          <p className="text-sm group-hover:text-white">Logout</p>
         </div>
       </div>
     </div>

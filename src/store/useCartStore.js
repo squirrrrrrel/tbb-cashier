@@ -75,6 +75,9 @@ export const useCartStore = create(
             }),
           };
         }),
+        
+        setCartFromHold: (cartData) => set({ cartData: cartData.orderItems }),
+
       // ===== OTHER =====
       setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),
       setSelectedTable: (table) => set({ selectedTable: table }),
