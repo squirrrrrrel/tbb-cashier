@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useCartStore } from "../../../store/useCartStore";
 import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
+import { useRetail } from "../../../hooks/useretail";
 
 export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal, cartProducts }) => {
     const { paymentMethods, hydrate, hydrated } = usePaymentMethodStore();
-    
+
     useEffect(() => {
         if (!hydrated) {
             hydrate();
@@ -16,13 +17,18 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     const [payingAmount, setPayingAmount] = useState("");
     const defaultPaymentMethodId = paymentMethods.length > 0 ? paymentMethods[0].id : null;
     const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethodId);
+    const { isRetail, setIsRetail, isRetailOpen, setIsRetailOpen } = useRetail();
+    const inputRef = useRef(null);
     
+    const isPayDisabled = !payingAmount || parseFloat(payingAmount) < total;
+
     // Update payment method when payment methods are loaded
     useEffect(() => {
         if (paymentMethods.length > 0 && !paymentMethod) {
             setPaymentMethod(paymentMethods[0].id);
         }
-    }, [paymentMethods, paymentMethod]);
+        setPayLeft(total)
+    }, [paymentMethods, paymentMethod, total]);
     const [payLeft, setPayLeft] = useState(total);
     const [change, setChange] = useState("0.00");
     const { selectedTable, selectedCustomer } = useCartStore();
@@ -76,6 +82,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     };
 
     const handlePay = () => {
+        if (isPayDisabled) return;
         const finalOrderData = {
             customerData: { ...selectedCustomer },
             tableData: { ...selectedTable },
@@ -94,7 +101,14 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
         onPay(finalOrderData);
     }
 
-    const isPayDisabled = !payingAmount || parseFloat(payingAmount) < total;
+
+    const HandleGoBack = () => {
+        setPayToProceed(false);
+        if (isRetail || isRetailOpen) {
+            setIsRetail(true);
+            setIsRetailOpen(true);
+        }
+    }
 
     return (
         <div>
@@ -117,7 +131,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                 </div>
             </div>
             <div className="flex gap-6 px-5 py-3">
-                <div onClick={() => { setPayToProceed(false) }} className="bg-gradient-to-b from-secondary to-primary h-12 w-15 text-white rounded-md flex justify-center items-center cursor-pointer">
+                <div onClick={HandleGoBack} className="bg-gradient-to-b from-secondary to-primary h-12 w-15 text-white rounded-md flex justify-center items-center cursor-pointer">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
@@ -141,6 +155,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                         </div>
                         <div className="flex justify-between gap-4 bg-[#f8f8f8] p-2">
                             <input
+                                ref={inputRef}
                                 type="text"
                                 inputMode="decimal"
                                 value={payingAmount}

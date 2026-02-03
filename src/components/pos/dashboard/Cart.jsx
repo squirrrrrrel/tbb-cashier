@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
 import defaultImg from "../../../assets/images/Default_Product_Img.png";
+import { useRetail } from "../../../hooks/useretail";
 import { useHoldOrderStore } from "../../../store/useHoldOrderStore";
 
 import { useAuthStore } from "../../../store/useAuthStore";
@@ -140,7 +141,8 @@ const CartProdctComponent = ({
 
 /* ---------------- CART ---------------- */
 
-const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, setIsRetail, isRetail }) => {
+const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total}) => {
+  
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
   const [loginData, setLoginData] = useState({ username: '', password: '' });
@@ -148,6 +150,7 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
   const [showDiscount, setShowDiscount] = useState(false);
   const [discountType, setDiscountType] = useState("percentage");
   const [discountValue, setDiscountValue] = useState(0.00);
+    const {setIsRetail, setIsRetailOpen} = useRetail();
   const [waiterName, setWaiterName] = useState("");
 
   const {
@@ -157,6 +160,7 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
     resetCart,
     selectedCustomer,
     selectedTable,
+    setManagerDiscount,
   } = useCartStore();
   const user = useAuthStore((u) => u.user);
 
@@ -182,6 +186,7 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
   };
   useEffect(() => {
     cartEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    handleToggleExpand(null);
   }, [cartData]);
 
   const handleProceed = () => {
@@ -210,12 +215,9 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total, se
       notifySuccess("Manager loged In")
     }
   }
-  const saveDiscountHandler = () => {
-    const discountData = {
-      discountType,
-      value: discountValue
-    }
-    console.log(discountData);
+    const saveDiscountHandler = ()=>{
+    const discountData = discountType==="percentage"? discountValue/100 : discountValue;
+    setManagerDiscount(discountData);
     setShowDiscount(false);
 
   }
@@ -262,10 +264,10 @@ const handleHoldOrder = async () => {
 };
 
   return (
-    <div className="h-screen border-l border-gray-200">
-      <div className="cart-header flex items-center justify-between p-4 border-b border-gray-200">
+    <div className="h-full flex flex-col border-l border-gray-200">
+      <div className="cart-header sticky top-0 flex items-center justify-between p-2 border-b border-gray-200 text-[#555555]">
         <div className="icons flex gap-2 fill-gray-600">
-          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={() => setIsRetail(true)}>
+          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={()=> {setIsRetail(true); setIsRetailOpen(true)}}>
             <svg
               viewBox="0 0 1024 1024"
               focusable="false"
@@ -297,7 +299,7 @@ const handleHoldOrder = async () => {
             onClick={() => navigate("/pos/customers")}
             className="select-customer cursor-pointer bg-linear-to-b justify-center from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex items-center gap-2 w-[180px]"
           >
-            <p>{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
+            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -329,13 +331,12 @@ const handleHoldOrder = async () => {
                 </g>
               </g>
             </svg>
-            <p>{selectedTable?.tableNumber ? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
+            <p className="text-[13px]">{selectedTable?.tableNumber ? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
           </button>
         </div>
       </div>
-      <div className="cart-container">
         {/* Cart items will be rendered here */}
-        <div className="cart-products p-2 h-[calc(100vh-380px)] overflow-y-auto no-scrollbar">
+        <div className="p-2 flex-1 flex flex-col z-10 overflow-y-auto overflow-hidden no-scrollbar">
           {cartData?.length > 0 ? (
             cartData?.map((p, index) => (
               <div
@@ -346,7 +347,7 @@ const handleHoldOrder = async () => {
                   product={p}
                   isExpanded={expandedProductId === p.id}
                   onToggle={() => handleToggleExpand(p.id)}
-                  onRemove={() => removeFromCart(p.id)}
+                  onRemove={() => {removeFromCart(p.id); handleToggleExpand(null); }}
                   onQuantityChange={updateQuantity}
                   notifyError={notifyError}
                 />
@@ -357,7 +358,7 @@ const handleHoldOrder = async () => {
             <p className="text-sm text-gray-700">No Products in Cart</p>
           )}
         </div>
-        <div className="cart-details border-t-1 border-gray-200 p-4">
+        <div className="sticky bottom-0 cart-details border-t-1 border-gray-200 px-4 py-2 bg-white">
           {/* Cart details like subtotal, tax, total will be shown here */}
           <div className="cart-summary flex flex-col gap-2 text-gray-600 text-sm">
             <div className="subtotal flex justify-between ">
@@ -370,11 +371,11 @@ const handleHoldOrder = async () => {
             </div>
             <div className="subtotal flex justify-between ">
               <span>Discount</span>
-              <span>P{discount.toFixed(2)}</span>
+              <span>P{Number(discount) < 1 ?`${((subtotal + tax) * (discount)).toFixed(2)}`: `${Number(discount).toFixed(2)}`}</span>
             </div>
           </div>
           <div className="cart-btns mt-4 flex gap-2">
-            <div onClick={() => openModal('discount')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => openModal('discount')} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -388,7 +389,7 @@ const handleHoldOrder = async () => {
               </svg>
               <p>Discount</p>
             </div>
-            <div onClick={() => navigate("/pos/invoices")} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => navigate("/pos/invoices")} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"
@@ -496,7 +497,6 @@ const handleHoldOrder = async () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 };

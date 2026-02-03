@@ -13,9 +13,11 @@ const ProductComp = ({
   price,
   unit,
   stock,
+  barcode,
   stockQueue,
   categoryName,
   setCartProducts,
+  discount,
   mute,
   originalPrice,
   lowStockThreshold
@@ -47,8 +49,10 @@ const ProductComp = ({
         price,
         unit: name.toLowerCase().includes("shots") ? "ml" : unit,
         stock,
+        barcode,
         stockQueue,
-        categoryName
+        categoryName,
+        discount
       });
 
       setSelectPriceFor(
@@ -72,7 +76,9 @@ const ProductComp = ({
       price,
       unit,
       stock,
-      stockQueue
+      barcode,
+      stockQueue, 
+      discount
     });
 
     if (result?.success === false) {
