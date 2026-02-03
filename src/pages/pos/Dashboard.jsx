@@ -35,9 +35,12 @@ const Dashboard = () => {
   const [activePopup, setActivePopup] = useState(null); // 'receipt', 'customer', or null
   const [orderId, setOrderId] = useState(null);
   const [customerDetails, setCustomerDetails] = useState({ name: '', phoneCode: { value: "+91" }, phone: '' });
-  const { orderData, setOrderData } = useCartStore();
+  // const { orderData, setOrderData } = useCartStore();
+  const orderData = useCartStore(state => state.orderData);
+const setOrderData = useCartStore(state => state.setOrderData);
+
   const [isPrinting, setIsPrinting] = useState(false);
-  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart } = useCartStore();
+  const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, clearOrderData } = useCartStore();
   const [isRetail, setIsRetail] = useState(false);
   const [isPettyClicked, setIsPettyClicked] = useState(false)
 
@@ -133,6 +136,10 @@ const Dashboard = () => {
     promoHydrate();
   }, [hydrate, promoHydrate]);
 
+  useEffect(() => {
+  console.log("✅ orderData updated:wertyhj", orderData);
+}, [orderData]);
+
   if (!hydrated || !promoHydarated) {
     return <OfflineLoader />;
   }
@@ -149,6 +156,7 @@ const Dashboard = () => {
     }));
   };
 
+
   const handlePay = async (finalOrderData) => {
 
     try {
@@ -161,23 +169,20 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-      console.log("Order details after creating it:", result);
-      setOrderData(result.fulldata);
-      openPaySuccess(result.orderId);
-
+      //console.log("Order details after creating it:", result.order);
+      setOrderData(result.order);
+      openPaySuccess(result.order.display_id);
       notifySuccess(
         result.mode === "online"
           ? "Order created successfully"
           : "Order saved offline"
       );
       resetCart();
-      //setPayToProceed(false);
     } catch (err) {
       notifyError("Order failed");
       console.error("Error creating order:", err);
     }
   };
-
   const subtotal = cartData.reduce(
     (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0),
     0

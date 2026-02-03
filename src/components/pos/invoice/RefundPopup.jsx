@@ -130,7 +130,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                         </p>
                     )}
 
-                    {refundItems.filter(item => item.productId && item.category_name).map((item, index) => (
+                    {refundItems.filter(item => item.productId && (item.quantity - item.refundQuantity) > 0).map((item, index) => (
                         <div
                             key={item.id || index}
                             className="flex justify-between items-center px-3 py-2 "

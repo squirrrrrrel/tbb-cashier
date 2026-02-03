@@ -318,7 +318,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
                 const categories =
                   selectedOrder?.orderItems?.map((item) =>
                     (
-                      item?.category_name || "undefined"
+                      item?.category_name || "null"
                     ).toLowerCase()
                   ) || [];
                 // Disable if all are butchery or shots

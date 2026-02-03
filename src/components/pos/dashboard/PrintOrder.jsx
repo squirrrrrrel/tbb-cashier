@@ -1,15 +1,53 @@
 import React, { useEffect, useRef } from "react";
-
+import { getProductByServerIdDB } from "../../../db/productsDB";
 const PrintOrder = ({ show, setShow, finalOrderData }) => {
     const printRef = useRef();
-    const isPrinting = useRef(false); // Flag to prevent double printing
+    const isPrinting = useRef(false) // Flag to prevent double printing
+    const [productsMap, setProductsMap] = React.useState({});
+    const [loading, setLoading] = React.useState(false);
+    const originalTitle = document.title;
+    const whole = (num) => {
+        return Math.floor(num);
+    }
+ useEffect(() => {
+    if (!show || !finalOrderData?.orderItems?.length) return;
+
+    let cancelled = false;
+
+    const loadProducts = async () => {
+      setLoading(true);
+
+      const map = {};
+
+      for (const item of finalOrderData.orderItems) {
+        const productId =item.product_id;
+        if (!productId || map[productId]) continue;
+
+        const product = await getProductByServerIdDB(productId);
+        if (product) {
+          map[productId] = product;
+        }
+      }
+
+      if (!cancelled) {
+        setProductsMap(map);
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [show, finalOrderData]);
 
     const handlePrint = () => {
         // Only run if not already printing and ref exists
         if (printRef?.current && finalOrderData && !isPrinting.current) {
             isPrinting.current = true;
 
-            const filename = `Invoice_${finalOrderData.orderId || Date.now()}`;
+            const filename = `Invoice_${finalOrderData.display_id || Date.now()}`;
             const iframe = document.createElement("iframe");
             iframe.style.display = "none";
             document.body.appendChild(iframe);
@@ -151,17 +189,16 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
             setShow(false);
         }
     }, [show, finalOrderData]);
-
     return (
         <div ref={printRef} style={{ display: "none" }}>
             <div className="receipt-content">
                 <h3>Sales Receipt</h3>
 
                 {/* Fixed typo: oderId -> orderId */}
-                <p><b>Order:</b> #{finalOrderData?.orderId || finalOrderData?.date}</p>
-                <p><b>Date:</b> {new Date(finalOrderData?.date).toLocaleString()}</p>
+                <p><b>Order:</b> #{finalOrderData?.orderId || finalOrderData?.display_id}</p>
+                <p><b>Date:</b> {new Date(finalOrderData?.date).toLocaleString() || finalOrderData?.created_at}</p>
                 <p><b>Cashier:</b> {finalOrderData?.cashier || "-"}</p>
-                <p><b>Customer:</b> {finalOrderData?.customerData?.firstName} {finalOrderData?.customerData?.lastName}</p>
+                <p><b>Customer:</b> {finalOrderData?.customerData?.firstName || finalOrderData?.customer?.first_name} {finalOrderData?.customerData?.lastName || finalOrderData?.customer?.last_name}</p>
                 <p><b>Payment:</b> {finalOrderData?.paymentMethodId}</p>
 
                 <table>
@@ -176,10 +213,10 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                     <tbody>
                         {finalOrderData?.orderItems?.map((item, index) => (
                             <tr key={index}>
-                                <td>{item.name || item.productName}</td>
-                                <td className="text-right">P{item.price}</td>
-                                <td className="text-right">{item.quantity}</td>
-                                <td className="text-right">P{parseFloat(item.totalPrice || (item.price * item.quantity)).toFixed(2)}</td>
+                                <td>{item.name || (productsMap[item.productId || item.product_id]?.name || item.productName)}</td>
+                                <td className="text-right">P{item.price || item.unit_price}</td>
+                                <td className="text-right">{whole(item.quantity)}</td>
+                                <td className="text-right">P{parseFloat(item.totalPrice || (item.price * item.quantity) || item.total_amount || 0).toFixed(2)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -207,19 +244,19 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                             <td>Discount</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">-P{parseFloat(finalOrderData?.discount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.discount || finalOrderData?.orderDiscountAmount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Total</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.tenderedAmount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.total || finalOrderData?.total_amount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Tendered</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.tenderedAmount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.tenderedAmount || finalOrderData?.total_amount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Change</td>

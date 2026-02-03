@@ -85,8 +85,10 @@ export const useCartStore = create(
           selectedCustomer: null,
           selectedTable: null,
           cartData: [],
-          orderData: {},
+          //orderData: {},
         }),
+        clearOrderData: () => set({ orderData: null }),
+
     }),
     {
       name: "pos-storage",
