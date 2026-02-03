@@ -17,6 +17,7 @@ const DashboardPopup = ({
   resetCart,
   setCartProducts,
   setPayToProceed,
+  handleWhatsApp
 }) => {
   const order = useOrderStore(state =>
     state.orders.find(o =>
@@ -42,7 +43,13 @@ const DashboardPopup = ({
 
             <div className="flex gap-4 p-2 text-sm">
               <button
-                onClick={() => setActivePopup("customer")}
+                onClick={() => {
+                  if (orderData?.customer?.phone_code && orderData?.customer?.phone_number) {
+                    handleWhatsApp();
+                  } else {
+                    setActivePopup("customer");
+                  }
+                }}
                 className="flex-1 py-2 font-semibold text-white bg-[#15b71a] rounded-md"
               >
                 Send WhatsApp
@@ -80,13 +87,14 @@ const DashboardPopup = ({
             </h2>
 
             <div className="space-y-5">
+              <label className="text-sm font-semibold text-gray-600">Customer Name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 name="name"
                 value={customerDetails.name}
                 placeholder="Enter Customer Name"
                 onChange={handleCustomerChange}
-                className="w-full p-3 bg-background shadow rounded-md text-sm"
+                className="w-full p-3 bg-background shadow rounded-md text-sm mt-2"
               />
 
               <PhoneInputWithCode
@@ -98,7 +106,7 @@ const DashboardPopup = ({
 
             <div className="flex gap-3 mt-7">
               <button
-                onClick={() => setActivePopup("receipt")}
+                onClick={() => handleWhatsApp()}
                 className="flex-1 py-3 text-white font-bold rounded-md bg-[#15b71a]"
               >
                 Send WhatsApp
