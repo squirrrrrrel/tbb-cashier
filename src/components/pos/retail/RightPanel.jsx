@@ -7,14 +7,23 @@ import Select from "react-select";
 import { useEffect } from "react";
 import { useRetail } from "../../../hooks/useretail";
 import { useNotification } from "../../../hooks/useNotification";
+import { useAuthStore } from "../../../store/useAuthStore";
+import { usePromotionStore } from "../../../store/usePromotionStore";
 
-const RightPanel = ({ total, setPayToProceed }) => {
+const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const navigate = useNavigate();
     const { customers, hydrate: customerHydrate } = useCustomerStore();
     const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
-    const { selectedCustomer, setSelectedCustomer, addToCart, cartData, resetCart } = useCartStore();
+    const { selectedCustomer, setSelectedCustomer, addToCart, cartData, resetCart, managerDiscount } = useCartStore();
     const { setIsRetail, setIsRetailOpen } = useRetail();
     const { notifyError } = useNotification();
+    const tax = 0.00;
+    const discount = Number(managerDiscount) < 1 ?((total + tax) * (managerDiscount)).toFixed(2): Number(managerDiscount).toFixed(2);
+
+    
+        //promotions
+        const outletId = useAuthStore.getState().user?.outlet_id;
+        const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
     // --- fatching customers and products data when component mounts ---
     useEffect(() => {
         customerHydrate();
@@ -64,15 +73,23 @@ const RightPanel = ({ total, setPayToProceed }) => {
     };
 
     const handleProductSelect = (data) => {
+        const price = getFinalProductPrice({
+                      product: data,
+                      promotions,
+                      outletId,
+                    });
+        const discount = price < data.sellingPrice ? data.sellingPrice-price : 0
+                    
         const addToCartData = {
             id: data.serverId,
             img: data.img,
             name: data.name,
-            price: data.sellingPrice,
+            price: price,
             stock: data.stock,
             stockQueue: data.stockQueue,
             unit: data.unit,
-            barcode: data.barcode
+            barcode: data.barcode,
+            discount: discount
         }
         const result = addToCart(addToCartData);
         if (result?.success === false) {
@@ -136,7 +153,7 @@ const RightPanel = ({ total, setPayToProceed }) => {
                     {/* Right Buttons */}
                     <div className="flex gap-2">
                         <button className="flex items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer">
-                            <p>{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
+                            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
                             <svg
                                 viewBox="64 64 896 896"
                                 focusable="false"
@@ -155,8 +172,6 @@ const RightPanel = ({ total, setPayToProceed }) => {
                         </button>
                     </div>
                 </div>
-
-
             </div>
 
             {/* SCROLLABLE MIDDLE SPACE */}
@@ -204,21 +219,22 @@ const RightPanel = ({ total, setPayToProceed }) => {
             </div>
 
             {/* FOOTER (STICKY BOTTOM) */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-300 p-4 text-sm z-10">
+            <div className="sticky bottom-0 bg-white border-t border-gray-300 px-4 py-2 text-sm z-10">
 
                 {/* SUMMARY */}
                 <div className="space-y-2 mb-4">
                     <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>P 0.00</span>
+                        <span>P{total ||0.00}</span>
                     </div>
                     <div className="flex justify-between">
                         <span>Tax</span>
-                        <span>P 0.00</span>
+                        <span>P{tax}</span>
                     </div>
                     <div className="flex justify-between">
                         <span>Discount</span>
-                        <span>P 0.00</span>
+                        {/* <span>P{managerDiscount ? managerDiscount : 0.00}</span> */}
+                        <span>P{discount}</span>
                     </div>
                 </div>
 
@@ -318,7 +334,7 @@ const RightPanel = ({ total, setPayToProceed }) => {
                         <h4 className="text-sm">Total Items {cartData.length}</h4>
                     </div>
                     <div className="proceed flex gap-2 items-center">
-                        <div className="price text-xl font-semibold">P{total}</div>
+                        <div className="price text-xl font-semibold">P{total-discount}</div>
                         <div className="icon">
                             <svg
                                 viewBox="64 64 896 896"

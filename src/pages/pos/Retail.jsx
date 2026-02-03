@@ -7,7 +7,7 @@ import { useProductStore } from "../../store/useProductStore";
 import { useCartStore } from "../../store/useCartStore";
 import { useNotification } from "../../hooks/useNotification";
 
-const Retail = ({ setPayToProceed }) => {
+const Retail = ({ setPayToProceed, getFinalProductPrice }) => {
 
     const { products } = useProductStore();
 
@@ -152,11 +152,11 @@ const handleKeyDown = (e) => {
                     </div>
                 </div>
                 <div>
-                    <LeftPanel setTotalAmount={setTotalAmount} />
+                    <LeftPanel setTotalAmount={setTotalAmount} getFinalProductPrice={getFinalProductPrice} />
                 </div>
             </div>
             <div className="w-1/3 h-full">
-                <RightPanel total={totalAmount} setPayToProceed={setPayToProceed}/>
+                <RightPanel total={totalAmount} setPayToProceed={setPayToProceed} getFinalProductPrice={getFinalProductPrice}/>
             </div>
         </div>
     );

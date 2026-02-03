@@ -17,6 +17,7 @@ const ProductComp = ({
   stockQueue,
   categoryName,
   setCartProducts,
+  discount,
   mute,
   originalPrice,
   lowStockThreshold
@@ -50,7 +51,8 @@ const ProductComp = ({
         stock,
         barcode,
         stockQueue,
-        categoryName
+        categoryName,
+        discount
       });
 
       setSelectPriceFor(
@@ -75,7 +77,8 @@ const ProductComp = ({
       unit,
       stock,
       barcode,
-      stockQueue
+      stockQueue, 
+      discount
     });
 
     if (result?.success === false) {

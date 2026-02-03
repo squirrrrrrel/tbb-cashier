@@ -186,6 +186,7 @@ const Cart = ({ onHoldOrder, setPayToProceed, subtotal, tax, discount, total}) =
   };
   useEffect(() => {
     cartEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    handleToggleExpand(null);
   }, [cartData]);
 
   const handleProceed = () => {
@@ -263,8 +264,8 @@ const handleHoldOrder = async () => {
 };
 
   return (
-    <div className="h-screen border-l border-gray-200">
-      <div className="cart-header flex items-center justify-between p-4 border-b border-gray-200">
+    <div className="h-full flex flex-col border-l border-gray-200">
+      <div className="cart-header sticky top-0 flex items-center justify-between p-2 border-b border-gray-200 text-[#555555]">
         <div className="icons flex gap-2 fill-gray-600">
           <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={()=> {setIsRetail(true); setIsRetailOpen(true)}}>
             <svg
@@ -298,7 +299,7 @@ const handleHoldOrder = async () => {
             onClick={() => navigate("/pos/customers")}
             className="select-customer cursor-pointer bg-linear-to-b justify-center from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex items-center gap-2 w-[180px]"
           >
-            <p>{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
+            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -330,13 +331,12 @@ const handleHoldOrder = async () => {
                 </g>
               </g>
             </svg>
-            <p>{selectedTable?.tableNumber ? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
+            <p className="text-[13px]">{selectedTable?.tableNumber ? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
           </button>
         </div>
       </div>
-      <div className="cart-container">
         {/* Cart items will be rendered here */}
-        <div className="cart-products p-2 h-[calc(100vh-380px)] overflow-y-auto no-scrollbar">
+        <div className="p-2 flex-1 flex flex-col z-10 overflow-y-auto overflow-hidden no-scrollbar">
           {cartData?.length > 0 ? (
             cartData?.map((p, index) => (
               <div
@@ -347,7 +347,7 @@ const handleHoldOrder = async () => {
                   product={p}
                   isExpanded={expandedProductId === p.id}
                   onToggle={() => handleToggleExpand(p.id)}
-                  onRemove={() => removeFromCart(p.id)}
+                  onRemove={() => {removeFromCart(p.id); handleToggleExpand(null); }}
                   onQuantityChange={updateQuantity}
                   notifyError={notifyError}
                 />
@@ -358,7 +358,7 @@ const handleHoldOrder = async () => {
             <p className="text-sm text-gray-700">No Products in Cart</p>
           )}
         </div>
-        <div className="cart-details border-t-1 border-gray-200 p-4">
+        <div className="sticky bottom-0 cart-details border-t-1 border-gray-200 px-4 py-2 bg-white">
           {/* Cart details like subtotal, tax, total will be shown here */}
           <div className="cart-summary flex flex-col gap-2 text-gray-600 text-sm">
             <div className="subtotal flex justify-between ">
@@ -371,7 +371,7 @@ const handleHoldOrder = async () => {
             </div>
             <div className="subtotal flex justify-between ">
               <span>Discount</span>
-              <span>P{Number(discount) < 1 ?`${(subtotal + tax) * (discount)}`: `${Number(discount).toFixed(2)}`}</span>
+              <span>P{Number(discount) < 1 ?`${((subtotal + tax) * (discount)).toFixed(2)}`: `${Number(discount).toFixed(2)}`}</span>
             </div>
           </div>
           <div className="cart-btns mt-4 flex gap-2">
@@ -497,7 +497,6 @@ const handleHoldOrder = async () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 };

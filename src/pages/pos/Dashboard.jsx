@@ -40,7 +40,7 @@ const Dashboard = () => {
   const { orderData, setOrderData, } = useCartStore();
   const [isPrinting, setIsPrinting] = useState(false);
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
-  const {isRetail, isRetailOpen} = useRetail();
+  const { isRetail, isRetailOpen } = useRetail();
   const [isPettyClicked, setIsPettyClicked] = useState(false)
 
   const scanToCart = (barcode) => {
@@ -82,8 +82,8 @@ const Dashboard = () => {
   const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
 
   // condition for open the retail section
-  const whenToOpenRetail = payToProceed? false : (isRetail||isRetailOpen);
-  
+  const whenToOpenRetail = payToProceed ? false : (isRetail || isRetailOpen);
+
 
   // // 1️⃣ Restore from store
   // useEffect(() => {
@@ -489,6 +489,7 @@ Hope to see you again soon!
                       promotions,
                       outletId,
                     });
+                    const discount = price < p.sellingPrice ? p.sellingPrice - price : 0
                     return (
                       <ProductComp
                         key={p.serverId ?? p.localId}
@@ -501,6 +502,7 @@ Hope to see you again soon!
                         barcode={p.barcode}
                         stockQueue={p.stockQueue}
                         categoryName={p.categoryName}
+                        discount={discount}
                         mute={mute}
                         originalPrice={p.sellingPrice}
                         lowStockThreshold={p.lowStockThreshold}
@@ -541,6 +543,7 @@ Hope to see you again soon!
       {whenToOpenRetail &&
         <Retail
           setPayToProceed={setPayToProceed}
+          getFinalProductPrice={getFinalProductPrice}
         />
       }
       {isPettyClicked && <PettyCash setIsPettyClicked={setIsPettyClicked} />}
