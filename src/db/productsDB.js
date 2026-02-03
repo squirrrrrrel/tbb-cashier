@@ -48,3 +48,15 @@ export const deleteProductDB = async (localId) => {
   const db = await dbPromise;
   await db.delete(STORE, localId);
 };
+export const getProductByServerIdDB = async (serverId) => {
+  const db = await dbPromise;
+
+  const tx = db.transaction(STORE, "readonly");
+  const store = tx.objectStore(STORE);
+  const index = store.index("serverId");
+
+  const product = await index.get(serverId);
+  await tx.done;
+
+  return product || null;
+};

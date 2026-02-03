@@ -89,9 +89,11 @@ export const useCartStore = create(
           selectedCustomer: null,
           selectedTable: null,
           cartData: [],
-          orderData: {},
+          //orderData: {},
           managerDiscount: 0
         }),
+        clearOrderData: () => set({ orderData: null }),
+
     }),
     {
       name: "pos-storage",
