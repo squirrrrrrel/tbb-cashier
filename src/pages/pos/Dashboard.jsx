@@ -20,6 +20,7 @@ import { useRetail } from "../../hooks/useRetail";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePromotionStore } from "../../store/usePromotionStore";
 import PettyCash from "../../components/pos/dashboard/PettyCash";
+import api from "../../utils/api";
 
 const Dashboard = () => {
   const { products, hydrate, hydrated } = useProductStore();
@@ -39,7 +40,7 @@ const Dashboard = () => {
   const [customerDetails, setCustomerDetails] = useState({ name: '', phoneCode: { value: "+91" }, phone: '' });
   // const { orderData, setOrderData } = useCartStore();
   const orderData = useCartStore(state => state.orderData);
-const setOrderData = useCartStore(state => state.setOrderData);
+  const setOrderData = useCartStore(state => state.setOrderData);
 
   const [isPrinting, setIsPrinting] = useState(false);
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
@@ -143,8 +144,8 @@ const setOrderData = useCartStore(state => state.setOrderData);
   }, [hydrate, promoHydrate]);
 
   useEffect(() => {
-  console.log("✅ orderData updated:wertyhj", orderData);
-}, [orderData]);
+    console.log("✅ orderData updated:wertyhj", orderData);
+  }, [orderData]);
 
   if (!hydrated || !promoHydarated) {
     return <OfflineLoader />;
@@ -371,13 +372,19 @@ console.log("carddara",cartData)
     return applyPromotion(product.sellingPrice, bestPromo);
   };
 
-
   //whats app
   const handleWhatsApp = async () => {
     try {
-      let finalphone = orderDetail.customerPhone || `${phoneCode}${phone}`;
+      // To safely concatenate phone code and phone number, ensure both exist, then fallback if missing.
+      let finalphone =
+        orderData?.customer?.phone_code && orderData?.customer?.phone_number
+          ? `${orderData.customer.phone_code}${orderData.customer.phone_number}`
+          : `${customerDetails.phoneCode?.value ?? ""}${customerDetails.phone ?? ""}`;
+
       let customerName =
-        orderDetail.customerName || `${customerNameInput}` || "Customer";
+        orderData?.customer?.first_name && orderData?.customer?.last_name
+          ? `${orderData.customer.first_name} ${orderData.customer.last_name}`
+          : customerDetails.name || "Customer";
       finalphone = finalphone.trim().replace(/\D/g, ""); // keep digits only
 
       if (!finalphone) return;
@@ -388,23 +395,22 @@ console.log("carddara",cartData)
       }
 
       const {
-        cashierName,
-        orderNumber,
-        orderId,
-        orderDate,
+        cashierName = "Cashier",
+        display_id,
+        order_date,
         subtotal,
-        taxAmount,
-        discountAmount,
-        totalAmount,
+        tax_amount,
+        discount_amount,
+        total_amount,
         orderItems = [],
-      } = orderDetail;
+      } = orderData;
 
-      const formattedDate = new Date(orderDate).toLocaleString();
+      const formattedDate = new Date(order_date).toLocaleString();
       const productLines = orderItems
         .map(
           (item, idx) =>
-            `${idx + 1}. ${item.itemName} x ${item.quantity
-            } = ${item.totalPrice.toLocaleString("en-IN")}`
+            `${idx + 1}. ${item.product_id} x ${item.quantity
+            } = ${item.total_amount.toLocaleString("en-IN")}`
         )
         .join("\n");
 
@@ -416,7 +422,8 @@ Your order has been placed successfully.
 
 *Order Invoice Details*  
 Customer: ${customerName}
-Order No: ${orderNumber} (#${orderId})  
+Phone: +${finalphone}
+Order No: ${display_id}  
 Date: ${formattedDate}  
 Cashier: ${cashierName}  
 
@@ -424,34 +431,39 @@ Cashier: ${cashierName}
 ${productLines || "No items"}  
 
 Subtotal: ${Number(subtotal).toLocaleString("en-IN")}  
-Tax: ${Number(taxAmount).toLocaleString("en-IN")}  
-Discount: ${Number(discountAmount).toLocaleString("en-IN")}  
+Tax: ${Number(tax_amount).toLocaleString("en-IN")}  
+Discount: ${Number(discount_amount).toLocaleString("en-IN")}  
 --------------------  
-*Total: ${Number(totalAmount).toLocaleString("en-IN")}*  
+*Total: ${Number(total_amount).toLocaleString("en-IN")}*  
 
 We truly appreciate your trust in us.  
 Hope to see you again soon!  
-- Team Warnoc`;
+- Team QKarts`;
 
       // Send the message through backend
-      const res = await axiosInstance().post("/whatsapp/send", {
-        phone: finalphone,
+      const res = await api.post("/tenant/whatsapp/send", {
+        event_key: "ORDER_PLACED",
+        to: finalphone,
         message: message,
+      }, {
+        headers: {
+          "x-tenant-id": orderData.tenant_id,
+        },
       });
 
       if (res?.data?.success) {
-        notifySuccess("WhatsApp message sent successfully!", "Success");
+        notifySuccess("WhatsApp message sent successfully!");
+        setActivePopup("receipt")
+        setCustomerDetails({ name: '', phoneCode: { value: "+91" }, phone: '' })
       } else {
         notifyError(
-          "Failed to send WhatsApp message. Please try again.",
-          "Error"
+          "Failed to send WhatsApp message. Please try again."
         );
       }
     } catch (error) {
       console.error("Error sending WhatsApp message:", error);
       notifyError(
-        "Whats App is not connected or Something went wrong while sending the message!",
-        "Error"
+        "Whats App is not connected or Something went wrong while sending the message!"
       );
     }
   };
@@ -551,6 +563,7 @@ Hope to see you again soon!
         resetCart={resetCart}
         setCartProducts={setCartProducts}
         setPayToProceed={setPayToProceed}
+        handleWhatsApp={handleWhatsApp}
       />
       {whenToOpenRetail &&
         <Retail
