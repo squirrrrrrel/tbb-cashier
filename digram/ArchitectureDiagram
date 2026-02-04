@@ -122,3 +122,19 @@ Later internet comes back
 Auto sync
 ↓
 isSynced = true
+
+
+
+ProductComp
+   ↓
+addToCart()  → cartData (NO TAX)
+   ↓
+Dashboard
+   ↓
+subtotal / tax / discount / total (DERIVED)
+   ↓
+createOrder()
+   ↓
+Order saved (WITH TAX)
+   ↓
+PrintOrder uses order totals

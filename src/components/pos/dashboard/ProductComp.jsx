@@ -18,6 +18,7 @@ const ProductComp = ({
   categoryName,
   setCartProducts,
   discount,
+  tax,
   mute,
   originalPrice,
   lowStockThreshold
@@ -49,6 +50,7 @@ const ProductComp = ({
         price,
         unit: name.toLowerCase().includes("shots") ? "ml" : unit,
         stock,
+        tax,
         barcode,
         stockQueue,
         categoryName,
@@ -75,6 +77,7 @@ const ProductComp = ({
       name,
       price,
       unit,
+      tax,
       stock,
       barcode,
       stockQueue, 
