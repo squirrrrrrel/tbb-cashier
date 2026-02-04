@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { getProductByServerIdDB } from "../../../db/productsDB";
+// import { getProductByServerIdDB } from "../../../db/productsDB";
 const PrintOrder = ({ show, setShow, finalOrderData }) => {
     const printRef = useRef();
     const isPrinting = useRef(false) // Flag to prevent double printing
@@ -9,38 +9,39 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
     const whole = (num) => {
         return Math.floor(num);
     }
- useEffect(() => {
-    if (!show || !finalOrderData?.orderItems?.length) return;
+//  useEffect(() => {
+//     if (!show || !finalOrderData?.orderItems?.length) return;
 
-    let cancelled = false;
+//     let cancelled = false;
 
-    const loadProducts = async () => {
-      setLoading(true);
+//     const loadProducts = async () => {
+//       setLoading(true);
 
-      const map = {};
+//       const map = {};
 
-      for (const item of finalOrderData.orderItems) {
-        const productId =item.product_id;
-        if (!productId || map[productId]) continue;
+//       for (const item of finalOrderData.orderItems) {
+//         const productId = item.product_id;
+//         if (!productId || map[productId]) continue;
 
-        const product = await getProductByServerIdDB(productId);
-        if (product) {
-          map[productId] = product;
-        }
-      }
+//         const product = await getProductByServerIdDB(productId);
+//         if (product) {
+//           map[productId] = product;
+//         }
+//       }
+//       console.log("products",productId)
 
-      if (!cancelled) {
-        setProductsMap(map);
-        setLoading(false);
-      }
-    };
+//       if (!cancelled) {
+//         setProductsMap(map);
+//         setLoading(false);
+//       }
+//     };
 
-    loadProducts();
+//     loadProducts();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [show, finalOrderData]);
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [show, finalOrderData]);
 
     const handlePrint = () => {
         // Only run if not already printing and ref exists
@@ -112,7 +113,7 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                             table td:first-child {
                                 width: 39%;
                             }
-                            .sub-total-table tr:nth-child(3) td {
+                            .sub-total-table tr:nth-child(4) td {
                                 font-weight: 700;
                                 font-size: 20px
                             }
@@ -196,8 +197,8 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
 
                 {/* Fixed typo: oderId -> orderId */}
                 <p><b>Order:</b> #{finalOrderData?.orderId || finalOrderData?.display_id}</p>
-                <p><b>Date:</b> {new Date(finalOrderData?.date).toLocaleString() || finalOrderData?.created_at}</p>
-                <p><b>Cashier:</b> {finalOrderData?.cashier || "-"}</p>
+                <p><b>Date:</b> {finalOrderData?.order_date || finalOrderData?.created_at}</p>
+                <p><b>Cashier:</b> {finalOrderData?.user?.first_name || "-"}</p>
                 <p><b>Customer:</b> {finalOrderData?.customerData?.firstName || finalOrderData?.customer?.first_name} {finalOrderData?.customerData?.lastName || finalOrderData?.customer?.last_name}</p>
                 <p><b>Payment:</b> {finalOrderData?.paymentMethodId}</p>
 
@@ -213,7 +214,7 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                     <tbody>
                         {finalOrderData?.orderItems?.map((item, index) => (
                             <tr key={index}>
-                                <td>{item.name || (productsMap[item.productId || item.product_id]?.name || item.productName)}</td>
+                                <td>{item.name || item.productName || item.product?.product_name}</td>
                                 <td className="text-right">P{item.price || item.unit_price}</td>
                                 <td className="text-right">{whole(item.quantity)}</td>
                                 <td className="text-right">P{parseFloat(item.totalPrice || (item.price * item.quantity) || item.total_amount || 0).toFixed(2)}</td>
@@ -239,6 +240,12 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                             <td></td>
                             <td></td>
                             <td className="inputvalue">P{parseFloat(finalOrderData?.subtotal || 0).toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td>Tax</td>
+                            <td></td>
+                            <td></td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.tax_amount || finalOrderData?.taxAmound || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Discount</td>

@@ -5,6 +5,7 @@ import { useRetail } from "../../../hooks/useRetail";
 
 export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal, cartProducts }) => {
     const { paymentMethods, hydrate, hydrated } = usePaymentMethodStore();
+    const [isPaying, setIsPaying] = useState(false);
 
     useEffect(() => {
         if (!hydrated) {
@@ -81,8 +82,8 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
         });
     };
 
-    const handlePay = () => {
-        if (isPayDisabled) return;
+    const handlePay = async () => {
+        if (isPaying || isPayDisabled) return;
         const finalOrderData = {
             customerData: { ...selectedCustomer },
             tableData: { ...selectedTable },
@@ -98,7 +99,21 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
             }],
             paymentMethodId: paymentMethod // Keep for backward compatibility
         }
-        onPay(finalOrderData);
+
+        //onPay(finalOrderData);
+
+
+         try {
+            setIsPaying(true); //  lock button
+
+           await  onPay(finalOrderData); // or your createOrder logic
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+           setIsPaying(false); //  unlock after response
+        }
+        
     }
 
 
@@ -216,7 +231,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                                 <div onClick={() => handleNumpadClick("7")} className={`w-1/5 ${buttonBase} ${hoverStyle}`}>7</div>
                                 <div onClick={() => handleNumpadClick("8")} className={`w-1/5 ${buttonBase} ${hoverStyle}`}>8</div>
                                 <div onClick={() => handleNumpadClick("9")} className={`w-1/5 ${buttonBase} ${hoverStyle}`}>9</div>
-                                <div disabled={isPayDisabled} onClick={handlePay} className={`w-2/5  bg-gradient-to-b from-secondary to-primary text-white shadow-none py-5 ${isPayDisabled ? " opacity-50" : "cursor-pointer"}`}>Pay</div>
+                                <button onClick={!isPayDisabled && !isPaying ? handlePay : undefined} className={`w-2/5  bg-gradient-to-b from-secondary to-primary text-white shadow-none py-5 ${isPayDisabled || isPaying ? " opacity-50" : "cursor-pointer"}`}> {isPaying ? "Paying..." : "Pay"}</button>
                             </div>
 
                             <div className="flex justify-between">

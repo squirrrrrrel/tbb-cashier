@@ -174,7 +174,7 @@ const Dashboard = () => {
         totals: {
           subtotal,
           tax,
-          discount: discount < 1 ? (subtotal + tax) * (discount) : discount,
+          discount,
           total
         },
         paymentMethods: finalOrderData?.paymentMethods || [],
@@ -199,8 +199,14 @@ const Dashboard = () => {
     (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0),
     0
   );
-
-  const tax = 0;
+console.log("carddara",cartData)
+ const tax = cartData.reduce((totalTax, item) => {
+  const taxPercent = Number(item.tax || 0);
+  return (
+    totalTax +
+    (item.price * item.quantity * taxPercent) / 100
+  );
+}, 0);
   const discount = managerDiscount;
   const total = discount < 1 ? (subtotal + tax) * (1 - discount) : subtotal + tax - discount;
 
@@ -521,6 +527,7 @@ Hope to see you again soon!
                         categoryName={p.categoryName}
                         discount={discount}
                         mute={mute}
+                        tax={p.tax}
                         originalPrice={p.sellingPrice}
                         lowStockThreshold={p.lowStockThreshold}
                       />
