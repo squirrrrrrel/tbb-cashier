@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import SearchBar from "../../searchBar/SearchBar";
 import { useAuthStore } from "../../../store/useAuthStore";
 
-const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, searchTerm }) => {
+const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, searchTerm, dateRange, givenDate, setDateRange, setGivenDate, activeBtn }) => {
     const user = useAuthStore((u) => u.user);
     useEffect(() => {
         if (!selectedOrder && orders.length > 0) {
@@ -27,6 +27,12 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                     onChange={setSearchTerm}
                     placeholder="Search by Invoice No, Customer Name, Phone Number...."
                     resultCount={orders.length}
+                    dateRange={dateRange}
+                    givenDate={givenDate}
+                    setDateRange={setDateRange}
+                    setGivenDate={setGivenDate}
+                    activegivenDate={activeBtn==="invoiceBTN"}
+                    activeDateRange ={activeBtn==="weekInvoiceBTN"}
                 />
 
             </div>

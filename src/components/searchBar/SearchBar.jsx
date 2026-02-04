@@ -5,6 +5,12 @@ const SearchBar = ({
   onChange,
   placeholder = "Search...",
   resultCount = 0,
+  dateRange,
+  givenDate,
+  setDateRange,
+  setGivenDate,
+  activegivenDate = false,
+  activeDateRange = false,
 }) => {
   return (
     <div className="search relative mt-4 flex items-center justify-between gap-2">
@@ -28,9 +34,41 @@ const SearchBar = ({
         placeholder={placeholder}
         className="py-2 pl-8 bg-white rounded-md w-4/5 shadow-[0_0_3px_#00000026] outline-0 cursor-text placeholder:text-[#555555] placeholder:text-sm"
       />
+      <div>
+        {activegivenDate &&
+          <input
+            type="date"
+            className="p-2.5 rounded-md text-sm outline-none shadow-[0_0_3px_#00000026] bg-white "
+            // HTML date inputs expect YYYY-MM-DD format
+            value={givenDate.toISOString().split('T')[0]}
+            onChange={(e) => {
+              if (!e.target.value) return; // Ignore if user clears the input
+              setGivenDate(new Date(e.target.value));
+            }}
+          />
+        }
 
-      <span className="text-sm text-[#555555] px-1">
-        {resultCount} Results
+        {activeDateRange &&
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              className="p-2.5 rounded-md text-sm outline-none shadow-[0_0_3px_#00000026] bg-white "
+              value={dateRange.start || ""}
+              onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+            />
+            <span className="text-gray-400">to</span>
+            <input
+              type="date"
+              className="p-2.5 rounded-md text-sm outline-none shadow-[0_0_3px_#00000026] bg-white "
+              value={dateRange.end || ""}
+              onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+            />
+          </div>
+        }
+      </div>
+
+      <span className="text-sm text-[#555555] px-2 min-w-25 text-right">
+        <p>{resultCount} Results</p>
       </span>
     </div>
   );
