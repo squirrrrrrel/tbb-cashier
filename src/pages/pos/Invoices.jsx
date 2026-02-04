@@ -7,14 +7,14 @@ import { useOrderStore } from "../../store/useOrderStore";
 import { fetchOrdersFromAPI } from "../../utils/fetchOrdersFromAPI";
 import { refundOrderAPI } from "../../api/refundApi";
 import { exchangeOrderAPI } from "../../api/exchangeApi";
- import { useHoldOrderStore } from "../../store/useHoldOrderStore";
+import { useHoldOrderStore } from "../../store/useHoldOrderStore";
 import { useCartStore } from "../../store/useCartStore";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
-
-
-const { setCartFromHold } = useCartStore();
-
+  const { setCartFromHold } = useCartStore();
+   
+  const [givenDate, setGivenDate] = useState(new Date());
+  const [dateRange, setDateRange] = useState( {start: null,end: null} );
 
   // const holdOrders = [
   //   {
@@ -247,14 +247,14 @@ const { setCartFromHold } = useCartStore();
   //     },
   //   },
   // ];
-const holdOrders = useHoldOrderStore(state => state.holdOrders);
-const loadHoldOrdersFromDB = useHoldOrderStore(
-  state => state.loadHoldOrdersFromDB
-);
-useEffect(() => {
-  loadOrdersFromDB();
-  loadHoldOrdersFromDB();
-}, []);
+  const holdOrders = useHoldOrderStore(state => state.holdOrders);
+  const loadHoldOrdersFromDB = useHoldOrderStore(
+    state => state.loadHoldOrdersFromDB
+  );
+  useEffect(() => {
+    loadOrdersFromDB();
+    loadHoldOrdersFromDB();
+  }, []);
 
   const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
@@ -284,25 +284,25 @@ useEffect(() => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedHoldOrder, setSelectedHoldOrder] = useState(null);
 
-useEffect(() => {
-  if (!holdOrders.length) {
-    // No hold orders → clear form
-    setSelectedHoldOrder(null);
-  } else if (
-    !selectedHoldOrder ||
-    !holdOrders.find(o => o.localId === selectedHoldOrder.localId)
-  ) {
-    // Select first available hold order
-    setSelectedHoldOrder(holdOrders[0]);
-  }
-}, [holdOrders]);
+  useEffect(() => {
+    if (!holdOrders.length) {
+      // No hold orders → clear form
+      setSelectedHoldOrder(null);
+    } else if (
+      !selectedHoldOrder ||
+      !holdOrders.find(o => o.localId === selectedHoldOrder.localId)
+    ) {
+      // Select first available hold order
+      setSelectedHoldOrder(holdOrders[0]);
+    }
+  }, [holdOrders]);
 
 
   const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
   const selectedOrderData = orders.find(o => orderKey(o) === orderKey(selectedOrder)) || orders.find(o => o) || null;
 
 
-  const isHoldInvoice = activeBtn !== "invoiceBTN";
+  const isHoldInvoice = activeBtn === "holdInvoiceBTN";
 
   const getBtnClass = (btnKey) =>
     `text-lg py-2 px-6 border rounded-md mr-2 cursor-pointer transition-all duration-200
@@ -314,12 +314,42 @@ useEffect(() => {
   const [searchTerm, setSearchTerm] = useState("");
   const [holdSearchTerm, setHoldSearchTerm] = useState("");
 
-  const currentOrders = activeBtn === "invoiceBTN" ? orders : holdOrders;
+  const currentOrders = activeBtn === "holdInvoiceBTN" ? holdOrders : orders;
+
 
   const filteredOrders = currentOrders.filter((order) => {
+
     if (!order) return false;
+
+    // --- 1. DATE FILTERING LOGIC ---
+    const orderDate = new Date(order.createdAt || order.orderDate);
+    const now = new Date();
+    if (activeBtn === "invoiceBTN") {
+      // If 'givenDate' exists, use it; otherwise, use today
+      const targetDate = givenDate ? new Date(givenDate) : new Date();
+
+      const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+      if (orderDate < startOfDay || orderDate > endOfDay) return false;
+
+    } else if (activeBtn === "weekInvoiceBTN") {
+      // Default: 2 weeks (14 days) from now backwards
+      // If a custom range exists, you'd apply that here
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(now.getDate() - 14);
+
+      // If user provided a range, use it, otherwise use the 14-day window
+      const start = dateRange?.start ? new Date(dateRange.start) : fourteenDaysAgo;
+      const end = dateRange?.end ? new Date(dateRange.end) : new Date();
+
+      if (orderDate < start || orderDate > end) return false;
+    }
+
+    // --- 2. SEARCH FILTERING LOGIC (Your existing code) ---
     const search = searchTerm.trim().toLowerCase();
     const holdSearch = holdSearchTerm.trim().toLowerCase();
+
     if (isHoldInvoice) {
       const firstName = order?.cartData?.customer?.firstName;
       const phoneNumber = order?.cartData?.customer?.phoneNumber;
@@ -331,7 +361,7 @@ useEffect(() => {
         (note && String(note).toLowerCase().includes(holdSearch))
       );
     } else {
-      if (search === "") return true; // Include all orders when no search
+      if (search === "") return true;
       const customerName = order?.customerName;
       const customerPhone = order?.customerPhone;
       const userId = order?.userId;
@@ -382,24 +412,24 @@ useEffect(() => {
     }
   }
 
-  const handleExchangeAction = async(newExchangeData) => {
-  if (!newExchangeData?.order_id) {
-    throw new Error("Missing order_id for exchange");
-  }
- try {
-    // 1️⃣ Call backend exchange API
-    await exchangeOrderAPI(newExchangeData);
+  const handleExchangeAction = async (newExchangeData) => {
+    if (!newExchangeData?.order_id) {
+      throw new Error("Missing order_id for exchange");
+    }
+    try {
+      // 1️⃣ Call backend exchange API
+      await exchangeOrderAPI(newExchangeData);
 
-    // 2️⃣ Sync fresh data from server
-    await fetchOrdersFromAPI();
+      // 2️⃣ Sync fresh data from server
+      await fetchOrdersFromAPI();
 
-    // 3️⃣ Reload orders from IndexedDB → Zustand
-    await loadOrdersFromDB();
-  } catch (error) {
-    // 🔴 Let RefundPopup handle error message
-    throw error;
+      // 3️⃣ Reload orders from IndexedDB → Zustand
+      await loadOrdersFromDB();
+    } catch (error) {
+      // 🔴 Let RefundPopup handle error message
+      throw error;
+    }
   }
-}
 
   return (
     <div className="flex w-full h-screen">
@@ -414,28 +444,45 @@ useEffect(() => {
             </button>
 
             <button
+              className={getBtnClass("weekInvoiceBTN")}
+              onClick={() => setActiveBtn("weekInvoiceBTN")}
+            >
+              2 Week Invoice
+            </button>
+            <button
               className={getBtnClass("holdInvoiceBTN")}
               onClick={() => setActiveBtn("holdInvoiceBTN")}
             >
               Invoices on Hold
             </button>
+            {/* <button
+              className={getBtnClass("creditInvoiceBTN")}
+              onClick={() => setActiveBtn("creditInvoiceBTN")}
+            >
+              Invoices on Credit
+            </button> */}
           </div>
         </div>
-        {activeBtn === "invoiceBTN" ? (
-          <InvoiceList
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            orders={filteredOrders}
-            selectedOrder={selectedOrder}
-            setSelectedOrder={setSelectedOrder}
-          />
-        ) : (
+        {activeBtn === "holdInvoiceBTN" ? (
           <HoldInvoiceList
             searchTerm={holdSearchTerm}
             setSearchTerm={setHoldSearchTerm}
             orders={filteredOrders}
             selectedHoldOrder={selectedHoldOrder}
             setSelectedHoldOrder={setSelectedHoldOrder}
+          />
+        ) : (
+          <InvoiceList
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            orders={filteredOrders}
+            selectedOrder={selectedOrder}
+            setSelectedOrder={setSelectedOrder}
+            dateRange={dateRange}
+            givenDate={givenDate}
+            setDateRange={setDateRange}
+            setGivenDate={setGivenDate}
+            activeBtn={activeBtn}
           />
         )}
       </div>
@@ -448,9 +495,9 @@ useEffect(() => {
         /> : <HoldInvoiceFrom
           selectedHoldOrder={selectedHoldOrder}
           onAddToCart={(cartData) => {
-    setCartFromHold(cartData);
-   // setActiveBtn("invoiceBTN");
-  }}
+            setCartFromHold(cartData);
+            // setActiveBtn("invoiceBTN");
+          }}
           onDelete={() => { setSelectedHoldOrder(); }}
         />}
 

@@ -151,10 +151,6 @@ const Dashboard = () => {
     return <OfflineLoader />;
   }
 
-  const saveHoldOrder = (waiterName) => {
-    console.log(` Waiter's Name: ${waiterName}, cartData ${cartProducts}`);
-  }
-
   const handleCustomerChange = (e) => {
     const { name, value } = e.target;
     setCustomerDetails((prev) => ({
@@ -542,7 +538,6 @@ Hope to see you again soon!
       <div className="w-2/5 h-screen">
         {/* <Cart cartProducts={cartProducts} setCartProducts={setCartProducts} onHoldOrder={saveHoldOrder} setPayToProceed={setPayToProceed} subtotal={subtotal} tax={tax} discount={discount} total={total} /> */}
         <Cart
-          onHoldOrder={saveHoldOrder}
           setPayToProceed={setPayToProceed}
           subtotal={subtotal}
           tax={tax}

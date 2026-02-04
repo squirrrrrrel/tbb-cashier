@@ -4,17 +4,19 @@ import { useCustomerStore } from "../../../store/useCustomerStore";
 import { useProductStore } from "../../../store/useProductStore";
 import { useCartStore } from "../../../store/useCartStore";
 import Select from "react-select";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRetail } from "../../../hooks/useRetail";
 import { useNotification } from "../../../hooks/useNotification";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { usePromotionStore } from "../../../store/usePromotionStore";
+import DiscountHoldOrderPopup from "../dashboard/DiscountHoldOrderPopup";
 
 const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const navigate = useNavigate();
     const { customers, hydrate: customerHydrate } = useCustomerStore();
     const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
     const { selectedCustomer, setSelectedCustomer, addToCart, cartData, resetCart, managerDiscount } = useCartStore();
+    const [activeModal, setActiveModal] = useState("");
     const { setIsRetail, setIsRetailOpen } = useRetail();
     const { notifyError } = useNotification();
     const tax = 0.00;
@@ -285,7 +287,9 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                     </div>
                 </div>
                 <div className="cart-btns mt-4 flex gap-2">
-                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" >
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" 
+                    onClick={()=>setActiveModal("discount")}
+                    >
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -313,7 +317,8 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         </svg>
                         <p>Exchange</p>
                     </div>
-                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer"
+                    onClick={()=>setActiveModal("holdOrder")}>
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -351,6 +356,16 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                     </div>
                 </div>
             </div>
+
+            {/* popup for hold order and manager discount */}
+            <DiscountHoldOrderPopup
+                activeModal={activeModal}
+                closeModal={()=>setActiveModal(null)}
+                subtotal={total}
+                tax={tax}
+                discount={discount}
+                total={total+tax-discount}
+            />
         </div>
     );
 };
