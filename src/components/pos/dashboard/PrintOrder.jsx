@@ -263,13 +263,13 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                             <td>Tendered</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.tenderedAmount || finalOrderData?.total_amount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.transactions[0]?.tendered_amount || finalOrderData?.total_amount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Change</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.change || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.transactions[0]?.cash_returned || 0).toFixed(2)}</td>
                         </tr>
                     </tbody>
                 </table>
