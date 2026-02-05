@@ -12,7 +12,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
   //promotions
   const outletId = useAuthStore.getState().user?.outlet_id;
   const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
-
+  const tax = 0.00; // Placeholder for tax calculation
   // --- Calculate Total Amount for the entire cart ---
   useEffect(() => {
     const total = cartData.reduce((acc, item) => {
@@ -24,22 +24,36 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
     if (setTotalAmount) setTotalAmount(total);
   }, [cartData, setTotalAmount]);
 
-  const changeQuantity = (method, item) => {
+  const changeQuantity = (method, item, newValue) => {
+    const maxQty = item.stock + item.stockQueue;
+
     if (method === "inc") {
-      const maxQty = item.stock + item.stockQueue;
       const newQty = item.quantity + 1;
       if (newQty > maxQty) {
-        notifyError(<>Only <span style={{ color: "red" }}>{item.stock + item.stockQueue}</span> items available in<br />stock for {item.name}</>);
+        notifyError(<>Only <span style={{ color: "red" }}>{maxQty}</span> items available in stock</>);
         return;
       }
       updateQuantity(item.id, newQty);
-    } else {
+    }
+
+    else if (method === "dec") {
       const newQty = item.quantity - 1;
-      if (newQty <= 0) {
-        // removeFromCart(item.id);
+      if (newQty > 0) updateQuantity(item.id, newQty);
+    }
+
+    else if (method === "manual") {
+      const val = parseInt(newValue);
+
+      // If input is empty or not a number, we can let them type, 
+      // but we only update if it's a valid number.
+      if (isNaN(val) || val <= 0) return;
+
+      if (val > maxQty) {
+        notifyError(<>Only <span style={{ color: "red" }}>{maxQty}</span> items available</>);
+        // By not calling updateQuantity, the input will revert to the previous state value
         return;
       }
-      updateQuantity(item.id, newQty);
+      updateQuantity(item.id, val);
     }
   }
 
@@ -55,13 +69,13 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
       <div className="sticky top-0 z-10">
         <div className="flex text-sm font-semibold text-white bg-gradient-to-b from-secondary to-primary">
           <div className="flex-1 flex">
-            <div className="flex-1 w-1/4 px-3 py-3">Barcode</div>
-            <div className="flex-1 w-1/4 px-3 py-3">Item</div>
+            <div className="flex-1 w-1/6 px-3 py-3">Barcode</div>
+            <div className="flex-1 w-1/3 px-3 py-3">Item</div>
           </div>
           <div className="flex-1 w-2/4  py-3">
             <div className="grid grid-cols-4 text-center">
-              <span>Unit</span>
               <span>Qty</span>
+              <span>Tax</span>
               <span>Discount</span>
               <span>Subtotal</span>
             </div>
@@ -91,30 +105,44 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
             return (
               <div key={item.serverId || index} className="flex border-b border-gray-100 py-3 hover:bg-gray-50 transition-colors">
                 <div className="flex-1 flex">
-                  <div className="px-3 flex-1 font-mono text-xs self-center">{item.barcode || "N/A"}</div>
-                  <div className="px-3 flex-1 font-medium self-center">{item.name}</div>
+                  <div className="px-3  font-mono text-xs self-center">{item.barcode || "N/A"}</div>
+                  <div className="px-3 flex-1 flex flex-col font-medium self-center">
+                    <span>{item.name}</span>
+                    <span className="text-xs font-bold text-gray-400">P{unitPrice} X {quantity}</span>
+                  </div>
                 </div>
                 {/* <div className="flex-1 self-center"> */}
                 <div className="flex-1 grid grid-cols-4 text-center items-center">
-                  <span className="text-gray-400">P {unitPrice}</span>
                   {/* <span className="font-bold">{quantity}</span> */}
-                  <span className="font-bold">
-                    <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden  border border-gray-200">
-                      <div
-                        onClick={() => changeQuantity("dec", item)}
-                        className="w-10 pb-0.5 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
-                      >
-                        -
-                      </div>
-                      <span>{quantity}</span>
-                      <div
-                        onClick={() => changeQuantity("inc", item)}
-                        className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
-                      >
-                        +
-                      </div>
+                  <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden border border-gray-200">
+                    <div
+                      onClick={() => changeQuantity("dec", item)}
+                      className="w-10 pb-0.5 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
+                    >
+                      -
                     </div>
-                  </span>
+
+                    <input
+                      type="number"
+                      className="w-10 text-center outline-none border-none font-bold appearance-none"
+                      value={item.quantity}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => changeQuantity("manual", item, e.target.value)}
+                      onBlur={(e) => {
+                        // Revert if they leave the input empty
+                        if (e.target.value === "") updateQuantity(item.id, item.quantity);
+                      }}
+                    />
+
+                    <div
+                      onClick={() => changeQuantity("inc", item)}
+                      className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
+                    >
+                      +
+                    </div>
+                  </div>
+
+                  <span className="text-gray-400">P{tax.toFixed(2)}</span>
                   <span className="text-red-400">P{discountValue}</span>
                   <span className="font-semibold text-gray-800">P {subtotal.toFixed(2)}</span>
                 </div>

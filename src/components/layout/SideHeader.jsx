@@ -39,7 +39,7 @@ const SideHeader = ({ setIsLogoutClicked }) => {
   ];
 
   return (
-    <div className="header w-28 p-4 h-screen flex flex-col items-center justify-between gap-4 border-r border-gray-200">
+    <div className="header w-[109px] p-4 h-screen flex flex-col items-center justify-between gap-4 border-r border-gray-200">
       <div className="flex flex-col items-center justify-center gap-2">
         <div className="logo mb-2">
           <img src={qkartsLogo} className="w-16" alt="warnoc-logo" />

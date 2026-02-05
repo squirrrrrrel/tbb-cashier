@@ -487,7 +487,7 @@ const Invoices = () => {
         )}
       </div>
 
-      <div className="invoice-form w-2/5 h-full overflow-y-auto">
+      <div className="invoice-form w-[35vw] h-full overflow-y-auto">
         {!isHoldInvoice ? <InvoiceForm
           selectedOrder={selectedOrderData}
           onRefund={handleRefundAction}

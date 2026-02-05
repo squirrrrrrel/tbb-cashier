@@ -65,7 +65,7 @@ const Customers = () => {
   return (
     <div className="w-full h-full flex">
       {/* LEFT: CUSTOMER LIST */}
-      <div className="customer-list py-2 w-3/5 bg-background flex flex-col h-full">
+      <div className="customer-list py-2 flex-grow bg-background flex flex-col h-full">
         <div className="customer-list-header mb-2 px-2.5">
           <h2 className="text-2xl font-semibold text-gray-700">Customers</h2>
           <SearchBar
@@ -88,7 +88,7 @@ const Customers = () => {
       </div>
 
       {/* RIGHT: FORM */}
-      <div className="form w-2/5 overflow-y-auto no-scrollbar">
+      <div className="form w-[35vw] overflow-y-auto no-scrollbar">
         <AddCustomersForm
           focusedCustomer={focusedCustomer}
           clearSelection={() => setFocusedCustomer(null)}
