@@ -27,6 +27,24 @@ const DashboardPopup = ({
     )
   );
 
+  useEffect(() => {
+  const handleGlobalKeyDown = (e) => {
+    // Only trigger if the receipt popup is the one currently visible
+    if (activePopup === "receipt" && e.key === "Enter") {
+      e.preventDefault();
+      setIsPrinting(true);
+    }
+  };
+
+  // Add listener when component mounts
+  window.addEventListener("keydown", handleGlobalKeyDown);
+
+  // Clean up listener when component unmounts
+  return () => {
+    window.removeEventListener("keydown", handleGlobalKeyDown);
+  };
+}, [activePopup, setIsPrinting]); // Dependencies ensure logic stays current
+
 
   return (
     <>

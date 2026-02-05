@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCartStore } from "../../../store/useCartStore";
 import defaultImg from "../../../assets/images/Default_Product_Img.png";
-import { useRetail } from "../../../hooks/useRetail";
 import DiscountHoldOrderPopup from "./DiscountHoldOrderPopup";
 import { useAuthStore } from "../../../store/useAuthStore";
 
@@ -145,7 +144,7 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
   const [activeModal, setActiveModal] = useState(null);
-    const {setIsRetail, setIsRetailOpen} = useRetail();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const {
     cartData,
@@ -178,6 +177,19 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
     handleToggleExpand(null);
   }, [cartData]);
 
+  // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
+  useEffect(() => {
+    const handleStatusChange = () => {
+        setIsOnline(navigator.onLine);
+    };
+    window.addEventListener('online', handleStatusChange);
+    window.addEventListener('offline', handleStatusChange);
+    return () => {
+        window.removeEventListener('online', handleStatusChange);
+        window.removeEventListener('offline', handleStatusChange);
+    };
+}, []);
+
   const handleProceed = () => {
     if (totalItems === 0) {
       notifyError("Please add items in the cart");
@@ -188,28 +200,29 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
 
   return (
     <div className="h-full flex flex-col border-l border-gray-200">
-      <div className="cart-header sticky top-0 flex items-center justify-between p-2 border-b border-gray-200 text-[#555555]">
-        <div className="icons flex gap-2 fill-gray-600">
-          <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={()=> {setIsRetail(true); setIsRetailOpen(true)}}>
-            <svg
-              viewBox="0 0 1024 1024"
-              focusable="false"
-              data-icon="shopping-cart"
-              width="24"
-              height="24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M922.9 701.9H327.4l29.9-60.9 496.8-.9c16.8 0 31.2-12 34.2-28.6l68.8-385.1c1.8-10.1-.9-20.5-7.5-28.4a34.99 34.99 0 00-26.6-12.5l-632-2.1-5.4-25.4c-3.4-16.2-18-28-34.6-28H96.5a35.3 35.3 0 100 70.6h125.9L246 312.8l58.1 281.3-74.8 122.1a34.96 34.96 0 00-3 36.8c6 11.9 18.1 19.4 31.5 19.4h62.8a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7h161.1a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7H923c19.4 0 35.3-15.8 35.3-35.3a35.42 35.42 0 00-35.4-35.2zM305.7 253l575.8 1.9-56.4 315.8-452.3.8L305.7 253zm96.9 612.7c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6zm325.1 0c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6z"></path>
-            </svg>
-          </div>
-          <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={resetCart}>
+      <div className="cart-header sticky top-0 flex items-center justify-between px-3 py-2.5 border-b border-gray-200 text-[#555555]">
+        <div className="icons flex gap-3 fill-gray-600">
+          <div className="cart-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer">
+                            <svg
+                                viewBox="0 0 1024 1024"
+                                focusable="false"
+                                data-icon="shopping-cart"
+                                width="26"
+                                height="26"
+                                fill="currentColor"
+                                aria-hidden="true"
+                                color={isOnline ? "green" : "red"}
+                            >
+                                <path d="M723 620.5C666.8 571.6 593.4 542 513 542s-153.8 29.6-210.1 78.6a8.1 8.1 0 00-.8 11.2l36 42.9c2.9 3.4 8 3.8 11.4.9C393.1 637.2 450.3 614 513 614s119.9 23.2 163.5 61.5c3.4 2.9 8.5 2.5 11.4-.9l36-42.9c2.8-3.3 2.4-8.3-.9-11.2zm117.4-140.1C751.7 406.5 637.6 362 513 362s-238.7 44.5-327.5 118.4a8.05 8.05 0 00-1 11.3l36 42.9c2.8 3.4 7.9 3.8 11.2 1C308 472.2 406.1 434 513 434s205 38.2 281.2 101.6c3.4 2.8 8.4 2.4 11.2-1l36-42.9c2.8-3.4 2.4-8.5-1-11.3zm116.7-139C835.7 241.8 680.3 182 511 182c-168.2 0-322.6 59-443.7 157.4a8 8 0 00-1.1 11.4l36 42.9c2.8 3.3 7.8 3.8 11.1 1.1C222 306.7 360.3 254 511 254c151.8 0 291 53.5 400 142.7 3.4 2.8 8.4 2.3 11.2-1.1l36-42.9c2.9-3.4 2.4-8.5-1.1-11.3zM448 778a64 64 0 10128 0 64 64 0 10-128 0z"></path>
+                            </svg>
+                        </div>
+          <div className="reset-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer" onClick={resetCart}>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
               data-icon="redo"
-              width="24"
-              height="24"
+              width="26"
+              height="26"
               fill="currentColor"
               aria-hidden="true"
             >

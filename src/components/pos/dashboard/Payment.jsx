@@ -20,7 +20,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethodId);
     const { isRetail, setIsRetail, isRetailOpen, setIsRetailOpen } = useRetail();
     const inputRef = useRef(null);
-    
+
     const isPayDisabled = !payingAmount || parseFloat(payingAmount) < total;
 
     // Update payment method when payment methods are loaded
@@ -50,6 +50,16 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     const handleBoxClick = (val) => {
         setPayingAmount(val);
     }
+    // to fucus input on component mount
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+                inputRef.current.select(); // This highlights the text inside
+            }
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (!payingAmount) {
@@ -63,6 +73,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
             setPayLeft(0.00);
             setChange((parseFloat(payingAmount) - total).toFixed(2));
         }
+        inputRef.current.focus();
     }, [payingAmount])
 
     const handleClear = () => setPayingAmount("");
@@ -103,19 +114,27 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
         //onPay(finalOrderData);
 
 
-         try {
+        try {
             setIsPaying(true); //  lock button
 
-           await  onPay(finalOrderData); // or your createOrder logic
+            await onPay(finalOrderData); // or your createOrder logic
 
         } catch (err) {
             console.error(err);
         } finally {
-           setIsPaying(false); //  unlock after response
+            setIsPaying(false); //  unlock after response
         }
-        
+
     }
 
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault(); // Prevents form submission or page refresh
+            if (!isPayDisabled && !isPaying) {
+                handlePay();
+            }
+        }
+    };
 
     const HandleGoBack = () => {
         setPayToProceed(false);
@@ -175,6 +194,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                                 inputMode="decimal"
                                 value={payingAmount}
                                 placeholder="0.00"
+                                onKeyDown={handleKeyDown}
                                 onChange={(e) => {
                                     const inputValue = e.target.value;
                                     if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
