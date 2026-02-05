@@ -272,7 +272,7 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
         </div>
       </div>
         {/* Cart items will be rendered here */}
-        <div className="p-2 flex-1 flex flex-col z-10 overflow-y-auto overflow-hidden no-scrollbar">
+        <div className="p-2 flex-1 flex flex-col overflow-y-auto overflow-hidden no-scrollbar">
           {cartData?.length > 0 ? (
             cartData?.map((p, index) => (
               <div

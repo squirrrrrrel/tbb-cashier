@@ -50,7 +50,7 @@ const DashboardPopup = ({
     <>
       {/* ---------- RECEIPT POPUP ---------- */}
       {activePopup === "receipt" && (
-        <div className="fixed inset-0 z-50 flex text-[#555555] items-center justify-center bg-black/20">
+        <div className="fixed inset-0 z-999 flex text-[#555555] items-center justify-center bg-black/20">
           <div className="bg-white rounded-md shadow-2xl w-150 py-4 px-5 animate-scale-in">
             <div className="py-2 text-center">
               <h2 className="text-2xl font-bold pb-2">Print Receipt</h2>
@@ -98,7 +98,7 @@ const DashboardPopup = ({
 
       {/* ---------- CUSTOMER POPUP ---------- */}
       {activePopup === "customer" && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/30">
           <div className="bg-white rounded-md shadow-2xl w-[480px] p-6 animate-scale-in">
             <h2 className="text-2xl font-bold mb-6 text-center">
               Add Customer Details
