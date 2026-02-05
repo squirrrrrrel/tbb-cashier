@@ -17,35 +17,51 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
     const { selectedCustomer, setSelectedCustomer, addToCart, cartData, resetCart, managerDiscount } = useCartStore();
     const [activeModal, setActiveModal] = useState("");
-    const { setIsRetail, setIsRetailOpen } = useRetail();
+    const { setIsRetailOpen } = useRetail();
     const { notifyError } = useNotification();
     const tax = 0.00;
-    const discount = Number(managerDiscount) < 1 ?((total + tax) * (managerDiscount)).toFixed(2): Number(managerDiscount).toFixed(2);
-
+    const discount = Number(managerDiscount) < 1 ? ((total + tax) * (managerDiscount)).toFixed(2) : Number(managerDiscount).toFixed(2);
     
-        //promotions
-        const outletId = useAuthStore.getState().user?.outlet_id;
-        const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
+      const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+
+    //promotions
+    const outletId = useAuthStore.getState().user?.outlet_id;
+    const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
     // --- fatching customers and products data when component mounts ---
     useEffect(() => {
         customerHydrate();
         productsHydrate();
-    }, [productsHydrate, customerHydrate])
+        promoHydrate();
+    }, [productsHydrate, customerHydrate, promoHydrate])
     useEffect(() => {
         console.log(customers);
         console.log(products);
     }, [customers, products])
+    // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
+      useEffect(() => {
+        const handleStatusChange = () => {
+            setIsOnline(navigator.onLine);
+        };
+        window.addEventListener('online', handleStatusChange);
+        window.addEventListener('offline', handleStatusChange);
+        return () => {
+            window.removeEventListener('online', handleStatusChange);
+            window.removeEventListener('offline', handleStatusChange);
+        };
+    }, []);
 
     // --- Data Formatting for Searchable Select ---
     const customerOptions = [
-    // The "Reset" option
-    { value: "default", label: "Select Customer", data: {} }, 
-    ...(customers?.map(c => ({
-        value: c.serverId,
-        label: `${c.firstName} ${c.lastName}`,
-        data: c
-    })) || [])
-];
+        // The "Reset" option
+        { value: "default", label: "Select Customer", data: {} },
+        ...(customers?.map(c => ({
+            value: c.serverId,
+            label: `${c.firstName} ${c.lastName}`,
+            data: c
+        })) || [])
+    ];
+    
 
     const productOptions = products?.map(p => ({
         value: p?.serverId,
@@ -76,12 +92,12 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
 
     const handleProductSelect = (data) => {
         const price = getFinalProductPrice({
-                      product: data,
-                      promotions,
-                      outletId,
-                    });
-        const discount = price < data.sellingPrice ? data.sellingPrice-price : 0
-                    
+            product: data,
+            promotions,
+            outletId,
+        });
+        const discount = price < data.sellingPrice ? data.sellingPrice - price : 0
+
         const addToCartData = {
             id: data.serverId,
             img: data.img,
@@ -119,31 +135,32 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         <div className="h-full flex flex-col bg-white rounded-md text-[#555555]">
 
             {/* HEADER (STICKY TOP) */}
-            <div className="sticky top-0 z-20 bg-white border-b border-gray-300 p-4">
+            <div className="sticky top-0 z-20 bg-white border-b border-gray-300 py-2.5 px-3">
                 <div className="flex items-center justify-between">
 
                     {/* Left Icons */}
-                    <div className="flex gap-2">
-                        <div className="cart-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={() => { setIsRetail(false); setIsRetailOpen(false); }}>
+                    <div className="flex gap-3">
+                        <div className="cart-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer">
                             <svg
                                 viewBox="0 0 1024 1024"
                                 focusable="false"
                                 data-icon="shopping-cart"
-                                width="24"
-                                height="24"
+                                width="26"
+                                height="26"
                                 fill="currentColor"
                                 aria-hidden="true"
+                                color={isOnline ? "green" : "red"}
                             >
-                                <path d="M922.9 701.9H327.4l29.9-60.9 496.8-.9c16.8 0 31.2-12 34.2-28.6l68.8-385.1c1.8-10.1-.9-20.5-7.5-28.4a34.99 34.99 0 00-26.6-12.5l-632-2.1-5.4-25.4c-3.4-16.2-18-28-34.6-28H96.5a35.3 35.3 0 100 70.6h125.9L246 312.8l58.1 281.3-74.8 122.1a34.96 34.96 0 00-3 36.8c6 11.9 18.1 19.4 31.5 19.4h62.8a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7h161.1a102.43 102.43 0 00-20.6 61.7c0 56.6 46 102.6 102.6 102.6s102.6-46 102.6-102.6c0-22.3-7.4-44-20.6-61.7H923c19.4 0 35.3-15.8 35.3-35.3a35.42 35.42 0 00-35.4-35.2zM305.7 253l575.8 1.9-56.4 315.8-452.3.8L305.7 253zm96.9 612.7c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6zm325.1 0c-17.4 0-31.6-14.2-31.6-31.6 0-17.4 14.2-31.6 31.6-31.6s31.6 14.2 31.6 31.6a31.6 31.6 0 01-31.6 31.6z"></path>
+                                <path d="M723 620.5C666.8 571.6 593.4 542 513 542s-153.8 29.6-210.1 78.6a8.1 8.1 0 00-.8 11.2l36 42.9c2.9 3.4 8 3.8 11.4.9C393.1 637.2 450.3 614 513 614s119.9 23.2 163.5 61.5c3.4 2.9 8.5 2.5 11.4-.9l36-42.9c2.8-3.3 2.4-8.3-.9-11.2zm117.4-140.1C751.7 406.5 637.6 362 513 362s-238.7 44.5-327.5 118.4a8.05 8.05 0 00-1 11.3l36 42.9c2.8 3.4 7.9 3.8 11.2 1C308 472.2 406.1 434 513 434s205 38.2 281.2 101.6c3.4 2.8 8.4 2.4 11.2-1l36-42.9c2.8-3.4 2.4-8.5-1-11.3zm116.7-139C835.7 241.8 680.3 182 511 182c-168.2 0-322.6 59-443.7 157.4a8 8 0 00-1.1 11.4l36 42.9c2.8 3.3 7.8 3.8 11.1 1.1C222 306.7 360.3 254 511 254c151.8 0 291 53.5 400 142.7 3.4 2.8 8.4 2.3 11.2-1.1l36-42.9c2.9-3.4 2.4-8.5-1.1-11.3zM448 778a64 64 0 10128 0 64 64 0 10-128 0z"></path>
                             </svg>
                         </div>
-                        <div className="reset-icons p-2 border border-gray-300 rounded-md cursor-pointer" onClick={() => resetCart()}>
+                        <div className="reset-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer" onClick={() => resetCart()}>
                             <svg
                                 viewBox="64 64 896 896"
                                 focusable="false"
                                 data-icon="redo"
-                                width="24"
-                                height="24"
+                                width="26"
+                                height="26"
                                 fill="currentColor"
                                 aria-hidden="true"
                             >
@@ -189,6 +206,19 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         onChange={(selected) => setSelectedCustomer(selected.data)}
                         isSearchable
                         menuPortalTarget={document.body}
+                        formatOptionLabel={(option, { context }) => (
+                            <div className="flex justify-between items-center w-full">
+                                {/* This always shows (Name) */}
+                                <span>{option.label}</span>
+
+                                {/* This ONLY shows inside the dropdown list */}
+                                {context === "menu" && (
+                                    <span className=" text-xs ">
+                                        {option.data.phoneCode}-{option.data.phone}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     />
 
                     {/* SEARCHABLE PRODUCT DROPDOWN */}
@@ -227,22 +257,22 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                 <div className="space-y-2 mb-4">
                     <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>P{total ||0.00}</span>
+                        <span>P{(total).toFixed(2) || 0.00}</span>
                     </div>
                     <div className="flex justify-between">
                         <span>Tax</span>
-                        <span>P{tax}</span>
+                        <span>P{tax.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span>Discount</span>
                         {/* <span>P{managerDiscount ? managerDiscount : 0.00}</span> */}
-                        <span>P{discount}</span>
+                        <span>P{Number(discount).toFixed(2)}</span>
                     </div>
                 </div>
 
                 {/* 6 ACTION BUTTONS */}
 
-                <div className="cart-btns mt-4 flex gap-2">
+                <div className="cart-btns mt-2 flex gap-2 text-base">
                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/invoices")}>
                         <svg
                             viewBox="64 64 896 896"
@@ -286,9 +316,9 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         <p>Low Stock</p>
                     </div>
                 </div>
-                <div className="cart-btns mt-4 flex gap-2">
-                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" 
-                    onClick={()=>setActiveModal("discount")}
+                <div className="cart-btns mt-2 flex gap-2 text-base">
+                    <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer"
+                        onClick={() => setActiveModal("discount")}
                     >
                         <svg
                             viewBox="64 64 896 896"
@@ -318,7 +348,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         <p>Exchange</p>
                     </div>
                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer"
-                    onClick={()=>setActiveModal("holdOrder")}>
+                        onClick={() => setActiveModal("holdOrder")}>
                         <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -336,10 +366,10 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                 <div className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer" onClick={handleProceed}>
                     <div className="proceed">
                         <h3 className="text-xl font-semibold">Proceed to Pay</h3>
-                        <h4 className="text-sm">Total Items {cartData.length}</h4>
+                        <h4 className="text-sm">{cartData.length} Items</h4>
                     </div>
                     <div className="proceed flex gap-2 items-center">
-                        <div className="price text-xl font-semibold">P{total-discount}</div>
+                        <div className="price text-xl font-semibold">P{(total - discount).toFixed(2)}</div>
                         <div className="icon">
                             <svg
                                 viewBox="64 64 896 896"
@@ -360,11 +390,11 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
             {/* popup for hold order and manager discount */}
             <DiscountHoldOrderPopup
                 activeModal={activeModal}
-                closeModal={()=>setActiveModal(null)}
+                closeModal={() => setActiveModal(null)}
                 subtotal={total}
                 tax={tax}
                 discount={discount}
-                total={total+tax-discount}
+                total={total + tax - discount}
             />
         </div>
     );

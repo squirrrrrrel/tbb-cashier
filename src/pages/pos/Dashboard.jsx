@@ -186,6 +186,7 @@ const Dashboard = () => {
           : "Order saved offline"
       );
       resetCart();
+      setPayToProceed(false);
     } catch (err) {
       notifyError("Order failed");
       console.error("Error creating order:", err);
@@ -467,7 +468,7 @@ Hope to see you again soon!
 
   return (
     <div className="flex">
-      <div className="home w-3/5 bg-background">
+      <div className="home flex-grow bg-background">
         {payToProceed ? (
           <Payment setPayToProceed={setPayToProceed} total={total} onPay={handlePay} tax={tax} discount={discount} subtotal={subtotal} cartProducts={cartData} />
         ) : (
@@ -535,7 +536,7 @@ Hope to see you again soon!
           </>
         )}
       </div>
-      <div className="w-2/5 h-screen">
+      <div className="w-[35vw] h-screen">
         {/* <Cart cartProducts={cartProducts} setCartProducts={setCartProducts} onHoldOrder={saveHoldOrder} setPayToProceed={setPayToProceed} subtotal={subtotal} tax={tax} discount={discount} total={total} /> */}
         <Cart
           setPayToProceed={setPayToProceed}
