@@ -87,7 +87,7 @@ const ProductComp = ({
     if (result?.success === false) {
       if (result.reason === "OUT_OF_STOCK") {
         notifyError(<>
-          Only <span style={{ color: "red" }}>{stock + stockQueue}</span> items available in
+          Only <span style={{ color: "white" }}>{stock + stockQueue}</span> items available in
           <br />
           stock for {name}
         </>);

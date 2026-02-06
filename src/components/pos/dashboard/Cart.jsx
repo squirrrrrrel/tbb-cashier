@@ -93,12 +93,12 @@ const CartProdctComponent = ({
                 -
               </div>
               {/* <span className="flex-1 text-center  text-sm">{qty}</span> */}
-              <span><input type="number" value={qty} onChange={(e) => e.target.value > product.stock + product.stockQueue ? notifyError(<>Only <span style={{ color: "red" }}>{product.stock + product.stockQueue}</span> items available in<br />stock for {product.name}</>) : setQty(e.target.value)} className="w-14 h-full text-center text-sm outline-none" /></span>
+              <span><input type="number" value={qty} onChange={(e) => e.target.value > product.stock + product.stockQueue ? notifyError(<>Only <span style={{ color: "white" }}>{product.stock + product.stockQueue}</span> items available in<br />stock for {product.name}</>) : setQty(e.target.value)} className="w-14 h-full text-center text-sm outline-none" /></span>
               <div
                 onClick={() => {
                   if (qty >= product.stock + product.stockQueue) {
                     notifyError(<>
-                      Only <span style={{ color: "red" }}>{product.stock + product.stockQueue}</span> items available in
+                      Only <span style={{ color: "white" }}>{product.stock + product.stockQueue}</span> items available in
                       <br />
                       stock for {product.name}
                     </>);;

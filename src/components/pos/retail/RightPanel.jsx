@@ -213,8 +213,8 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
 
                                 {/* This ONLY shows inside the dropdown list */}
                                 {context === "menu" && (
-                                    <span className=" text-xs ">
-                                        {option.data.phoneCode}-{option.data.phone}
+                                    <span className=" text-md">
+                                       [{option.data.phoneCode}-{option.data.phone}]
                                     </span>
                                 )}
                             </div>
@@ -231,15 +231,15 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         isSearchable
                         menuPortalTarget={document.body}
                         formatOptionLabel={(option) => (
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center color-#1684a1">
                                 <div>
-                                    <span className="text-sm font-semibold text-gray-800">{option.data.name}</span>
-                                    <div className="text-xs text-gray-400">Code: {option.data.barcode}</div>
+                                    <span className="text-sm text-gray-800">{option.data.name}</span>
+                                    <div className="text-xs text-gray-400">{option.data.barcode}</div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-sm font-bold text-primary">P{option.data.sellingPrice}</div>
+                                    <div className="text-sm">[P{option.data.sellingPrice.toFixed(2)}]</div>
                                     <div className="text-xs text-gray-400">
-                                        Stock: <span className="font-semibold">{option.data.stock}</span>
+                                        Stock: <span className="font-semibold">[{option.data.stock}]</span>
                                     </div>
                                 </div>
                             </div>

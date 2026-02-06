@@ -392,16 +392,22 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                   {orderDetails?.refunded ? `P${orderDetails?.refunded}` : "-"}
                 </td>
               </tr>
+              {/* {selectedOrder?.payments.map((item,i) => (
+            <div className="flex justify-between">
+            <p className="capitalize">{item?.paymentMethod} (tendered Amount)</p>
+            <span>P{selectedOrder?.isSynced ? item?.amount : selectedOrder?.tenderedAmount}</span>
+          </div>
+          ))} */}
+           {orderDetails?.payments.map((item,i) => (
               <tr>
-                <td>Total Tendered</td>
+                <td>{item?.paymentMethod}</td>
                 <td></td>
                 <td></td>
                 <td className="inputvalue">
-                  {orderDetails?.transactions?.[0]?.tenderedAmount
-                    ? `P${orderDetails?.transactions?.[0]?.tenderedAmount}`
-                    : "-"}
+                  P{orderDetails?.isSynced ? item?.amount.toFixed(2) : orderDetails?.tenderedAmount}
                 </td>
               </tr>
+           ))}
               <tr>
                 <td>Change</td>
                 <td></td>
