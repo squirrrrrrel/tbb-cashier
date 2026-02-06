@@ -42,8 +42,7 @@ export const useOutletStore = create((set, get) => ({
         try {
             const res = await api.get("/tenant/outlet");
 
-            const apiOutlet = res?.data || [];
-
+            const apiOutlet = res?.data.data || [];
             const mapped = apiOutlet.map(mapApiResponseToOutlet);
 
             // 🔥 UPSERT into IndexedDB

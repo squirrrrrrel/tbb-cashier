@@ -81,7 +81,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
             setChange((totalTendered - total).toFixed(2));
         }
         if (inputRef.current) inputRef.current.focus();
-    }, [totalTendered, total]);
+    }, [totalTendered, total, splits]);
 
     const handleClear = () => updateSplit(splits[splits.length - 1].id, "amount", "");
 

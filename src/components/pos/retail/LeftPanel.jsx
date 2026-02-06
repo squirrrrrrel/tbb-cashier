@@ -142,7 +142,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
                     </div>
                   </div>
 
-                  <span className="text-gray-400">P{tax.toFixed(2)}</span>
+                  <span className="text-gray-400">{parseFloat(item?.tax).toFixed(2) || 0.00}%</span>
                   <span className="text-red-400">P{discountValue}</span>
                   <span className="font-semibold text-gray-800">P {subtotal.toFixed(2)}</span>
                 </div>
