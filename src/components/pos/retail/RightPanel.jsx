@@ -19,7 +19,13 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const [activeModal, setActiveModal] = useState("");
     const { setIsRetailOpen } = useRetail();
     const { notifyError } = useNotification();
-    const tax = 0.00;
+    const tax = cartData.reduce((totalTax, item) => {
+    const taxPercent = Number(item.tax || 0);
+    return (
+      totalTax +
+      (item.price * item.quantity * taxPercent) / 100
+    );
+  }, 0);
     const discount = Number(managerDiscount) < 1 ? ((total + tax) * (managerDiscount)).toFixed(2) : Number(managerDiscount).toFixed(2);
     
       const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -369,7 +375,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         <h4 className="text-sm">{cartData.length} Items</h4>
                     </div>
                     <div className="proceed flex gap-2 items-center">
-                        <div className="price text-xl font-semibold">P{(total - discount).toFixed(2)}</div>
+                        <div className="price text-xl font-semibold">P{(total + tax - discount).toFixed(2)}</div>
                         <div className="icon">
                             <svg
                                 viewBox="64 64 896 896"

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import qkartsLogo from "../../assets/images/qkarts-small-logo.png";
+import { useAuthStore } from "../../store/useAuthStore";
 
 const NavButtons = ({ name, icon, target }) => {
   const location = useLocation();
@@ -29,6 +30,9 @@ const NavButtons = ({ name, icon, target }) => {
 };
 
 const SideHeader = ({ setIsLogoutClicked }) => {
+  const user = useAuthStore((u) => u.user);
+  console.log(user);
+  
   const navLinks = [
     { name: "Home", icon: <HomeIcon />, target: "/pos/dashboard" },
     { name: "Customers", icon: <CustomersIcon />, target: "/pos/customers" },
@@ -63,6 +67,7 @@ const SideHeader = ({ setIsLogoutClicked }) => {
           <LogoutIcon />
           <p className="text-sm group-hover:text-white">Logout</p>
         </div>
+        <div className="text-center text-xs text-[#555555]">{user? `${user.first_name} ${user.last_name}`: ""}</div>
       </div>
     </div>
   );

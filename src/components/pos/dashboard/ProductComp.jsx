@@ -166,21 +166,31 @@ const ProductComp = ({
         </div>
       </div>
       {lowStockThreshold >= stock && (
-        <div className="relative">
-          <div
-            className="low-stock-badge text-xs rounded-full py-px px-2 absolute text-red-700 font-semibold"
-            style={{
-              right: 8,
-              bottom: 8,
-              position: "absolute",
-              animation: "pulse 1s infinite",
-              opacity: 0 // ensure min opacity for better fade
-            }}
-          >
-            Low
-          </div>
-        </div>
-      )}
+  <div className="relative">
+    {/* Local Styles for this component only */}
+    <style>
+      {`
+        @keyframes fadeInOut {
+          0% { opacity: 0; }
+          50% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}
+    </style>
+    
+    <div
+      className="low-stock-badge text-xs py-px px-2 absolute text-[#ff0000]"
+      style={{
+        right: 8,
+        bottom: 8,
+        position: "absolute",
+        animation: "fadeInOut 1.5s ease-in-out infinite",
+      }}
+    >
+      Low
+    </div>
+  </div>
+)}
 
       {selectPriceFor && selectedProduct && (
         <PriceSelectionPopup
