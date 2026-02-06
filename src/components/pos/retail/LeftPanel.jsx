@@ -105,10 +105,10 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
             return (
               <div key={item.serverId || index} className="flex border-b border-gray-100 py-3 hover:bg-gray-50 transition-colors">
                 <div className="flex-1 flex">
-                  <div className="px-3  font-mono text-xs self-center">{item.barcode || "N/A"}</div>
+                  <div className="px-3  font-mono text-500 self-center">{item.barcode || "N/A"}</div>
                   <div className="px-3 flex-1 flex flex-col font-medium self-center">
                     <span>{item.name}</span>
-                    <span className="text-xs font-bold text-gray-400">P{unitPrice} X {quantity}</span>
+                    <span className="text-xs text-gray-400">P{ unitPrice.toFixed(2)} X {quantity }{ item.unit}</span>
                   </div>
                 </div>
                 {/* <div className="flex-1 self-center"> */}
@@ -147,7 +147,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
                   <span className="font-semibold text-gray-800">P {subtotal.toFixed(2)}</span>
                 </div>
                 {/* </div> */}
-                <span className="delete-btn cursor-pointer w-5 pr-10 m-auto text-red-400" onClick={() => removeFromCart(item.id)}>
+                <span className="delete-btn cursor-pointer w-5 pr-10 m-auto " onClick={() => removeFromCart(item.id)}>
                   <svg
                     viewBox="64 64 896 896"
                     focusable="false"
