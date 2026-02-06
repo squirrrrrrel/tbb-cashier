@@ -196,14 +196,14 @@ const Dashboard = () => {
     (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0),
     0
   );
-console.log("carddara",cartData)
- const tax = cartData.reduce((totalTax, item) => {
-  const taxPercent = Number(item.tax || 0);
-  return (
-    totalTax +
-    (item.price * item.quantity * taxPercent) / 100
-  );
-}, 0);
+  console.log("carddara", cartData)
+  const tax = cartData.reduce((totalTax, item) => {
+    const taxPercent = Number(item.tax || 0);
+    return (
+      totalTax +
+      (item.price * item.quantity * taxPercent) / 100
+    );
+  }, 0);
   const discount = managerDiscount;
   const total = discount < 1 ? (subtotal + tax) * (1 - discount) : subtotal + tax - discount;
 

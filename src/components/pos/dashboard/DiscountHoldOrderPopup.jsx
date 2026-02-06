@@ -115,7 +115,8 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
                             <div className="text-center text-lg font-semibold text-[#555555] py-4 space-y-2 my-6 rounded-md">
                                 <p>Select Discount Type</p>
                                 <div className="flex justify-center gap-2 text-sm text-white font-light">
-                                    <div onClick={() => setDiscountType("fixed")} className={`cursor-pointer py-2.5 px-4 rounded-md ${discountType == "fixed" ? "bg-gradient-to-b from-secondary to-primary text-white" : "shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Fixed</div>
+                                    <div className={`cursor-not-allowed  py-2.5 px-4 rounded-md ${discountType == "fixed" ? "bg-gradient-to-b from-secondary to-primary text-white" : "shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Fixed</div>
+                                    {/* <div onClick={() => setDiscountType("fixed")} className={`cursor-not-allowed  py-2.5 px-4 rounded-md ${discountType == "fixed" ? "bg-gradient-to-b from-secondary to-primary text-white" : "shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Fixed</div> */}
                                     <div onClick={() => setDiscountType("percentage")} className={`cursor-pointer py-2.5 px-4 rounded-md ${discountType == "percentage" ? "bg-gradient-to-b from-secondary to-primary text-white" : "shadow-[0_0_3px_#00000028] text-[#555555] bg-white"}`}>Percentage</div>
                                 </div>
                             </div>

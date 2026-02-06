@@ -16,6 +16,7 @@ import { useNetworkStore } from "./store/useNetworkStore";
 import { usePosStore } from "./store/usePosStore";
 import { usePaymentMethodStore } from "./store/usePaymentMethodStore";
 import  { RetailProvider } from "./hooks/useRetail.jsx";
+import SelectOutlet from "./pages/outlet/SelectOutlet.jsx";
 
 
 const App = () => {
@@ -51,6 +52,7 @@ const App = () => {
       <Routes>
         {/* Public */}
         <Route path="/" element={<LoginPage />} />
+        <Route path="/select-outlet" element={<SelectOutlet />} />
 
         {/* Protected POS */}
         <Route element={<ProtectedRoute />}>

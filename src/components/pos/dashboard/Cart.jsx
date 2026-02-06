@@ -17,7 +17,8 @@ const CartProdctComponent = ({
   onQuantityChange,
   isExpanded,
   onToggle,
-  notifyError
+  notifyError,
+  matchBG
 }) => {
   const price = Number(product.price) || 0;
   const quantity = Number(product.quantity) || 0;
@@ -34,10 +35,12 @@ const CartProdctComponent = ({
     onQuantityChange(product.id, qty);
     onToggle();
   };
-
+  // const divBG = matchBG % 2 === 0 ? "bg-gray-100" : "bg-white";
+  const divBG = isExpanded && (matchBG % 2 === 0 ? "bg-white" : "bg-gray-100") ;
+  const expandedDivBG = isExpanded && (matchBG % 2 === 0 ? "bg-gray-100" : "bg-white") ;
   return (
     <>
-      <div className="cart-product w-full p-2 flex justify-between items-center">
+      <div className={`cart-product w-full p-2 flex justify-between items-center ${divBG}`}>
         <div className="product-detail flex gap-2 items-center">
           {/* <img src={keyup} alt="arrow-down" onClick={()=> setIsChnage(false)}/> */}
           {product.categoryName === "Butchery" ? (
@@ -82,7 +85,7 @@ const CartProdctComponent = ({
         </div>
       </div>
       {isExpanded && product.categoryName !== "Butchery" &&
-        <div className="flex justify-between gap-4 items-end px-2">
+        <div className={`flex justify-between gap-4 items-end px-2 pt-1 pb-1 ${expandedDivBG}`}>
           <div className="flex flex-col gap-1 flex-1">
             <p className="text-sm font-semibold text-[#555555]">Quantity</p>
             <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden  border border-gray-200">
@@ -140,7 +143,7 @@ const CartProdctComponent = ({
 /* ---------------- CART ---------------- */
 
 const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
-  
+  let matchBG = 0;
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
   const [activeModal, setActiveModal] = useState(null);
@@ -170,11 +173,11 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   const [expandedProductId, setExpandedProductId] = useState(null);
 
   const handleToggleExpand = (id) => {
-    setExpandedProductId(prev => (prev === id ? null : id));
+    setExpandedProductId(prev => (prev === id ? -1 : id));
   };
   useEffect(() => {
     cartEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    handleToggleExpand(null);
+    handleToggleExpand(-1);
   }, [cartData]);
 
   // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
@@ -197,6 +200,27 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
     }
     setPayToProceed(true);
   };
+
+  // // Handle "Enter" key globally for Proceed to Pay
+  // useEffect(() => {
+  //   const handleGlobalKeyDown = (e) => {
+  //     // Only trigger if 'Enter' is pressed
+  //     if (e.key === "Enter") {
+  //       // Prevent default behavior (like form submissions)
+  //       e.preventDefault();
+        
+  //       // Check same conditions as your button: 
+  //       // 1. Not a manager
+  //       // 2. Cart is not empty
+  //       if (user?.role?.name !== "manager" && totalItems > 0) {
+  //         handleProceed();
+  //       }
+  //     }
+  //   };
+
+  //   window.addEventListener("keydown", handleGlobalKeyDown);
+  //   return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  // }, [totalItems, user, handleProceed]); // Dependencies ensure logic stays current
 
   return (
     <div className="h-full flex flex-col border-l border-gray-200">
@@ -275,17 +299,19 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
         <div className="p-2 flex-1 flex flex-col overflow-y-auto overflow-hidden no-scrollbar">
           {cartData?.length > 0 ? (
             cartData?.map((p, index) => (
+              expandedProductId === index ? matchBG+=2 : matchBG++,
               <div
                 key={p.id}
-                className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                className={matchBG % 2 === 0 ? "bg-gray-100" : "bg-white"}
               >
                 <CartProdctComponent
                   product={p}
-                  isExpanded={expandedProductId === p.id}
-                  onToggle={() => handleToggleExpand(p.id)}
-                  onRemove={() => {removeFromCart(p.id); handleToggleExpand(null); }}
+                  isExpanded={expandedProductId === index}
+                  onToggle={() => handleToggleExpand(index)}
+                  onRemove={() => {removeFromCart(p.id); handleToggleExpand(-1); }}
                   onQuantityChange={updateQuantity}
                   notifyError={notifyError}
+                  matchBG={matchBG}
                 />
                 <div ref={cartEndRef} />
               </div>
