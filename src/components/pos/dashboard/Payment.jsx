@@ -170,7 +170,8 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                         {splits.map((split, index) => (
                             <div key={split.id} className="flex justify-between gap-4 bg-[#f8f8f8] p-2 mb-2 rounded-md items-center">
                                 <div className="w-full flex gap-4">
-                                    <input
+                                    <div className="flex-1">
+                                        <input
                                         ref={index === splits.length - 1 ? inputRef : null}
                                         type="text"
                                         inputMode="decimal"
@@ -183,39 +184,48 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                                                 updateSplit(split.id, "amount", val);
                                             }
                                         }}
-                                        className="flex-1 outline-secondary rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028]"
+                                        className="w-full outline-secondary rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028]"
                                     />
-                                    <select
-                                        value={split.methodId}
-                                        onChange={(e) => updateSplit(split.id, "methodId", e.target.value)}
-                                        className="flex-1 outline-none rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028] cursor-pointer"
-                                    >
-                                        {paymentMethods.map((pm) => (
-                                            <option key={pm.id} value={pm.id}>{pm.display_name || pm.payment_method_name}</option>
-                                        ))}
-                                    </select>
-                                    {index === 0 && 
-                                    <div className="w-10"></div>
-                                    }
-                                </div>
-                                {splits.length > 1 && index !== 0 && (
-                                    <button
-                                        onClick={() => setSplits(splits.filter(s => s.id !== split.id))}
-                                        className="text-red-500 font-bold px-2 w-10"
-                                    >
-                                        <svg
-                                            viewBox="64 64 896 896"
-                                            focusable="false"
-                                            data-icon="delete"
-                                            width="16"
-                                            height="16"
-                                            fill="currentColor"
-                                            aria-hidden="true"
+                                    </div>
+                                    <div className="flex-1 flex gap-2">
+                                        <select
+                                            value={split.methodId}
+                                            onChange={(e) => updateSplit(split.id, "methodId", e.target.value)}
+                                            className="appearance-none flex-1 outline-none rounded-md py-3 pl-4 pr-10 text-sm bg-white shadow-[0_0_3px_#00000028] cursor-pointer"
+                                            style={{
+                                                // The %23 is the URL-encoded version of the # symbol
+                                                backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")`,
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'right 1rem center',
+                                                backgroundSize: '0.8em auto'
+                                            }}
                                         >
-                                            <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"></path>
-                                        </svg>
-                                    </button>
-                                )}
+                                            {paymentMethods.map((pm) => (
+                                                <option key={pm.id} value={pm.id}>
+                                                    {pm.display_name || pm.payment_method_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {splits.length > 1 && index !== 0 && (
+                                            <button
+                                                onClick={() => setSplits(splits.filter(s => s.id !== split.id))}
+                                                className="text-red-500 font-bold px-2 w-10"
+                                            >
+                                                <svg
+                                                    viewBox="64 64 896 896"
+                                                    focusable="false"
+                                                    data-icon="delete"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    aria-hidden="true"
+                                                >
+                                                    <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"></path>
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ))}
 
