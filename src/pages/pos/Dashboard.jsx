@@ -21,8 +21,11 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { usePromotionStore } from "../../store/usePromotionStore";
 import PettyCash from "../../components/pos/dashboard/PettyCash";
 import api from "../../utils/api";
+import { useSocket } from "../../socket/SocketProvider";
 
 const Dashboard = () => {
+  const socket = useSocket();
+
   const { products, hydrate, hydrated } = useProductStore();
   const [filters, setFilters] = useState({
     barcode: "",
@@ -108,6 +111,22 @@ const Dashboard = () => {
     setOrderId(id);
     setActivePopup('receipt');
   };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleOrderRefresh = (payload) => {
+      if (payload?.type !== "REFETCH_STOCK_LIST_FOR_CASHIER") return;
+
+      useProductStore.getState().fetchProductsFromAPI();
+    };
+
+    socket.on("purchase:product", handleOrderRefresh);
+
+    return () => {
+      socket.off("purchase:product", handleOrderRefresh);
+    };
+  }, [socket]);
 
   useEffect(() => {
     let filtered = [...products];
