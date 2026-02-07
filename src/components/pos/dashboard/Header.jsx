@@ -56,12 +56,25 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-      setIsFullScreen(true);
     } else {
       document.exitFullscreen();
-      setIsFullScreen(false);
     }
   };
+
+  useEffect(() => {
+  const handleFullscreenChange = () => {
+    // Check if there is currently an element in fullscreen
+    setIsFullScreen(!!document.fullscreenElement);
+  };
+
+  // Listen for the change event
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+  // Clean up the listener when the component unmounts
+  return () => {
+    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  };
+}, []);
   const { products, ready, hydrate } = useProductStore();
   useEffect(() => {
     if (isTransferProductOpen && !ready) {

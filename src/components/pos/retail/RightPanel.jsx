@@ -146,7 +146,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
 
                     {/* Left Icons */}
                     <div className="flex gap-3">
-                        <div className="cart-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer">
+                        <div className="cart-icons p-2 shadow-[0_0_3px_#00000026] rounded-md">
                             <svg
                                 viewBox="0 0 1024 1024"
                                 focusable="false"
@@ -177,7 +177,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
 
                     {/* Right Buttons */}
                     <div className="flex gap-2">
-                        <button className="flex items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer">
+                        <button className="flex items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary">
                             <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
                             <svg
                                 viewBox="64 64 896 896"
@@ -192,7 +192,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                             </svg>
                         </button>
 
-                        <button className="w-10 h-10 flex text-2xl items-center justify-center text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer">
+                        <button className="w-10 h-10 flex text-2xl items-center justify-center text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer" onClick={()=>navigate("/pos/customers")}>
                             +
                         </button>
                     </div>

@@ -60,7 +60,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
 
 
   return (
-    <div className="h-full m-5 rounded-md bg-white flex flex-col overflow-hidden border border-gray-200">
+    <div className="h-full mt-4 rounded-md bg-white flex flex-col overflow-hidden border border-gray-200">
 
       {/* BARCODE SEARCH SECTION */}
 
@@ -69,10 +69,10 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
       <div className="sticky top-0 z-10">
         <div className="flex text-sm font-semibold text-white bg-gradient-to-b from-secondary to-primary">
           <div className="flex-1 flex">
-            <div className="flex-1 w-1/6 px-3 py-3">Barcode</div>
-            <div className="flex-1 w-1/3 px-3 py-3">Item</div>
+            <div className="flex-1 w-1/6 px-3 py-2.5">Barcode</div>
+            <div className="flex-1 w-1/3 px-3 py-2.5">Item</div>
           </div>
-          <div className="flex-1 w-2/4  py-3">
+          <div className="flex-1 w-2/4  py-2.5">
             <div className="grid grid-cols-4 text-center">
               <span>Qty</span>
               <span>Tax</span>

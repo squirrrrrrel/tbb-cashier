@@ -82,12 +82,12 @@ const handleKeyDown = (e) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
-            <div className="flex-grow  h-full" >
-                <div className="p-5 flex gap-8 items-center text-[#555555]">
-                    <div><img className="w-40" src={qKartLogo} alt="logo" /></div>
-                    <div className="font-bold text-3xl text-right flex-1"><h3>Cashier Panel</h3></div>
+            <div className="flex-grow  h-full p-5" >
+                <div className="flex gap-8 items-center text-[#555555]">
+                    <div><img className="w-36" src={qKartLogo} alt="logo" /></div>
+                    {/* <div className="font-bold text-3xl text-right flex-1"><h3>Cashier Panel</h3></div> */}
                 </div>
-                <div className="p-5 flex items-center gap-3 space-between">
+                <div className="mt-2 flex items-center gap-3 space-between">
                     <div className="relative w-3/4 flex items-center justify-between gap-2">
                         <svg
                             className="absolute left-3 top-3.5 w-3.5 h-3.5 text-gray-500"
