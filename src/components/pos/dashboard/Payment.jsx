@@ -104,6 +104,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
             cashReturned: parseFloat(change) || 0,
             paymentMethods: splits.map(s => ({
                 paymentMethodId: s.methodId,
+                //name: s.display_name,
                 amount: parseFloat(s.amount) || 0
             }))
         };

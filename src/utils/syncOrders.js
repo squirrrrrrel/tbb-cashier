@@ -1,5 +1,5 @@
 import api from "../utils/api";
-import { getPendingOrdersDB, markOrderSyncedDB,deleteLocalUnsyncedOrdersDB } from "../db/ordersDB";
+import { getPendingOrdersDB, markOrderSyncedDB} from "../db/ordersDB";
 import { mapOrderToApiPayload } from "./orderMapper";
 import { useAuthStore } from "../store/useAuthStore";
 

@@ -277,10 +277,10 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                         </tr>
                         {originalItems.filter(item => item.type === null).map((item, idx) => (
                           <tr key={`orig-${idx}`}>
-                            <td>{item.productName}</td>
-                            <td>{`P${parseFloat(item.unitPrice || 0).toFixed(2)}`}</td>
-                            <td className="inputvalue">{item.quantity}{item.category_name === "Butchery" ? " kg" : " pcs"}</td>
-                            <td className="inputvalue">{`P${parseFloat(item.subtotal || 0).toFixed(2)}`}</td>
+                            <td>{item.productName || item.name}</td>
+                            <td>{`P${parseFloat(item.unitPrice || item.price).toFixed(2)}`}</td>
+                            <td className="inputvalue">{item.quantity}{ item.category_name === "Butchery" ? " kg" : item.unit}</td>
+                            <td className="inputvalue">{`P${parseFloat(item.subtotal || item.total).toFixed(2)}`}</td>
                           </tr>
                         ))}
                       </>
@@ -305,7 +305,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                                 <tr key={`ret-${exIdx}`}>
                                   <td>{ri.productName || "Returned Item"} (Ret)</td>
                                   <td>P{ri.unitPrice}</td>
-                                  <td className="inputvalue">{ri.quantity}{ri.category_name === "Butchery" ? " kg" : " pcs"}</td>
+                                  <td className="inputvalue">{ri.quantity}{ri.unit}</td>
                                   <td className="inputvalue">-P{Math.abs(ri.subtotal)}</td>
                                 </tr>
                               );
@@ -317,7 +317,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                                 <tr key={`new-${exIdx}`}>
                                   <td>{ri.productName || "Returned Item"} (New)</td>
                                   <td>P{ri.unitPrice}</td>
-                                  <td className="inputvalue">{ri.quantity}{ri.category_name === "Butchery" ? " kg" : " pcs"}</td>
+                                  <td className="inputvalue">{ri.quantity}{ri.unit}</td>
                                   <td className="inputvalue">P{Math.abs(ri.subtotal)}</td>
                                 </tr>
                               );

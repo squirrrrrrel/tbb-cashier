@@ -267,7 +267,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Refunded</p>
-            <span>P{selectedOrder.refunded}</span>
+            <span>P{selectedOrder.refunded|| 0.00}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Exchanged{exchangeRefundAmount ? "(Refund)" : exchangeReceiveAmount ? "(Receive)" : ""}</p>
@@ -275,13 +275,13 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
           </div>
           {selectedOrder?.payments.map((item,i) => (
             <div className="flex justify-between">
-            <p className="capitalize">{item?.paymentMethod} (tendered Amount)</p>
-            <span>P{selectedOrder?.isSynced ? item?.amount : selectedOrder?.tenderedAmount}</span>
+            <p className="capitalize">{item?.paymentMethod || item.name} (tendered Amount)</p>
+            <span>P{item?.amount}</span>
           </div>
           ))}
           <div className="flex justify-between">
             <p>Change</p>
-            <span>P{selectedOrder?.transactions?.[0]?.cashReturned}</span>
+            <span>P{selectedOrder?.isSynced ?selectedOrder?.transactions?.[0]?.cashReturned:selectedOrder?.cashReturned}</span>
           </div>
         </div>
 

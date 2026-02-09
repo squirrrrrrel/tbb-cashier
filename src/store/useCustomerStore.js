@@ -117,16 +117,16 @@ export const useCustomerStore = create((set, get) => ({
 
   // edit customer
   editCustomer: async (payload) => {
-    const { isDuplicateCustomer } = get();
+    // const { isDuplicateCustomer } = get();
 
-    const isDuplicate = await isDuplicateCustomer({
-      email: payload.email,
-      phone: payload.phone,
-    });
+    // const isDuplicate = await isDuplicateCustomer({
+    //   email: payload.email,
+    //   phone: payload.phone,
+    // });
 
-    if (isDuplicate && !payload.isDeleted) {
-      throw new Error("Customer with same email or phone already exists");
-    }
+    // if (isDuplicate && !payload.isDeleted) {
+    //   throw new Error("Customer with same email or phone already exists");
+    // }
     const updatedCustomer = {
       ...payload,
       isSynced: false,
@@ -191,7 +191,7 @@ export const useCustomerStore = create((set, get) => ({
     if (navigator.onLine && customer.serverId) {
       try {
         const res = await api.delete(`/tenant/customer/${customer.serverId}`);
-        console.log("Delete response:", res.data);
+       // console.log("Delete response:", res.data);
         updatedCustomer.isSynced = true;
         await updateCustomerDB(updatedCustomer);
       } catch (err) {
@@ -210,10 +210,10 @@ export const useCustomerStore = create((set, get) => ({
     }
 
     try {
-      console.log("🔄 Fetching customers from API...");
+    //  console.log("🔄 Fetching customers from API...");
       // Fetch customers from API
       const res = await api.get("/tenant/customer");
-      console.log("📦 API Response:", res.data);
+     // console.log("📦 API Response:", res.data);
 
       // Handle different possible response structures
       let apiCustomers = [];
@@ -350,7 +350,7 @@ export const useCustomerStore = create((set, get) => ({
           !processedLocalIds.has(c.localId)
       );
 
-      console.log(`💾 Preserving ${localOnlyCustomers.length} local-only customers`);
+      //console.log(`💾 Preserving ${localOnlyCustomers.length} local-only customers`);
 
       // Combine server customers with local-only customers
       const allCustomers = [...processedCustomers, ...localOnlyCustomers];
@@ -361,7 +361,7 @@ export const useCustomerStore = create((set, get) => ({
         customers: activeCustomers,
       });
 
-      console.log(`✅ Successfully synced ${processedCustomers.length} customers from API, preserved ${localOnlyCustomers.length} local customers. Total: ${activeCustomers.length} active customers`);
+     // console.log(`✅ Successfully synced ${processedCustomers.length} customers from API, preserved ${localOnlyCustomers.length} local customers. Total: ${activeCustomers.length} active customers`);
     } catch (err) {
       console.error("❌ Failed to fetch customers from API:", err);
       console.error("Error details:", err.response?.data || err.message);
@@ -408,7 +408,7 @@ export const useCustomerStore = create((set, get) => ({
             "/tenant/customer",
             mapCustomerToApiPayload(customer)
           );
-          console.log("Sync create response:", res.data);
+        //  console.log("Sync create response:", res.data);
           customer.serverId = res.data.data.customer.customerId || res.data.customer.customerId || res.data._id;
         }
 

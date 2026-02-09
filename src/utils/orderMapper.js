@@ -15,7 +15,7 @@ export const mapOrderToApiPayload = (order, userId) => {
     amount: order.amount || order.total || 0,
     
     // Order items - map from items array
-    orderItems: (order.items || []).map(item => ({
+    orderItems: (order.orderItems || []).map(item => ({
       productId: item.productId || item.id,
       unitPrice: item.unitPrice || item.price || 0,
       quantity: item.quantity || 0,
@@ -25,7 +25,7 @@ export const mapOrderToApiPayload = (order, userId) => {
     })),
     
     // Payment methods
-    paymentMethods: order.paymentMethods || [],
+    paymentMethods: order.payments || [],
     
     // Payment details
     tenderedAmount: order.tenderedAmount || 0,

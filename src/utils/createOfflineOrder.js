@@ -8,7 +8,7 @@ export const createOfflineOrder = async ({
   table,
   totals,
   paymentMethods = [],
-  tenderedAmount = 0,
+  tenderedAmount = [],
   cashReturned = 0,
   discount_percentage = null,
 }) => {
@@ -23,9 +23,10 @@ export const createOfflineOrder = async ({
     customer_id: customer?.serverId || null,
     table_id: table?.serverId || null,
 
-    items: cartData.map(p => ({
+    orderItems: cartData.map(p => ({
       productId: p.id || p.productId,
       name: p.name,
+      type: null,
       price: p.price || p.unitPrice || p.sellingPrice || 0,
       unitPrice: p.unitPrice || p.price || p.sellingPrice || 0,
       quantity: p.quantity || 0,
@@ -41,10 +42,10 @@ export const createOfflineOrder = async ({
     discount: totals.discount || 0,
     discountAmount: totals.discountAmount || totals.discount || 0,
     discount_percentage: Number(discount_percentage || totals.discount_percentage || 0),
-    total: totals.total || 0,
+    totalAmount: totals.total || 0,
     amount: totals.amount || totals.total || 0,
     
-    paymentMethods: paymentMethods,
+    payments: paymentMethods,
     tenderedAmount: tenderedAmount,
     cashReturned: cashReturned,
   };
