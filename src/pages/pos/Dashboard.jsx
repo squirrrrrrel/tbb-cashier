@@ -49,6 +49,7 @@ const Dashboard = () => {
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
   const { isRetail, isRetailOpen } = useRetail();
   const [isPettyClicked, setIsPettyClicked] = useState(false)
+  console.log(orderData, "Order Data")
 
   const scanToCart = (barcode) => {
     const trimmed = (barcode || "").trim();
@@ -426,7 +427,7 @@ const Dashboard = () => {
       const productLines = orderItems
         .map(
           (item, idx) =>
-            `${idx + 1}. ${item.product_id} x ${item.quantity
+            `${idx + 1}. ${item.product.product_name} x ${item.quantity
             } = ${item.total_amount.toLocaleString("en-IN")}`
         )
         .join("\n");
