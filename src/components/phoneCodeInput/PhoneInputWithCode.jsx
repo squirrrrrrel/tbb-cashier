@@ -1,5 +1,6 @@
 import React from "react";
 import Select from "react-select";
+import { countriesList } from "../../store/countryStore";
 
 const PhoneInputWithCode = ({
     formData,
@@ -7,28 +8,32 @@ const PhoneInputWithCode = ({
     onPhoneChange,
 }) => {
 
-    const countryCodeOptions = [
-        { label: "India", value: "+91" },
-        { label: "United States", value: "+1" },
-        { label: "United Kingdom", value: "+44" },
-        { label: "Canada", value: "+1" },
-        { label: "Australia", value: "+61" },
-        { label: "Philippines", value: "+63" },
-        { label: "United Arab Emirates", value: "+971" },
-        { label: "Saudi Arabia", value: "+966" },
-        { label: "Germany", value: "+49" },
-        { label: "France", value: "+33" },
-        { label: "Italy", value: "+39" },
-        { label: "Spain", value: "+34" },
-        { label: "Japan", value: "+81" },
-        { label: "China", value: "+86" },
-        { label: "Singapore", value: "+65" },
-        { label: "Malaysia", value: "+60" },
-        { label: "Thailand", value: "+66" },
-        { label: "Indonesia", value: "+62" },
-        { label: "South Africa", value: "+27" },
-        { label: "Brazil", value: "+55" },
-    ];
+    // const countryCodeOptions = [
+    //     { label: "India", value: "+91" },
+    //     { label: "United States", value: "+1" },
+    //     { label: "United Kingdom", value: "+44" },
+    //     { label: "Canada", value: "+1" },
+    //     { label: "Australia", value: "+61" },
+    //     { label: "Philippines", value: "+63" },
+    //     { label: "United Arab Emirates", value: "+971" },
+    //     { label: "Saudi Arabia", value: "+966" },
+    //     { label: "Germany", value: "+49" },
+    //     { label: "France", value: "+33" },
+    //     { label: "Italy", value: "+39" },
+    //     { label: "Spain", value: "+34" },
+    //     { label: "Japan", value: "+81" },
+    //     { label: "China", value: "+86" },
+    //     { label: "Singapore", value: "+65" },
+    //     { label: "Malaysia", value: "+60" },
+    //     { label: "Thailand", value: "+66" },
+    //     { label: "Indonesia", value: "+62" },
+    //     { label: "South Africa", value: "+27" },
+    //     { label: "Brazil", value: "+55" },
+    // ];
+    const countryCodeOptions = countriesList.map((country) => ({
+  label: `${country.name}`,
+  value: country.code
+}));
 
 
     return (

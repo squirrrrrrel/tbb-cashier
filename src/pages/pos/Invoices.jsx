@@ -264,11 +264,11 @@ const Invoices = () => {
     loadOrdersFromDB(); // IndexedDB → Zustand
   }, []);
 
-  useEffect(() => {
-    if (orders.length && !selectedOrderId) {
-      setSelectedOrderId(orders[0].localId);
-    }
-  }, [orders]);
+  // useEffect(() => {
+  //   if (orders.length && !selectedOrderId) {
+  //     setSelectedOrderId(orders[0].localId);
+  //   }
+  // }, [orders]);
   // const uiOrders = orders.map(order => ({
   //   id: order.localId,
   //   orderId: order.serverOrderId || order.localId,
@@ -489,7 +489,7 @@ const Invoices = () => {
 
       <div className="invoice-form w-[35vw] h-full overflow-y-auto">
         {!isHoldInvoice ? <InvoiceForm
-          selectedOrder={selectedOrderData}
+          selectedOrder={selectedOrder}
           onRefund={handleRefundAction}
           onExchange={handleExchangeAction}
         /> : <HoldInvoiceFrom

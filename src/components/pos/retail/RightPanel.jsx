@@ -40,10 +40,6 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         productsHydrate();
         promoHydrate();
     }, [productsHydrate, customerHydrate, promoHydrate])
-    useEffect(() => {
-        console.log(customers);
-        console.log(products);
-    }, [customers, products])
     // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
       useEffect(() => {
         const handleStatusChange = () => {
@@ -127,6 +123,14 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
             return;
         }
     }
+
+    const handleDiscountClick = ()=>{
+            if (cartData.length === 0) {
+                notifyError("Please add items in the cart to apply discount");
+                return;
+            }
+            setActiveModal("discount");
+    };
 
     const handleProceed = () => {
         if (cartData.length === 0) {
@@ -244,7 +248,8 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                                 </div>
                                 <div className="text-right">
                                     <div className="text-sm">[P{option.data.sellingPrice.toFixed(2)}]</div>
-                                    <div className="text-xs text-gray-400">
+                                    <div className="text-xs text-gray-400 space-x-2">
+                                        <span className={`font-semibold ${option.data.stockQueue < option.data.lowStockThreshold ? "text-red-500":"text-green-500"}`}>In Stock: [{option.data.stockQueue}]</span>
                                         Stock: <span className="font-semibold">[{option.data.stock}]</span>
                                     </div>
                                 </div>
@@ -324,7 +329,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                 </div>
                 <div className="cart-btns mt-2 flex gap-2 text-base">
                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer"
-                        onClick={() => setActiveModal("discount")}
+                        onClick={() => handleDiscountClick()}
                     >
                         <svg
                             viewBox="64 64 896 896"
