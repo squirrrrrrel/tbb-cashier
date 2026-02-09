@@ -13,6 +13,8 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
             });
 
             setSelectedOrder(sortedOrders[0]);
+        }else if (!selectedOrder) {
+            setSelectedOrder(null);
         }
     }, [orders, selectedOrder, setSelectedOrder]);
 

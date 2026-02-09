@@ -273,7 +273,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
             <p>Exchanged{exchangeRefundAmount ? "(Refund)" : exchangeReceiveAmount ? "(Receive)" : ""}</p>
             <span>P{exchangeReceiveAmount ? exchangeReceiveAmount.toFixed(2) : exchangeRefundAmount.toFixed(2)}</span>
           </div>
-          {selectedOrder?.payments.map((item,i) => (
+          {selectedOrder?.payments?.map((item,i) => (
             <div className="flex justify-between">
             <p className="capitalize">{item?.paymentMethod} (tendered Amount)</p>
             <span>P{selectedOrder?.isSynced ? item?.amount : selectedOrder?.tenderedAmount}</span>
