@@ -256,7 +256,8 @@ const Dashboard = () => {
 
 
   const isScheduleValid = (promo, now) => {
-    const currentDay = now.getDay(); // 0–6
+    const jsDay = now.getDay();
+    const currentDay = jsDay === 0 ? 7 : jsDay; // Sunday: 0→7, Mon–Sat: 1–6 stay
     const currentTime = now.toTimeString().slice(0, 5); // HH:mm
     const currentDate = now.toISOString().split('T')[0];
 
