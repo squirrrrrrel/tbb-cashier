@@ -221,6 +221,13 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   //   window.addEventListener("keydown", handleGlobalKeyDown);
   //   return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   // }, [totalItems, user, handleProceed]); // Dependencies ensure logic stays current
+  const handleDiscountClick = ()=>{
+            if (cartData.length === 0) {
+                notifyError("Please add items in the cart to apply discount");
+                return;
+            }
+            openModal("discount");
+    };
 
   return (
     <div className="h-full flex flex-col border-l border-gray-200">
@@ -337,7 +344,7 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
             </div>
           </div>
           <div className="cart-btns mt-4 flex gap-2">
-            <div onClick={() => openModal('discount')} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <div onClick={() => handleDiscountClick()} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
               <svg
                 viewBox="64 64 896 896"
                 focusable="false"

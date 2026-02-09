@@ -49,6 +49,7 @@ const Dashboard = () => {
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
   const { isRetail, isRetailOpen } = useRetail();
   const [isPettyClicked, setIsPettyClicked] = useState(false)
+  console.log(orderData, "Order Data")
 
   const scanToCart = (barcode) => {
     const trimmed = (barcode || "").trim();
@@ -256,7 +257,8 @@ const Dashboard = () => {
 
 
   const isScheduleValid = (promo, now) => {
-    const currentDay = now.getDay(); // 0–6
+    const jsDay = now.getDay();
+    const currentDay = jsDay === 0 ? 7 : jsDay; // Sunday: 0→7, Mon–Sat: 1–6 stay
     const currentTime = now.toTimeString().slice(0, 5); // HH:mm
     const currentDate = now.toISOString().split('T')[0];
 
@@ -425,7 +427,7 @@ const Dashboard = () => {
       const productLines = orderItems
         .map(
           (item, idx) =>
-            `${idx + 1}. ${item.product_id} x ${item.quantity
+            `${idx + 1}. ${item.product.product_name} x ${item.quantity
             } = ${item.total_amount.toLocaleString("en-IN")}`
         )
         .join("\n");
@@ -458,14 +460,16 @@ Hope to see you again soon!
 
       // Send the message through backend
       const res = await api.post("/tenant/whatsapp/send", {
-        event_key: "ORDER_PLACED",
-        to: finalphone,
+        // event_key: "ORDER_PLACED",
+        phone: finalphone,
         message: message,
-      }, {
-        headers: {
-          "x-tenant-id": orderData.tenant_id,
-        },
-      });
+      },
+        // {
+        //   headers: {
+        //     "x-tenant-id": orderData.tenant_id,
+        //   },
+        // }
+      );
 
       if (res?.data?.success) {
         notifySuccess("WhatsApp message sent successfully!");
@@ -479,7 +483,7 @@ Hope to see you again soon!
     } catch (error) {
       console.error("Error sending WhatsApp message:", error);
       notifyError(
-        "Whats App is not connected or Something went wrong while sending the message!"
+        <>Whats App is not connected or Something <br />  went wrong while sending the message!</>
       );
     }
   };

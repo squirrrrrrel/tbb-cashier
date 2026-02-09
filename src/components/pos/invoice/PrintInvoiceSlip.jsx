@@ -398,7 +398,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
             <span>P{selectedOrder?.isSynced ? item?.amount : selectedOrder?.tenderedAmount}</span>
           </div>
           ))} */}
-           {orderDetails?.payments.map((item,i) => (
+           {orderDetails?.payments?.map((item,i) => (
               <tr>
                 <td>{item?.paymentMethod}</td>
                 <td></td>
