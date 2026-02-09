@@ -459,14 +459,16 @@ Hope to see you again soon!
 
       // Send the message through backend
       const res = await api.post("/tenant/whatsapp/send", {
-        event_key: "ORDER_PLACED",
-        to: finalphone,
+        // event_key: "ORDER_PLACED",
+        phone: finalphone,
         message: message,
-      }, {
-        headers: {
-          "x-tenant-id": orderData.tenant_id,
-        },
-      });
+      },
+        // {
+        //   headers: {
+        //     "x-tenant-id": orderData.tenant_id,
+        //   },
+        // }
+      );
 
       if (res?.data?.success) {
         notifySuccess("WhatsApp message sent successfully!");
