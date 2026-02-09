@@ -483,7 +483,7 @@ Hope to see you again soon!
     } catch (error) {
       console.error("Error sending WhatsApp message:", error);
       notifyError(
-        "Whats App is not connected or Something went wrong while sending the message!"
+        <>Whats App is not connected or Something <br />  went wrong while sending the message!</>
       );
     }
   };
