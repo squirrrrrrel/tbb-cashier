@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PrintOrder from "./PrintOrder";
 import PhoneInputWithCode from "../../phoneCodeInput/PhoneInputWithCode";
 import { useOrderStore } from "../../../store/useOrderStore";
@@ -19,6 +19,8 @@ const DashboardPopup = ({
   setPayToProceed,
   handleWhatsApp
 }) => {
+
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const order = useOrderStore(state =>
     state.orders.find(o =>
       o.orderId === orderId ||
@@ -28,22 +30,34 @@ const DashboardPopup = ({
   );
 
   useEffect(() => {
-  const handleGlobalKeyDown = (e) => {
-    // Only trigger if the receipt popup is the one currently visible
-    if (activePopup === "receipt" && e.key === "Enter") {
-      e.preventDefault();
-      setIsPrinting(true);
-    }
-  };
+    const handleGlobalKeyDown = (e) => {
+      // Only trigger if the receipt popup is the one currently visible
+      if (activePopup === "receipt" && e.key === "Enter") {
+        e.preventDefault();
+        setIsPrinting(true);
+      }
+    };
 
-  // Add listener when component mounts
-  window.addEventListener("keydown", handleGlobalKeyDown);
+    // Add listener when component mounts
+    window.addEventListener("keydown", handleGlobalKeyDown);
 
-  // Clean up listener when component unmounts
-  return () => {
-    window.removeEventListener("keydown", handleGlobalKeyDown);
-  };
-}, [activePopup, setIsPrinting]); // Dependencies ensure logic stays current
+    // Clean up listener when component unmounts
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+    };
+  }, [activePopup, setIsPrinting]); // Dependencies ensure logic stays current
+  // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
+  useEffect(() => {
+    const handleStatusChange = () => {
+      setIsOnline(navigator.onLine);
+    };
+    window.addEventListener('online', handleStatusChange);
+    window.addEventListener('offline', handleStatusChange);
+    return () => {
+      window.removeEventListener('online', handleStatusChange);
+      window.removeEventListener('offline', handleStatusChange);
+    };
+  }, []);
 
 
   return (
@@ -62,13 +76,15 @@ const DashboardPopup = ({
             <div className="flex gap-4 p-2 text-sm">
               <button
                 onClick={() => {
-                  if (orderData?.customer?.phone_code && orderData?.customer?.phone_number) {
-                    handleWhatsApp();
-                  } else {
-                    setActivePopup("customer");
+                  if (isOnline) { // Moved the condition here for cleaner JSX
+                    if (orderData?.customer?.phone_code && orderData?.customer?.phone_number) {
+                      handleWhatsApp();
+                    } else {
+                      setActivePopup("customer");
+                    }
                   }
                 }}
-                className="flex-1 py-2 font-semibold text-white bg-[#15b71a] rounded-md"
+                className={`flex-1 py-2 font-semibold text-white bg-[#15b71a] rounded-md ${!isOnline ? "cursor-not-allowed opacity-50" : ""}`}
               >
                 Send WhatsApp
               </button>

@@ -49,7 +49,6 @@ const Dashboard = () => {
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
   const { isRetail, isRetailOpen } = useRetail();
   const [isPettyClicked, setIsPettyClicked] = useState(false)
-  console.log(orderData, "Order Data")
 
   const scanToCart = (barcode) => {
     const trimmed = (barcode || "").trim();
@@ -164,7 +163,7 @@ const Dashboard = () => {
   }, [hydrate, promoHydrate]);
 
   useEffect(() => {
-    console.log("✅ orderData updated:wertyhj", orderData);
+    console.log("✅ orderData updated:", orderData);
   }, [orderData]);
 
   if (!hydrated || !promoHydarated) {
@@ -216,7 +215,6 @@ const Dashboard = () => {
     (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0),
     0
   );
-  console.log("carddara", cartData)
   const tax = cartData.reduce((totalTax, item) => {
     const taxPercent = Number(item.tax || 0);
     return (
