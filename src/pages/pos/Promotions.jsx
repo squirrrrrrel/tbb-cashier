@@ -76,7 +76,7 @@ const Promotions = () => {
   }, [promoHydrate, productsHydrate, categoriesHydrate, outletHydrate]);
 
   useEffect(() => {
-    let filtered = [...promotions];
+    let filtered = promotions.filter(p => !p.isDeleted);
     if (filters.id) {
       filtered = filtered.filter((p) => p.promotion_id === filters.id);
     }
