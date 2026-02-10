@@ -14,7 +14,7 @@ export const useCartStore = create(
       // ===== CART ACTIONS =====
       addToCart: (product) => {
         console.log(product);
-        
+
         const state = get();
         const existing = state.cartData.find(p => p.id === product.id);
 
@@ -49,9 +49,14 @@ export const useCartStore = create(
 
 
       removeFromCart: (id) =>
-        set((state) => ({
-          cartData: state.cartData.filter(p => p.id !== id),
-        })),
+        set((state) => {
+          const newCartData = state.cartData.filter((p) => p.id !== id);
+          return {
+            cartData: newCartData,
+            // If newCart is empty, reset managerDiscount
+            managerDiscount: newCartData.length === 0 ? 0 : state.managerDiscount,
+          };
+        }),
 
       // updateQuantity: (id, quantity) =>
       //   set((state) => ({
@@ -75,15 +80,15 @@ export const useCartStore = create(
             }),
           };
         }),
-        
-        // setCartFromHold: (cartData) => set({ cartData: cartData.orderItems }),
-        
-setCartFromHold: (cartData) =>
-  set({
-    cartData: cartData.orderItems,
-    selectedCustomer: cartData.customer || null,
-    selectedTable: cartData.table || null,
-  }),
+
+      // setCartFromHold: (cartData) => set({ cartData: cartData.orderItems }),
+
+      setCartFromHold: (cartData) =>
+        set({
+          cartData: cartData.orderItems,
+          selectedCustomer: cartData.customer || null,
+          selectedTable: cartData.table || null,
+        }),
       // ===== OTHER =====
       setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),
       setSelectedTable: (table) => set({ selectedTable: table }),
@@ -98,7 +103,7 @@ setCartFromHold: (cartData) =>
           //orderData: {},
           managerDiscount: 0
         }),
-        clearOrderData: () => set({ orderData: null }),
+      clearOrderData: () => set({ orderData: null }),
 
     }),
     {

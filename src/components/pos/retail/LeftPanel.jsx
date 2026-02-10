@@ -105,7 +105,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
             return (
               <div key={item.serverId || index} className="flex border-b border-gray-100 py-3 hover:bg-gray-50 transition-colors">
                 <div className="flex-1 flex">
-                  <div className="px-3  font-mono text-500 self-center">{item.barcode || "N/A"}</div>
+                  <div className="px-3 self-center">{item.barcode || "N/A"}</div>
                   <div className="px-3 flex-1 flex flex-col font-medium self-center">
                     <span>{item.name}</span>
                     <span className="text-xs text-gray-400">P{ unitPrice.toFixed(2)} X {quantity }{ item.unit}</span>
@@ -142,7 +142,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
                     </div>
                   </div>
 
-                  <span className="text-gray-400">{parseFloat(item?.tax).toFixed(2) || 0.00}%</span>
+                  <span className="text-gray-400">{item.tax ? parseFloat(item?.tax).toFixed(2) : "0.00"}%</span>
                   <span className="text-red-400">P{discountValue}</span>
                   <span className="font-semibold text-gray-800">P {subtotal.toFixed(2)}</span>
                 </div>

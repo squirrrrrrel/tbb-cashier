@@ -7,6 +7,7 @@ import { useProductStore } from "../../store/useProductStore";
 import { useCategoryStore } from "../../store/useCategoryStore";
 import api from "../../utils/api";
 import { useOutletStore } from "../../store/useOutletStore";
+import { useAuthStore } from "../../store/useAuthStore";
 // const categories = [
 //   { label: "Category 1", value: "Category 1" },
 //   { label: "Category 2", value: "Category 2" },
@@ -24,6 +25,7 @@ const Promotions = () => {
   const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
   const { categories, hydrate: categoriesHydrate, hydrated: categoriesHydrated } = useCategoryStore();
   const { outlets, hydrate: outletHydrate, hydrated: outletHydrated } = useOutletStore();
+  const user = useAuthStore((u) => u.user);
 
   //Variables
   const [filters, setFilters] = useState({
@@ -31,7 +33,7 @@ const Promotions = () => {
     promotion: "",
     product: "",
     category: "",
-    outlet: "",
+    outlet: user?.outlet_id || "",
     type: "",
   });
   const [filteredPromotions, setFilteredPromotions] = useState([]);
@@ -52,24 +54,25 @@ const Promotions = () => {
     }
   ))
 
-  const fetchOutlet = async () => {
-    try {
-      const res = await api.get('/tenant/outlet');
-      console.log(res, "Outlet Response")
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const fetchOutlet = async () => {
+  //   try {
+  //     const res = await api.get('/tenant/outlet');
+  //     console.log(res, "Outlet Response")
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
 
-  useEffect(() => {
-    fetchOutlet();
-  }, [])
+  // useEffect(() => {
+  //   fetchOutlet();
+  // }, [])
 
   useEffect(() => {
     promoHydrate();
     productsHydrate();
     categoriesHydrate();
     outletHydrate();
+    console.log(user);
   }, [promoHydrate, productsHydrate, categoriesHydrate, outletHydrate]);
 
   useEffect(() => {
@@ -87,7 +90,7 @@ const Promotions = () => {
     }
 
     if (filters.outlet) {
-      filtered = filtered.filter((p) => p.outlet === filters.outlet);
+      filtered = filtered.filter((p) => p.outlet?.includes(filters.outlet));
     }
 
     if (filters.product) {
@@ -98,8 +101,8 @@ const Promotions = () => {
   }, [filters, promotions]);
 
   if (!productsHydrated || !promoHydrated || !categoriesHydrated || !outletHydrated) return <OfflineLoader />;
-  console.log(promotions, "Promotions")
-  console.log(products, "Products")
+  // console.log(promotions, "Promotions")
+  // console.log(products, "Products")
   // console.log(categories, "Categories")
   // console.log(outlets, "Outlets")
 
@@ -226,19 +229,11 @@ const Promotions = () => {
           styles={commonSelectStyles}
         />
         <Select
-          options={outlets}
-          onChange={(option) => {
-            setFilters((prev) => ({
-              ...prev,
-              outlet: option ? option.value : "",
-            }));
-          }}
-          isClearable={true}
-          placeholder="Select Outlet"
-          components={{
-            IndicatorSeparator: () => null,
-          }}
+          isDisabled={true} // Prevents user interaction
+          value={{ label: user?.outlet_name, value: user?.outlet_id }}
           styles={commonSelectStyles}
+          placeholder="Select Outlet"
+          components={{ IndicatorSeparator: () => null }}
         />
       </div>
       <div className="table-container">

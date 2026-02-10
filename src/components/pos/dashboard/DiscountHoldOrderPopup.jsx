@@ -42,6 +42,7 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
     const saveDiscountHandler = () => {
         const discountData = discountType === "percentage" ? discountValue / 100 : discountValue;
         setManagerDiscount(discountData);
+        notifySuccess("Discount Applied");
         setShowDiscount(false);
     }
 
@@ -142,7 +143,7 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
                             <h2 className="text-2xl font-bold mb-4 text-[#555555] text-center">Hold Order</h2>
                             <input
                                 type="text"
-                                placeholder="Enter Waiter's Name"
+                                placeholder="Enter Customer's Name"
                                 onChange={(e) => { setWaiterName(e.target.value) }}
                                 className="shadow-[0_0_3px_#00000028] w-full mb-6 p-2 rounded-md placeholder:text-sm outline-none text-sm"
                             />

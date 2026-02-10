@@ -8,7 +8,6 @@ import PrintOrder from "../dashboard/PrintOrder";
 
 const HoldInvoiceFrom = ({ selectedHoldOrder , onAddToCart,onDelete}) => {
 const navigate = useNavigate();
-const [showPrintSlip, setShowPrintSlip] = useState(false);
 const [isPrinting, setIsPrinting] = useState(false);
   // const tax = selectedHoldOrder.orderItems.reduce((acc, item) => {
   //   const itemTax = item.taxPercentagePerProduct
@@ -20,14 +19,6 @@ const [isPrinting, setIsPrinting] = useState(false);
   if (isPrinting) return;
 
   setIsPrinting(true);
-
-  // force re-open even if already true
-  setShowPrintSlip(false);
-
-  // allow React to re-render before reopening
-  setTimeout(() => {
-    setShowPrintSlip(true);
-  }, 0);
 };
 
 const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
@@ -98,7 +89,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           </svg>
           <p className="leading-none flex items-center">
             {selectedHoldOrder?.cartData?.customer
-              ? `${selectedHoldOrder?.cartData?.customer.firstName} ${selectedHoldOrder?.cartData?.customer.lastName}`
+              ? `${selectedHoldOrder?.cartData?.customer?.firstName} ${selectedHoldOrder?.cartData?.customer?.lastName}`
               : ""}
           </p>
 
@@ -155,7 +146,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
 
         <div className="mt-2">
           <div className="text-black font-bold w-full py-3.5 px-5 rounded-md bg-[#ccc] mb-2">
-            Waiter Name : {selectedHoldOrder?.note}
+            Customer Name : {selectedHoldOrder?.note}
           </div>
           <button className="bg-gradient-to-b from-secondary to-primary text-white text-sm font-bold w-full py-3.5 px-2 rounded-md
                    flex items-center justify-center gap-2 cursor-pointer"  disabled={isPrinting}
@@ -230,12 +221,13 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           </div>
         </div>
       </div>
-       <PrintOrder
-          show={showPrintSlip}
-          setShow={setShowPrintSlip}
-          setIsPrinting={setIsPrinting}
+       {isPrinting && (
+        <PrintOrder
+          show={isPrinting}
+          setShow={setIsPrinting}
           finalOrderData={selectedHoldOrder?.cartData}
-       />
+        />
+      )}
     </div>
    
   );

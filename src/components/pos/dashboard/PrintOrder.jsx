@@ -9,39 +9,39 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
     const whole = (num) => {
         return Math.floor(num);
     }
-//  useEffect(() => {
-//     if (!show || !finalOrderData?.orderItems?.length) return;
+    //  useEffect(() => {
+    //     if (!show || !finalOrderData?.orderItems?.length) return;
 
-//     let cancelled = false;
+    //     let cancelled = false;
 
-//     const loadProducts = async () => {
-//       setLoading(true);
+    //     const loadProducts = async () => {
+    //       setLoading(true);
 
-//       const map = {};
+    //       const map = {};
 
-//       for (const item of finalOrderData.orderItems) {
-//         const productId = item.product_id;
-//         if (!productId || map[productId]) continue;
+    //       for (const item of finalOrderData.orderItems) {
+    //         const productId = item.product_id;
+    //         if (!productId || map[productId]) continue;
 
-//         const product = await getProductByServerIdDB(productId);
-//         if (product) {
-//           map[productId] = product;
-//         }
-//       }
-//       console.log("products",productId)
+    //         const product = await getProductByServerIdDB(productId);
+    //         if (product) {
+    //           map[productId] = product;
+    //         }
+    //       }
+    //       console.log("products",productId)
 
-//       if (!cancelled) {
-//         setProductsMap(map);
-//         setLoading(false);
-//       }
-//     };
+    //       if (!cancelled) {
+    //         setProductsMap(map);
+    //         setLoading(false);
+    //       }
+    //     };
 
-//     loadProducts();
+    //     loadProducts();
 
-//     return () => {
-//       cancelled = true;
-//     };
-//   }, [show, finalOrderData]);
+    //     return () => {
+    //       cancelled = true;
+    //     };
+    //   }, [show, finalOrderData]);
 
     const handlePrint = () => {
         // Only run if not already printing and ref exists
@@ -51,8 +51,14 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
             const filename = `Invoice_${finalOrderData.display_id || Date.now()}`;
             const iframe = document.createElement("iframe");
             iframe.style.display = "none";
-            document.body.appendChild(iframe);
 
+            iframe.style.position = "fixed";
+            iframe.style.right = "0";
+            iframe.style.bottom = "0";
+            iframe.style.width = "0";
+            iframe.style.height = "0";
+            iframe.style.border = "none";
+            document.body.appendChild(iframe);
             iframe.contentDocument.write(`
                 <html>
                     <head>
@@ -153,23 +159,23 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                         </style>
                     </head>
                     <body>
-                        ${printRef?.current?.innerHTML}
+                        ${printRef.current.innerHTML}
                     </body>
                 </html>
             `);
 
             iframe.contentDocument.close();
 
-            iframe.contentWindow.onafterprint = () => {
-                document.body.removeChild(iframe);
-                try {
-                    document.title = originalTitle;
-                } catch { }
-            };
+            // iframe.contentWindow.onafterprint = () => {
+            //     document.body.removeChild(iframe);
+            //     try {
+            //         document.title = originalTitle;
+            //     } catch { }
+            // };
 
             // Try to influence the filename used by "Save as PDF"
             try {
-                iframe.contentDocument.title = filename;
+                // iframe.contentDocument.title = filename;
                 document.title = filename;
             } catch { }
 
@@ -177,7 +183,12 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
             setTimeout(() => {
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
-                document.body.removeChild(iframe);
+                if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe);
+                }
+                try {
+                    document.title = originalTitle;
+                } catch { }
                 isPrinting.current = false; // Reset flag
                 setShow(false); // Close state in parent
             }, 500);
@@ -235,7 +246,7 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
 
                 <table className="sub-total-table">
                     <tbody>
-                        <tr style={{borderTop: "2px dashed #555"}}>
+                        <tr style={{ borderTop: "2px dashed #555" }}>
                             <td>Subtotal</td>
                             <td></td>
                             <td></td>
