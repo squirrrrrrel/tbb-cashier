@@ -135,7 +135,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.warn("Verify failed, continuing offline session");
     }
   },
-  setOutlet: async (outlet_id: string) => {
+  setOutlet: async (outlet_id: string, outlet_name: string) => {
   const { user, token } = get();
 
   if (!user || !token) return;
@@ -143,6 +143,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   const updatedUser = {
     ...user,
     outlet_id,
+    outlet_name
   };
 
   // ✅ Persist to IndexedDB

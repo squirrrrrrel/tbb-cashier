@@ -19,18 +19,16 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const [activeModal, setActiveModal] = useState("");
     const { setIsRetailOpen } = useRetail();
     const { notifyError } = useNotification();
+    const user = useAuthStore((u) => u.user);
     const tax = cartData.reduce((totalTax, item) => {
-    const taxPercent = Number(item.tax || 0);
-    return (
-      totalTax +
-      (item.price * item.quantity * taxPercent) / 100
-    );
-  }, 0);
+        const taxPercent = Number(item.tax || 0);
+        return (
+            totalTax +
+            (item.price * item.quantity * taxPercent) / 100
+        );
+    }, 0);
     const discount = Number(managerDiscount) < 1 ? ((total + tax) * (managerDiscount)).toFixed(2) : Number(managerDiscount).toFixed(2);
-    
-      const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
     //promotions
     const outletId = useAuthStore.getState().user?.outlet_id;
     const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
@@ -41,7 +39,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         promoHydrate();
     }, [productsHydrate, customerHydrate, promoHydrate])
     // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
-      useEffect(() => {
+    useEffect(() => {
         const handleStatusChange = () => {
             setIsOnline(navigator.onLine);
         };
@@ -63,7 +61,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
             data: c
         })) || [])
     ];
-    
+
 
     const productOptions = products?.map(p => ({
         value: p?.serverId,
@@ -124,12 +122,12 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         }
     }
 
-    const handleDiscountClick = ()=>{
-            if (cartData.length === 0) {
-                notifyError("Please add items in the cart to apply discount");
-                return;
-            }
-            setActiveModal("discount");
+    const handleDiscountClick = () => {
+        if (cartData.length === 0) {
+            notifyError("Please add items in the cart to apply discount");
+            return;
+        }
+        setActiveModal("discount");
     };
 
     const handleProceed = () => {
@@ -196,7 +194,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                             </svg>
                         </button>
 
-                        <button className="w-10 h-10 flex text-2xl items-center justify-center text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer" onClick={()=>navigate("/pos/customers")}>
+                        <button className="w-10 h-10 flex text-2xl items-center justify-center text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer" onClick={() => navigate("/pos/customers")}>
                             +
                         </button>
                     </div>
@@ -224,7 +222,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                                 {/* This ONLY shows inside the dropdown list */}
                                 {context === "menu" && (
                                     <span className=" text-md">
-                                       [{option.data.phoneCode}-{option.data.phone}]
+                                        [{option.data.phoneCode}-{option.data.phone}]
                                     </span>
                                 )}
                             </div>
@@ -249,7 +247,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                                 <div className="text-right">
                                     <div className="text-sm">[P{option.data.sellingPrice.toFixed(2)}]</div>
                                     <div className="text-xs text-gray-400 space-x-2">
-                                        <span className={`font-semibold ${option.data.stockQueue < option.data.lowStockThreshold ? "text-red-500":"text-green-500"}`}>In Stock: [{option.data.stockQueue}]</span>
+                                        <span className={`font-semibold ${option.data.stockQueue < option.data.lowStockThreshold ? "text-red-500" : "text-green-500"}`}>In Stock: [{option.data.stockQueue}]</span>
                                         Stock: <span className="font-semibold">[{option.data.stock}]</span>
                                     </div>
                                 </div>
@@ -374,7 +372,9 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         <p>Hold Order</p>
                     </div>
                 </div>
-                <div className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer" onClick={handleProceed}>
+                {/* <div className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer" onClick={handleProceed}> */}
+                <div onClick={() => user?.role?.name === "manager" ? "" : handleProceed()}
+                    className={`${user?.role?.name === "manager" ? "opacity-70 cursor-not-allowed" : "cursor-pointer"} cart-checkout flex justify-between items-center bg-linear-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg `}>
                     <div className="proceed">
                         <h3 className="text-xl font-semibold">Proceed to Pay</h3>
                         <h4 className="text-sm">{cartData.length} Items</h4>

@@ -7,7 +7,7 @@ const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, sear
             <SearchBar
                 value={searchTerm}
                 onChange={setSearchTerm}
-                placeholder="Search by Customer Name, Customer Mobile Number and Waiter Name...."
+                placeholder="Search by Customer Name, Customer Mobile Number...."
                 resultCount={orders.length}
             /></div>
 
@@ -44,7 +44,7 @@ const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, sear
 
                                     <div>
                                         <h3 className="text-sm text-gray-500">
-                                            Waiter: {order?.note}
+                                            Customer Name: {order?.note}
                                         </h3>
 
                                         <p className="text-sm text-gray-500 flex items-center gap-1">

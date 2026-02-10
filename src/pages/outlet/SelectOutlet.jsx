@@ -128,8 +128,8 @@ const SelectOutlet = () => {
     console.log(outlets);
 
 
-    const handleSelectOutlet = async (outletId) => {
-    await setOutlet(outletId);   // save to IndexedDB + Zustand
+    const handleSelectOutlet = async (outletId, outletName) => {
+    await setOutlet(outletId, outletName);   // save to IndexedDB + Zustand
     navigate("/pos/dashboard");  // normal navigation
   };
 
@@ -150,7 +150,7 @@ const SelectOutlet = () => {
                         <div
                             key={outlet.id}
                             className="text-sm cursor-pointer border-b border-primary hover:bg-gradient-to-b from-secondary to-primary hover:text-white transition-colors"
-                            onClick={() => handleSelectOutlet(outlet.id)}
+                            onClick={() => handleSelectOutlet(outlet.id, outlet.outlet_name)}
                         >
                             <p className="p-3">
                                 {outlet.outlet_name} - ({outlet.city})

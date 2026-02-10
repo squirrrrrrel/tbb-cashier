@@ -4,20 +4,22 @@ import { useLowStockStore } from "../../store/useLowStockStore";
 import { useProductStore } from "../../store/useProductStore";
 import OfflineLoader from "../../components/OfflineLoader";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
-import defaultImg from   "./../../assets/images/Default_Product_Img.png";
+import defaultImg from "./../../assets/images/Default_Product_Img.png";
 import { useCategoryStore } from "../../store/useCategoryStore";
+import { useAuthStore } from "../../store/useAuthStore";
 
 const LowStock = () => {
   const { lowStock, hydrate: lowStockHydrate, hydrated: lowStockHydrated } = useLowStockStore();
-  const { products,hydrate: productHydrate ,hydrated: productsHydrated } = useProductStore();
+  const { products, hydrate: productHydrate, hydrated: productsHydrated } = useProductStore();
   const { categories, hydrate: categoriesHydrate, hydrated: categoriesHydrated } = useCategoryStore();
+  const user = useAuthStore((u) => u.user);
 
   const [filters, setFilters] = useState({
     product: "",
     category: "",
-    outlet: "",
+    outlet: user?.outlet_name || "",
   });
-  
+
   useEffect(() => {
     productHydrate();
     categoriesHydrate();
@@ -38,7 +40,6 @@ const LowStock = () => {
     ...new Set(lowStock.map((i) => i.outletName).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
- 
   const filtered = lowStock.filter((p) => {
     if (filters.product && p.productName !== filters.product) return false;
     if (filters.category && p.categoryName !== filters.category) return false;
@@ -54,7 +55,8 @@ const LowStock = () => {
       <div className="filters grid grid-cols-3 gap-2 mt-4 color-#117f9c">
         <Select
           options={outletOptions}
-          isClearable
+          isDisabled={true}
+          value={outletOptions.find(o => o.value === (user?.outlet_name || filters.outlet))}
           placeholder="Select Outlet"
           styles={commonSelectStyles}
           onChange={(o) =>
@@ -107,19 +109,19 @@ const LowStock = () => {
           {filtered.map((ls) => (
             <tr key={ls.localId} className="even:bg-gray-100">
               <td className="p-2 flex items-center justify-center">
-     {ls.img ? (
-             <img
-               src={ls.img}
-               alt={defaultImg}
-               className="w-10 h-10 object-cover"
-             />
-           ) : (
-             <img
-               src={defaultImg}
-               alt={defaultImg}
-               className="w-10 h-10 object-cover"
-             />
-           )}
+                {ls.img ? (
+                  <img
+                    src={ls.img}
+                    alt={defaultImg}
+                    className="w-10 h-10 object-cover"
+                  />
+                ) : (
+                  <img
+                    src={defaultImg}
+                    alt={defaultImg}
+                    className="w-10 h-10 object-cover"
+                  />
+                )}
               </td>
               <td className="p-2">{ls.productName}</td>
               <td className="p-2">{ls.categoryName}</td>
