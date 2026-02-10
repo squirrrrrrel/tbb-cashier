@@ -60,6 +60,7 @@ const SideHeader = ({ setIsLogoutClicked }) => {
         </div>
       </div>
       <div className="logout">
+        <div className="text-center text-xs text-[#555555]">{user? `${user.first_name}`: ""}</div>
         <div
           onClick={() => setIsLogoutClicked(true)}
           className="link px-5 py-3 flex flex-col justify-center items-center bg-transparent hover:bg-linear-to-b hover:from-primary hover:to-secondary rounded-3xl cursor-pointer text-gray-700 group"
@@ -67,7 +68,6 @@ const SideHeader = ({ setIsLogoutClicked }) => {
           <LogoutIcon />
           <p className="text-sm group-hover:text-white">Logout</p>
         </div>
-        <div className="text-center text-xs text-[#555555]">{user? `${user.first_name} ${user.last_name}`: ""}</div>
       </div>
     </div>
   );

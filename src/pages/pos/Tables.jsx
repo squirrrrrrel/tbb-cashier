@@ -5,6 +5,7 @@ import { useTableStore } from "../../store/useTableStore";
 import { useCartStore } from "../../store/useCartStore";
 import SearchBar from "../../components/searchBar/SearchBar";
 import { useNavigate } from "react-router-dom";
+import { useHoldOrderStore } from "../../store/useHoldOrderStore";
 const Tables = () => {
   const { tables, hydrate, hydrated, addTable, deleteTable } = useTableStore();
   const [addNewTableModal, setAddNewModal] = useState(false);
@@ -13,6 +14,16 @@ const Tables = () => {
   const { selectedTable, setSelectedTable } = useCartStore();
   const { notifyError, notifySuccess } = useNotification();
   const navigate = useNavigate();
+  const holdOrders = useHoldOrderStore(state => state.holdOrders);
+  const loadHoldOrdersFromDB = useHoldOrderStore(
+    state => state.loadHoldOrdersFromDB
+  );
+  useEffect(() => {
+    loadHoldOrdersFromDB();
+  }, []);
+// to find the table ids which are on hold
+  const holdOrderTableIds = holdOrders?.map((order) => order.cartData.table?.localId);
+
 
   useEffect(() => {
     hydrate();
@@ -54,14 +65,19 @@ const Tables = () => {
   };
 
   const filteredTableList = tables
-  .filter((item) => {
-    if (filter === "occupied") return selectedTable?.localId && item.localId === selectedTable.localId;
-    if (filter === "vacant") return !selectedTable?.localId || item.localId !== selectedTable.localId;
-    return true;
-  })
-  .filter((item) =>
-    item.tableNumber?.toString().includes(searchQuery) || ""
-  );
+    .filter((item) => {
+      const isOccupied =
+        item.localId === selectedTable?.localId ||
+        holdOrderTableIds.includes(item.localId);
+
+      if (filter === "occupied") return isOccupied;
+      if (filter === "vacant") return !isOccupied;
+
+      return true; // "all" filter
+    })
+    .filter((item) =>
+      item.tableNumber?.toString().includes(searchQuery)
+    );
 
   return (
     <div className="grid grid-cols-1 w-full h-screen">
@@ -108,7 +124,7 @@ const Tables = () => {
             <div className="flex flex-wrap gap-10 overflow-y-auto overflow-x-hidden py-5 px-3 h-full m-2">
               {filteredTableList.map((item) => {
                 const isSelected = selectedTable?.localId === item?.localId;
-
+                const isOnHold = holdOrderTableIds?.includes(item.localId);
                 return (
                   <div className="group" key={item.localId}>
                     {/* Table Visual Card */}
@@ -151,14 +167,26 @@ const Tables = () => {
 
                       {/* Action Buttons */}
                       <div className="mt-[25px] flex items-center justify-center gap-1">
-                        <div className="flex-1 w-5/6 items-center flex-wrap rounded-md bg-white p-[8px_2px] text-center shadow-[0_0_3px_0_rgba(0,0,0,0.15)] cursor-pointer hover:bg-black/5 hover:shadow-none " onClick={!isSelected ? () => { setSelectedTable(item); navigate("/pos/dashboard"); } : () => setSelectedTable({})}>
+                        <div className="flex-1 w-5/6 items-center flex-wrap rounded-md bg-white p-[8px_2px] text-center shadow-[0_0_3px_0_rgba(0,0,0,0.15)] cursor-pointer hover:bg-black/5 hover:shadow-none "
+                          onClick={() => {
+                            // Prevent action if table is on hold
+                            if (isOnHold) return;
+
+                            if (!isSelected) {
+                              setSelectedTable(item);
+                              navigate("/pos/dashboard");
+                            } else {
+                              setSelectedTable({});
+                            }
+                          }}
+                        >
                           <div className="flex gap-1 items-center text-xs justify-center text-[#555555]" >
                             <span className="text-lg text-[#15b71a]">
                               <svg viewBox="64 64 896 896" width="1em" height="1em" fill="currentColor">
                                 <path d="M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474a32 32 0 00-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1.4-12.8-6.3-12.8z"></path>
                               </svg>
                             </span>
-                            {isSelected ? "Current Table" : "Set Table"}
+                            {isOnHold ? "Occupied" : isSelected ? "Current Table" : "Set Table"}
                           </div>
                         </div>
 

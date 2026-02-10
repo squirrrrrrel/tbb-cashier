@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useRetail } from "../../hooks/useRetail";
 
 const SearchBar = ({
   value,
@@ -14,6 +15,7 @@ const SearchBar = ({
   activeDateRange = false,
 }) => {
   const navigate = useNavigate();
+  const {setIsRetail, setIsRetailOpen} = useRetail();
   return (
     <div className="search relative mt-4 flex items-center justify-between gap-2">
       <svg
@@ -36,7 +38,7 @@ const SearchBar = ({
         placeholder={placeholder}
         className="py-2 pl-8 bg-white rounded-md w-4/5 shadow-[0_0_3px_#00000026] outline-0 cursor-text placeholder:text-[#555555] placeholder:text-sm"
       />
-      <div className="cart-icons p-2 shadow-[0_0_3px_#00000026] text-[#555555] rounded-md cursor-pointer" onClick={() => {navigate("/pos/dashboard"); }}>
+      <div className="cart-icons p-2 shadow-[0_0_3px_#00000026] text-[#555555] rounded-md cursor-pointer bg-white" onClick={() => {setIsRetail(true); setIsRetailOpen(true); navigate("/pos/dashboard");}}>
               <svg
                 viewBox="0 0 1024 1024"
                 focusable="false"

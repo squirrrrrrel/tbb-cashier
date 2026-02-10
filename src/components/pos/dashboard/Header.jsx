@@ -173,7 +173,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
             >
               <img src={mute ? muteIcon : speakerIcon} alt="Speaker" />
             </div>
-            <div className="cart-icons text-gray-700 p-2 border border-gray-300 rounded-md bg-white cursor-pointer" onClick={() => { setIsRetail(true); setIsRetailOpen(true) }}>
+            <div className="cart-icons text-[#555555] p-2 border border-gray-300 rounded-md bg-white cursor-pointer" onClick={() => { setIsRetail(true); setIsRetailOpen(true) }}>
               <svg
                 viewBox="0 0 1024 1024"
                 focusable="false"
