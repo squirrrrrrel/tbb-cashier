@@ -54,14 +54,14 @@ const Tables = () => {
   };
 
   const filteredTableList = tables
-    .filter((item) => {
-      if (filter === "occupied") return item.localId === selectedTable.localId;
-      if (filter === "vacant") return item.localId !== selectedTable.localId;
-      return true;
-    })
-    .filter((item) =>
-      item.tableNumber?.toString().includes(searchQuery) || ""
-    );
+  .filter((item) => {
+    if (filter === "occupied") return selectedTable?.localId && item.localId === selectedTable.localId;
+    if (filter === "vacant") return !selectedTable?.localId || item.localId !== selectedTable.localId;
+    return true;
+  })
+  .filter((item) =>
+    item.tableNumber?.toString().includes(searchQuery) || ""
+  );
 
   return (
     <div className="grid grid-cols-1 w-full h-screen">

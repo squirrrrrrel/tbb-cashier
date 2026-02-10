@@ -61,6 +61,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAuthenticated: true,
       hydrated: true,
     });
+    return user;
   },
 
   /* -------------------------------------------------------
@@ -134,4 +135,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.warn("Verify failed, continuing offline session");
     }
   },
+  setOutlet: async (outlet_id: string) => {
+  const { user, token } = get();
+
+  if (!user || !token) return;
+
+  const updatedUser = {
+    ...user,
+    outlet_id,
+  };
+
+  // ✅ Persist to IndexedDB
+  await saveAuth({
+    user: updatedUser,
+    token,
+  });
+
+  // ✅ Update Zustand
+  set({
+    user: updatedUser,
+    isAuthenticated: true,
+  });
+},
+
 }));

@@ -11,6 +11,8 @@ import bombayImage from "../../assets/images/bombay.png";
 import tullemoreImage from "../../assets/images/tullemore.png";
 import smrinoffImage from "../../assets/images/smrinoff.png";
 import { useOutletStore } from "../../store/useOutletStore";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 /**
@@ -117,11 +119,19 @@ const FloatingItem = ({ item, index }) => {
 
 const SelectOutlet = () => {
     const { outlets, hydrate } = useOutletStore();
+    const setOutlet = useAuthStore((s) => s.setOutlet);
+    const navigate = useNavigate();
 
     useEffect(() => {
         hydrate();
     }, [hydrate]);
     console.log(outlets);
+
+
+    const handleSelectOutlet = async (outletId) => {
+    await setOutlet(outletId);   // save to IndexedDB + Zustand
+    navigate("/pos/dashboard");  // normal navigation
+  };
 
     return (
         <div className="login relative overflow-hidden bg-linear-to-b from-primary to-secondary min-h-screen flex items-center justify-center">
@@ -140,7 +150,7 @@ const SelectOutlet = () => {
                         <div
                             key={outlet.id}
                             className="text-sm cursor-pointer border-b border-primary hover:bg-gradient-to-b from-secondary to-primary hover:text-white transition-colors"
-                            onClick={() => console.log("Selected:", outlet.id)}
+                            onClick={() => handleSelectOutlet(outlet.id)}
                         >
                             <p className="p-3">
                                 {outlet.outlet_name} - ({outlet.city})
