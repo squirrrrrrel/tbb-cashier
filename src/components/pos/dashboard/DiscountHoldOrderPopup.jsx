@@ -42,6 +42,7 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
     const saveDiscountHandler = () => {
         const discountData = discountType === "percentage" ? discountValue / 100 : discountValue;
         setManagerDiscount(discountData);
+        notifySuccess("Discount Applied");
         setShowDiscount(false);
     }
 

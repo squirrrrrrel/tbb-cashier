@@ -36,8 +36,8 @@ const CartProdctComponent = ({
     onToggle();
   };
   // const divBG = matchBG % 2 === 0 ? "bg-gray-100" : "bg-white";
-  const divBG = isExpanded && (matchBG % 2 === 0 ? "bg-white" : "bg-gray-100") ;
-  const expandedDivBG = isExpanded && (matchBG % 2 === 0 ? "bg-gray-100" : "bg-white") ;
+  const divBG = isExpanded && (matchBG % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]") ;
+  const expandedDivBG = isExpanded && (matchBG % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white") ;
   return (
     <>
       <div className={`cart-product w-full p-2 flex justify-between items-center ${divBG}`}>
@@ -309,7 +309,7 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
               expandedProductId === index ? matchBG+=2 : matchBG++,
               <div
                 key={p.id}
-                className={matchBG % 2 === 0 ? "bg-gray-100" : "bg-white"}
+                className={matchBG % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"}
               >
                 <CartProdctComponent
                   product={p}
