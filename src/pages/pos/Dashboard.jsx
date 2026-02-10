@@ -256,11 +256,98 @@ const Dashboard = () => {
   };
 
 
+  // const isScheduleValid = (promo, now) => {
+  //   const jsDay = now.getDay();
+  //   const currentDay = jsDay === 0 ? 7 : jsDay; // Sunday: 0→7, Mon–Sat: 1–6 stay
+  //   const currentTime = now.toTimeString().slice(0, 5); // HH:mm
+  //   const currentDate = now.toISOString().split('T')[0];
+
+  //   /* -------- DAILY -------- */
+  //   if (promo.schedule_type === 'DAILY') {
+  //     return isTimeAllowed(promo, currentTime);
+  //   }
+
+  //   /* -------- WEEKLY -------- */
+  //   if (promo.schedule_type === 'WEEKLY') {
+  //     if (
+  //       promo.schedule_start_day == null ||
+  //       promo.schedule_end_day == null
+  //     ) return false;
+
+  //     if (!isDayBetween(currentDay, promo.schedule_start_day, promo.schedule_end_day)) {
+  //       return false;
+  //     }
+
+  //     return isTimeAllowed(promo, currentTime);
+  //   }
+
+  //   /* -------- DATE RANGE -------- */
+  //   if (promo.schedule_type === 'DATE_RANGE') {
+  //     if (
+  //       !promo.schedule_start_date ||
+  //       !promo.schedule_end_date
+  //     ) return false;
+
+  //     if (
+  //       currentDate < promo.schedule_start_date ||
+  //       currentDate > promo.schedule_end_date
+  //     ) return false;
+
+  //     return isTimeAllowed(promo, currentTime);
+  //   }
+
+  //   return false;
+  // };
+
+  // const isTimeAllowed = (promo, currentTime) => {
+  //   if (promo.schedule_mode === 'ALWAYS') return true;
+
+  //   if (promo.schedule_mode === 'FULL_DAY') {
+  //     return true; // 00:00 → 23:59
+  //   }
+
+  //   if (promo.schedule_mode === 'TIME_RANGE') {
+  //     if (!promo.schedule_start_time || !promo.schedule_end_time) {
+  //       return false;
+  //     }
+
+  //     // Overnight support
+  //     if (promo.schedule_start_time <= promo.schedule_end_time) {
+  //       return (
+  //         currentTime >= promo.schedule_start_time &&
+  //         currentTime <= promo.schedule_end_time
+  //       );
+  //     }
+
+  //     // Overnight (22:00 → 06:00)
+  //     return (
+  //       currentTime >= promo.schedule_start_time ||
+  //       currentTime <= promo.schedule_end_time
+  //     );
+  //   }
+
+  //   return false;
+  // };
+
   const isScheduleValid = (promo, now) => {
     const jsDay = now.getDay();
-    const currentDay = jsDay === 0 ? 7 : jsDay; // Sunday: 0→7, Mon–Sat: 1–6 stay
-    const currentTime = now.toTimeString().slice(0, 5); // HH:mm
-    const currentDate = now.toISOString().split('T')[0];
+    const currentDay = jsDay === 0 ? 7 : jsDay; // Mon:1, Tue:2 ... Sun:7
+    const yesterdayDay = currentDay === 1 ? 7 : currentDay - 1;
+
+    const currentTime = now.toTimeString().slice(0, 5); // "HH:mm"
+
+    // 1. Midnight Timestamps for Date Range
+    const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const yesterdayAtMidnight = todayAtMidnight - (24 * 60 * 60 * 1000);
+
+    const parseToMidnight = (dateStr) => {
+      if (!dateStr) return 0;
+      const d = new Date(dateStr);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    };
+
+    // Helper to check if a promotion is configured to be overnight
+    const isOvernightConfig = promo.schedule_mode === 'TIME_RANGE' && promo.schedule_start_time > promo.schedule_end_time;
 
     /* -------- DAILY -------- */
     if (promo.schedule_type === 'DAILY') {
@@ -269,13 +356,14 @@ const Dashboard = () => {
 
     /* -------- WEEKLY -------- */
     if (promo.schedule_type === 'WEEKLY') {
-      if (
-        promo.schedule_start_day == null ||
-        promo.schedule_end_day == null
-      ) return false;
+      if (promo.schedule_start_day == null || promo.schedule_end_day == null) return false;
 
-      if (!isDayBetween(currentDay, promo.schedule_start_day, promo.schedule_end_day)) {
-        return false;
+      // If it's early morning and the promo is overnight, check if YESTERDAY was a valid promo day
+      if (isOvernightConfig && currentTime <= promo.schedule_end_time) {
+        if (!isDayBetween(yesterdayDay, promo.schedule_start_day, promo.schedule_end_day)) return false;
+      } else {
+        // Otherwise, check if TODAY is a valid promo day
+        if (!isDayBetween(currentDay, promo.schedule_start_day, promo.schedule_end_day)) return false;
       }
 
       return isTimeAllowed(promo, currentTime);
@@ -283,15 +371,18 @@ const Dashboard = () => {
 
     /* -------- DATE RANGE -------- */
     if (promo.schedule_type === 'DATE_RANGE') {
-      if (
-        !promo.schedule_start_date ||
-        !promo.schedule_end_date
-      ) return false;
+      if (!promo.schedule_start_date || !promo.schedule_end_date) return false;
 
-      if (
-        currentDate < promo.schedule_start_date ||
-        currentDate > promo.schedule_end_date
-      ) return false;
+      const startTimestamp = parseToMidnight(promo.schedule_start_date);
+      const endTimestamp = parseToMidnight(promo.schedule_end_date);
+
+      if (isOvernightConfig && currentTime <= promo.schedule_end_time) {
+        // Check if yesterday was within the date range
+        if (!(yesterdayAtMidnight >= startTimestamp && yesterdayAtMidnight <= endTimestamp)) return false;
+      } else {
+        // Check if today is within the date range
+        if (!(todayAtMidnight >= startTimestamp && todayAtMidnight <= endTimestamp)) return false;
+      }
 
       return isTimeAllowed(promo, currentTime);
     }
@@ -300,32 +391,19 @@ const Dashboard = () => {
   };
 
   const isTimeAllowed = (promo, currentTime) => {
-    if (promo.schedule_mode === 'ALWAYS') return true;
-
-    if (promo.schedule_mode === 'FULL_DAY') {
-      return true; // 00:00 → 23:59
-    }
+    if (promo.schedule_mode === 'ALWAYS' || promo.schedule_mode === 'FULL_DAY') return true;
 
     if (promo.schedule_mode === 'TIME_RANGE') {
-      if (!promo.schedule_start_time || !promo.schedule_end_time) {
-        return false;
-      }
+      const start = promo.schedule_start_time;
+      const end = promo.schedule_end_time;
 
-      // Overnight support
-      if (promo.schedule_start_time <= promo.schedule_end_time) {
-        return (
-          currentTime >= promo.schedule_start_time &&
-          currentTime <= promo.schedule_end_time
-        );
+      if (start <= end) {
+        return currentTime >= start && currentTime <= end;
       }
-
-      // Overnight (22:00 → 06:00)
-      return (
-        currentTime >= promo.schedule_start_time ||
-        currentTime <= promo.schedule_end_time
-      );
+      // Overnight: 22:00 to 04:00
+      // Returns true if time is 23:00 OR if time is 02:00
+      return currentTime >= start || currentTime <= end;
     }
-
     return false;
   };
 
