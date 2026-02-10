@@ -68,13 +68,25 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
 
 
   const shouldDisableRefund = () => {
-    return (
-      selectedOrder?.orderItems?.filter(
-        (item) =>
-          item?.quantity - (item?.refundQuantity) > 0
-      )?.length === 0
-    );
-  };
+  return (
+    selectedOrder?.orderItems?.filter(
+      (item) => item?.quantity - (item?.refundQuantity) > 0
+    )?.length === 0
+  );
+};
+
+const shouldDisableByCategory = () => {
+  const categories =
+    selectedOrder?.orderItems?.map((item) =>
+      (item?.category_name || "").toLowerCase()
+    ) || [];
+  return (
+    categories.length > 0 &&
+    categories.every((cat) => ["butchery", "shots"].includes(cat))
+  );
+};
+
+const isDisabled = shouldDisableRefund() || shouldDisableByCategory();
 
   const exchangeableItems =
     normalizeOrderItemsForExchange(selectedOrder?.orderItems || []);
@@ -315,22 +327,8 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
 
         <div className="flex gap-2 mt-2 text-sm">
           <div className="w-1/2">
-            <button className={`bg-[#15b71a] w-full text-white font-bold py-4 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
-              disabled={shouldDisableRefund() && (() => {
-                const categories =
-                  selectedOrder?.orderItems?.map((item) =>
-                    (
-                      item?.category_name || "null"
-                    ).toLowerCase()
-                  ) || [];
-                // Disable if all are butchery or shots
-                return (
-                  categories.length > 0 &&
-                  categories.every((cat) =>
-                    ["Butchery", "Shots"].includes(cat)
-                  )
-                );
-              })()}
+            <button className={`bg-[#15b71a] w-full text-white font-bold py-4 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${isDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
+              disabled={isDisabled}
               onClick={() => setShowRefund(true)}
             >
               <span
@@ -354,10 +352,9 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
             </button>
           </div>
           <div className="w-1/2">
-            <button className={`bg-[#15b71a] w-full text-white font-bold py-2.75 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${shouldDisableRefund() ? 'cursor-not-allowed opacity-60' : ''}`}
+            <button className={`bg-[#15b71a] w-full text-white font-bold py-2.75 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${isDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
 
-              disabled={shouldDisableRefund()}
-              // disabled={true}
+              disabled={isDisabled}
               onClick={() => setShowExchange(true)}
             >
               <span
@@ -396,7 +393,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
       />
       <RefundPopup
         open={showRefund}
-        disabled={shouldDisableRefund()}
+        disabled={isDisabled}
         onClose={() => setShowRefund(false)}
         items={exchangeableItems}
         orderId={selectedOrder?.orderId} // Pass the ID
@@ -405,7 +402,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
       <ExchangePopup
         open={showExchange}
         onClose={() => setShowExchange(false)}
-        disabled={shouldDisableRefund()}
+        disabled={isDisabled}
         items={exchangeableItems}
         products={products} // You need to pass your master product list here
         onExchange={onExchange}

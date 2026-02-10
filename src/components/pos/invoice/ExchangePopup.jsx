@@ -12,7 +12,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     useEffect(() => {
         if (open) {
             const exchangeableItems = items.filter(
-                (item) => item.type !== "RETURN" && item.quantity - item.refundQuantity > 0
+                (item) => item.type !== "RETURN" && item.quantity - item.refundQuantity > 0 && item.category_name !== "Butchery" && item.category_name !== "Shots"
             );
             setExchangeRows(
                 exchangeableItems.map((item) => ({

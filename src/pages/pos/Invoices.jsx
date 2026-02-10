@@ -489,7 +489,7 @@ const Invoices = () => {
 
       <div className="invoice-form w-[35vw] h-full overflow-y-auto">
         {!isHoldInvoice ? <InvoiceForm
-          selectedOrder={selectedOrder}
+          selectedOrder={selectedOrderData}
           onRefund={handleRefundAction}
           onExchange={handleExchangeAction}
         /> : <HoldInvoiceFrom

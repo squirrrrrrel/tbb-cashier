@@ -125,7 +125,6 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const loginWithCredentials = useAuthStore((s) => s.loginWithCredentials);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -138,9 +137,18 @@ const LoginPage = () => {
     }
 
     try {
-      await loginWithCredentials(credentials);
+      const user = await loginWithCredentials(credentials);
+      const role = user?.role?.name;
+console.log("User role:", role);
       // Navigate to POS dashboard on success
+
+     if (role === "manager") {
+      navigate("/select-outlet");
+    } else if (role === "cashier") {
       navigate("/pos/dashboard");
+    } else {
+      navigate("/");
+    }
     } catch (err) {
       setError("Login failed. Please try again.");
     } finally {
