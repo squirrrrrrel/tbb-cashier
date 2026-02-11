@@ -53,11 +53,9 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
 
     // --- Data Formatting for Searchable Select ---
     const customerOptions = [
-        // The "Reset" option
-        { value: "default", label: "Select Customer", data: {} },
         ...(customers?.map(c => ({
-            value: c.serverId,
-            label: `${c.firstName} ${c.lastName}`,
+            value: c.localId,
+            label: `${c.firstName} ${c.lastName} (${c.phoneCode}-${c.phone})`,
             data: c
         })) || [])
     ];
@@ -180,18 +178,20 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                     {/* Right Buttons */}
                     <div className="flex gap-2">
                         <button className="flex items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary">
-                            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
-                            <svg
-                                viewBox="64 64 896 896"
-                                focusable="false"
-                                data-icon="edit"
-                                width="1em"
-                                height="1em"
-                                fill="currentColor"
-                                aria-hidden="true"
-                            >
-                                <path d="M880 836H144c-17.7 0-32 14.3-32 32v36c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-36c0-17.7-14.3-32-32-32zm-622.3-84c2 0 4-.2 6-.5L431.9 722c2-.4 3.9-1.3 5.3-2.8l423.9-423.9a9.96 9.96 0 000-14.1L694.9 114.9c-1.9-1.9-4.4-2.9-7.1-2.9s-5.2 1-7.1 2.9L256.8 538.8c-1.5 1.5-2.4 3.3-2.8 5.3l-29.5 168.2a33.5 33.5 0 009.4 29.8c6.6 6.4 14.9 9.9 23.8 9.9z"></path>
-                            </svg>
+                            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer?.firstName} ${selectedCustomer?.lastName}  (${selectedCustomer?.phoneCode}-${selectedCustomer?.phone})` : "Select Customer"}</p>
+                            {!selectedCustomer &&
+                                <svg
+                                    viewBox="64 64 896 896"
+                                    focusable="false"
+                                    data-icon="edit"
+                                    width="1em"
+                                    height="1em"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M880 836H144c-17.7 0-32 14.3-32 32v36c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-36c0-17.7-14.3-32-32-32zm-622.3-84c2 0 4-.2 6-.5L431.9 722c2-.4 3.9-1.3 5.3-2.8l423.9-423.9a9.96 9.96 0 000-14.1L694.9 114.9c-1.9-1.9-4.4-2.9-7.1-2.9s-5.2 1-7.1 2.9L256.8 538.8c-1.5 1.5-2.4 3.3-2.8 5.3l-29.5 168.2a33.5 33.5 0 009.4 29.8c6.6 6.4 14.9 9.9 23.8 9.9z"></path>
+                                </svg>
+                            }
                         </button>
 
                         <button className="w-10 h-10 flex text-2xl items-center justify-center text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer" onClick={() => navigate("/pos/customers")}>
@@ -210,23 +210,11 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         options={customerOptions}
                         placeholder="Select Customer"
                         styles={customSelectStyles}
-                        value={customerOptions?.find(opt => (selectedCustomer?.serverId && opt.value === selectedCustomer.serverId) || null)}
+                        value={customerOptions?.find(opt => (selectedCustomer?.localId && opt.value === selectedCustomer.localId) || null)}
                         onChange={(selected) => setSelectedCustomer(selected.data)}
                         isSearchable
+                        isClearable
                         menuPortalTarget={document.body}
-                        formatOptionLabel={(option, { context }) => (
-                            <div className="flex justify-between items-center w-full">
-                                {/* This always shows (Name) */}
-                                <span>{option.label}</span>
-
-                                {/* This ONLY shows inside the dropdown list */}
-                                {context === "menu" && (
-                                    <span className=" text-md">
-                                        [{option.data.phoneCode}-{option.data.phone}]
-                                    </span>
-                                )}
-                            </div>
-                        )}
                     />
 
                     {/* SEARCHABLE PRODUCT DROPDOWN */}
