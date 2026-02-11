@@ -299,7 +299,7 @@ const Invoices = () => {
 
 
   const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
-  const selectedOrderData = orders.find(o => orderKey(o) === orderKey(selectedOrder)) || orders.find(o => o) || null;
+  const selectedOrderData = selectedOrder ? orders.find(o => orderKey(o) === orderKey(selectedOrder)) || null : null;
 
 
   const isHoldInvoice = activeBtn === "holdInvoiceBTN";

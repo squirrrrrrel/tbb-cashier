@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCartStore } from "../../../store/useCartStore";
 import { useNotification } from "../../../hooks/useNotification";
 import { useHoldOrderStore } from "../../../store/useHoldOrderStore";
+import { useManagerAuth } from "../../../hooks/useManagerAuth";
 
 const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discount, total}) => {
     const [showDiscount, setShowDiscount] = useState(false);
@@ -9,6 +10,7 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
     const [discountValue, setDiscountValue] = useState(0.00);
     const [loginData, setLoginData] = useState({ username: '', password: '' });
     const [waiterName, setWaiterName] = useState("");
+    const { verify, isVerifying } = useManagerAuth();
      const { createHoldOrder } = useHoldOrderStore();
 
     const { notifyError, notifySuccess } = useNotification();
@@ -28,17 +30,22 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
             [field]: value
         }));
     };
-    const managerLoginHandler = () => {
+    const managerLoginHandler = async () => {
         if (!loginData.username || !loginData.password) {
-            notifyError("Username and Password is required");
+            notifyError("Username and Password are required");
             return;
-        } else {
-            closeModal();
-            setShowDiscount(true);
-            setLoginData({ username: '', password: '' })
-            notifySuccess("Manager loged In")
         }
-    }
+        const res = await verify(loginData.username, loginData.password);
+        const { success, message } = res?.data || {};
+        if (success) {
+            notifySuccess("Manager Verified");
+            setLoginData({ username: '', password: '' });
+            closeModal(); 
+            setShowDiscount(true); 
+        } else {
+            notifyError(message);
+        }
+    };
     const saveDiscountHandler = () => {
         const discountData = discountType === "percentage" ? discountValue / 100 : discountValue;
         setManagerDiscount(discountData);
@@ -100,7 +107,7 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
                             <input type="text" name="username" value={loginData.username} onChange={handleLoginChange} placeholder="Enter store manager username" className="shadow-[0_0_3px_#00000028] w-full mb-6 p-2 rounded-md placeholder:text-sm outline-none text-sm" />
                             <input type="password" name="password" value={loginData.password} onChange={handleLoginChange} placeholder="Enter store manager password" className="shadow-[0_0_3px_#00000028] w-full mb-6 p-2 rounded-md placeholder:text-sm outline-none text-sm" />
                             <div className="flex justify-between gap-2 text-[#555555]">
-                                <button onClick={managerLoginHandler} className=" flex-1 px-4 py-2 bg-primary text-white rounded">Login</button>
+                                <button onClick={managerLoginHandler} disabled={isVerifying} className=" flex-1 px-4 py-2 bg-primary text-white rounded">{isVerifying ? "Checking..." : "Login"}</button>
                                 <button onClick={closeModal} className=" flex-1 px-4 py-2 rounded text-sm font-bold shadow-[0_0_3px_#00000028]">X Cancel</button>
                             </div>
                         </div>
