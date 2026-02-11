@@ -212,7 +212,7 @@ const Dashboard = () => {
     }
   };
   const subtotal = cartData.reduce(
-    (sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0),
+    (sum, p) => p.unit === "ml" ? sum + Number(p.price || 0) * Number(p.quantity || 0) * p.shots : sum + Number(p.price || 0) * Number(p.quantity || 0),
     0
   );
   const tax = cartData.reduce((totalTax, item) => {
