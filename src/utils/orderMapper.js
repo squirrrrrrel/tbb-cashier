@@ -18,7 +18,8 @@ export const mapOrderToApiPayload = (order, userId) => {
     orderItems: (order.orderItems || []).map(item => ({
       productId: item.productId || item.id,
       unitPrice: item.unitPrice || item.price || 0,
-      quantity: item.quantity * (item.shots || 1) || 0,
+      quantity: item.quantity || 0,
+      shots: item.shots || 0,
       unit: item.unit || null,
       discount: item.discount || 0,
       tax_percentage_per_product: Number(item.tax_percentage_per_product || item.taxPercentage || 0),
