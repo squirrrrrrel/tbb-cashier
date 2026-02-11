@@ -54,6 +54,7 @@ export const createOrder = async ({
          productId: p.id || p.productId,
          unitPrice: p.unitPrice || p.price || p.sellingPrice || 0,
          quantity: p.quantity || 0,
+         shots: p.shots || 0,
          unit: p.unit || null,
          discount: p.discount || 0,
          tax_percentage_per_product: Number(p.tax_percentage_per_product || p.taxPercentage || 0),
