@@ -4,17 +4,33 @@ import { useAuthStore } from "../../../store/useAuthStore";
 
 const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, searchTerm, dateRange, givenDate, setDateRange, setGivenDate, activeBtn }) => {
     const user = useAuthStore((u) => u.user);
-    useEffect(() => {
-        if (!selectedOrder && orders.length > 0) {
-            const sortedOrders = [...orders].sort((a, b) => {
-                const dateA = new Date(a.orderDate || a.createdAt || 0).getTime();
-                const dateB = new Date(b.orderDate || b.createdAt || 0).getTime();
-                return dateB - dateA;
-            });
+// Helper to get a consistent ID from an order object
+    const getOrderId = (o) => o?.localId || o?.serverOrderId || o?.orderId;
 
-            setSelectedOrder(sortedOrders[0]);
-        }else if (!selectedOrder) {
+    // Helper to sort orders by date (Newest first)
+    const sortOrders = (data) => {
+        return [...data].sort((a, b) => {
+            const dateA = new Date(a.orderDate || a.createdAt || 0).getTime();
+            const dateB = new Date(b.orderDate || b.createdAt || 0).getTime();
+            return dateB - dateA;
+        });
+    };
+
+    useEffect(() => {
+        if (orders.length === 0) {
             setSelectedOrder(null);
+            return;
+        }
+
+        const currentSelectedId = getOrderId(selectedOrder);
+        
+        // Check if current selected order exists in the list
+        const isSelectedOrderValid = selectedOrder && orders.some(o => getOrderId(o) === currentSelectedId);
+
+        // If nothing is selected OR the selection is no longer in the list
+        if (!selectedOrder || !isSelectedOrderValid) {
+            const sorted = sortOrders(orders);
+            setSelectedOrder(sorted[0]);
         }
     }, [orders, selectedOrder, setSelectedOrder]);
 
