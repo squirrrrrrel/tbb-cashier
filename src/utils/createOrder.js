@@ -56,7 +56,7 @@ export const createOrder = async ({
          quantity: p.quantity || 0,
          unit: p.unit || null,
          discount: p.discount || 0,
-         tax_percentage_per_product: Number(p.tax_percentage_per_product || p.taxPercentage || 0),
+         tax_percentage_per_product: Number(p.tax_percentage_per_product || p.taxPercentage || p.tax || 0),
       
         })),
       };

@@ -394,6 +394,7 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
                 tax={tax}
                 discount={discount}
                 total={total}
+                setPayToProceed={setPayToProceed}
             />
           </div>
           <div onClick={() => user?.role?.name === "manager" ? "" : handleProceed()} className={`${user?.role?.name === "manager" ? "opacity-70 cursor-not-allowed" : "cursor-pointer"} cart-checkout flex justify-between items-center bg-linear-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg `}>

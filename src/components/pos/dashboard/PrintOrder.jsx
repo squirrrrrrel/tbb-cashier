@@ -1,6 +1,11 @@
 import React, { useEffect, useRef } from "react";
+import { useAuthStore } from "../../../store/useAuthStore";
 // import { getProductByServerIdDB } from "../../../db/productsDB";
 const PrintOrder = ({ show, setShow, finalOrderData }) => {
+    console.log(finalOrderData);
+    const user = useAuthStore((u) => u.user);
+    console.log(user);
+    
     const printRef = useRef();
     const isPrinting = useRef(false) // Flag to prevent double printing
     const [productsMap, setProductsMap] = React.useState({});
@@ -208,9 +213,9 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
 
                 {/* Fixed typo: oderId -> orderId */}
                 <p><b>Order:</b> #{finalOrderData?.orderId || finalOrderData?.display_id}</p>
-                <p><b>Date:</b> {finalOrderData?.order_date || finalOrderData?.created_at}</p>
-                <p><b>Cashier:</b> {finalOrderData?.user?.first_name || "-"}</p>
-                <p><b>Customer:</b> {finalOrderData?.customerData?.firstName || finalOrderData?.customer?.first_name} {finalOrderData?.customerData?.lastName || finalOrderData?.customer?.last_name}</p>
+                <p><b>Date:</b> {finalOrderData?.order_date || finalOrderData?.created_at || new Date().toISOString().replace('T', ' ').split('.')[0] }</p>
+                <p><b>Cashier:</b> {finalOrderData?.user?.first_name || user?.first_name || "-"}</p>
+                <p><b>Customer:</b> {finalOrderData?.customer?.firstName || finalOrderData?.customer?.first_name} {finalOrderData?.customer?.lastName || finalOrderData?.customer?.last_name}</p>
                 <p><b>Payment:</b> {finalOrderData?.paymentMethodId}</p>
 
                 <table>
