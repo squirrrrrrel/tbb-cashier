@@ -9,6 +9,10 @@ import speakerIcon from "../../../assets/icons/speaker.svg";
 import muteIcon from "../../../assets/icons/mute.svg";
 import { useProductStore } from "../../../store/useProductStore";
 import { useRetail } from "../../../hooks/useRetail";
+import { transferProductAPI } from "../../../api/transferProductAPI";
+import { useAuthStore } from "../../../store/useAuthStore";
+import { useNotification } from "../../../hooks/useNotification";
+
 const category = [
   {
     id: 1,
@@ -50,6 +54,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
   const [isTransferProductOpen, setIsTransferProductOpen] = useState(false);
   const [selectedTransferProduct, setSelectedTransferProduct] = useState("");
   const { setIsRetail, setIsRetailOpen } = useRetail();
+  const { notifyError, notifySuccess } = useNotification();
   const [isFullScreen, setIsFullScreen] = useState(
     !!document.fullscreenElement
   );
@@ -60,7 +65,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
       document.exitFullscreen();
     }
   };
-
+const [isTransferring, setIsTransferring] = useState(false);
   useEffect(() => {
   const handleFullscreenChange = () => {
     // Check if there is currently an element in fullscreen
@@ -75,7 +80,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
   };
 }, []);
-  const { products, ready, hydrate } = useProductStore();
+  const { products, ready, hydrate ,fetchProductsFromAPI} = useProductStore();
   useEffect(() => {
     if (isTransferProductOpen && !ready) {
       hydrate();
@@ -85,19 +90,91 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
   const transferableProducts = products.filter(
     (p) => p.stock > 0
   );
-  const handleTransfer = () => {
-    if (!selectedTransferProduct) return;
+  // const handleTransfer = () => {
+  //   if (!selectedTransferProduct) return;
 
-    const product = products.find(
-      (p) => p.serverId === selectedTransferProduct
-    );
+  //   const product = products.find(
+  //     (p) => p.serverId === selectedTransferProduct
+  //   );
 
-    console.log("Transfer product:", product);
+  //   console.log("Transfer product:", product);
 
-    // 👉 call transfer API / logic here
+  //   // 👉 call transfer API / logic here
 
-    setIsTransferProductOpen(false);
+  //   setIsTransferProductOpen(false);
+  // };
+
+  const handleTransfer = async () => {
+  if (!selectedTransferProduct || isTransferring) return;
+
+  const product = products.find(
+    (p) => p.serverId === selectedTransferProduct
+  );
+
+  if (!product) return;
+
+  const outletId = useAuthStore.getState().user?.outlet_id;
+
+  const payload = {
+    insert_into_shot_products_table: {
+      parent_product_id: product.serverId,
+      "product-image": product.img,
+      product_name: `${product.name}`,
+      barcode: product.barcode,
+      image_url: product.img,
+      category_id: product.categoryId,
+    },
+    insert_into_purchase_table: {
+      is_shots_product: true,
+      outlet_id: outletId,
+      purchase_date: new Date().toISOString().replace("T", " ").substring(0, 19),
+      purchase_date_to_display: new Date().toISOString().substring(0, 10),
+      invoice_number: product.barcode,
+      lot_no: `A-${product.barcode}`,
+      quantity: String(product.bottleVolumeML || 750),
+      purchase_quantity: String(product.stock),
+      unit: "ml",
+      totalPaidPrice: String(product.sellingPrice * product.stock),
+      unit_purchase_price: String(product.sellingPrice),
+      purchasePriceTaxType: true,
+      purchasePriceTaxPercentage: String(product.tax || "0.00"),
+      unitPurchaseValueTax: String((product.sellingPrice * (product.tax || 0)) / 100),
+      unitPurchaseValue: String(product.sellingPrice),
+      selling_price_markup: String(product.sellingPricePerShotMarkupPercentage || "100.0000000000"),
+      price: String(product.sellingPrice),
+      selling_price: String((product.sellingPricePerShot / product.shotsvolumeml)),
+      is_tax_inclusive_for_unit_sales_price: true,
+      inclusive_tax_percentage_per_unit: String(product.tax || "0.00"),
+      sales_price_tax_value_per_unit: String((product.sellingPrice * (product.tax || 0)) / 100),
+      addTaxToSalesPrice: false,
+      addedTaxPercentageToSalesPrice: null,
+      mfgDate: new Date().toISOString().substring(0, 10),
+      expDate: null,
+      is_auto_fill_volume_details: product.isautoFillVolumeDetails || true,
+      bottle_volume_ml: String(product.bottleVolumeML || "750.0000000000"),
+      price_per_ml: String(product.pricePerML || "0.0000000000"),
+      shot_volume_ml: String(product.shotsvolumeml || "30.0000000000"),
+      shots_per_bottle: String(product.shotsperbottel || "25.0000000000"),
+      purchase_price_per_shot: String(product.purchasePricePerShot || "0.0000000000"),
+      selling_price_per_shot_markup_percentage: String(product.sellingPricePerShotMarkupPercentage || "100.0000000000"),
+      selling_price_per_shot: String(product.sellingPricePerShot || "0.0000000000"),
+    },
   };
+
+  setIsTransferring(true);
+  try {
+    await transferProductAPI(payload);
+    notifySuccess("Product transferred successfully!");
+    setSelectedTransferProduct("");
+    await fetchProductsFromAPI();
+    setIsTransferProductOpen(false);
+
+  } catch (error) {
+    notifyError(error.message || "Transfer failed. Please try again.");
+  } finally {
+    setIsTransferring(false);
+  }
+};
 
 
   return (
@@ -216,7 +293,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
               </div>
             </div>
             <div className="flex gap-4 mt-6 text-sm">
-              <button
+              {/* <button
                 disabled={!selectedTransferProduct}
                 onClick={handleTransfer}
                 className={`flex-1 py-2 font-bold text-white rounded-md bg-gradient-to-b from-secondary to-primary 
@@ -226,7 +303,18 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
                   }`}
               >
                 Transfer
-              </button>
+              </button> */}
+              <button
+  disabled={!selectedTransferProduct || isTransferring}
+  onClick={handleTransfer}
+  className={`flex-1 py-2 font-bold text-white rounded-md bg-gradient-to-b from-secondary to-primary 
+  ${!selectedTransferProduct || isTransferring
+      ? "opacity-70"
+      : "cursor-pointer"
+  }`}
+>
+  {isTransferring ? "Transferring..." : "Transfer"}
+</button>
               <button className=" text-[#555555] cursor-pointer flex-1 py-2 font-bold rounded-md flex gap-1 justify-center shadow-[0_0_3px_#00000026]" onClick={() => setIsTransferProductOpen(false)}>
                 Cancel
               </button>

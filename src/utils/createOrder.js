@@ -5,8 +5,21 @@ import { useAuthStore } from "../store/useAuthStore";
 import { saveOrderDB,markOrderSyncedDB } from "../db/ordersDB";
 import { v4 as uuid } from "uuid";
 import { fetchOrdersFromAPI } from "./fetchOrdersFromAPI";
+import { getProductByServerIdDB, softDeleteProductDB } from "../db/productsDB";
 
 
+const softDeleteZeroStockAfterOrder = async (cartData) => {
+  for (const item of cartData) {
+    const productId = item.id || item.productId;
+    const product = await getProductByServerIdDB(productId);
+    if (!product) continue;
+
+    const totalStock = Number(product.stock || 0) + Number(product.stockQueue || 0);
+    if (totalStock <= 0) {
+      await softDeleteProductDB(productId);
+    }
+  }
+};
 export const createOrder = async ({
   cartData,
   customer,
@@ -16,6 +29,7 @@ export const createOrder = async ({
   tenderedAmount,
   cashReturned,
 }) => {
+
   const productStore = useProductStore.getState();
   const outletId = useAuthStore.getState().user?.outlet_id;
 
@@ -54,6 +68,7 @@ export const createOrder = async ({
          productId: p.id || p.productId,
          unitPrice: p.unitPrice || p.price || p.sellingPrice || 0,
          quantity: p.quantity || 0,
+         shots: p.shots || 0,
          unit: p.unit || null,
          discount: p.discount || 0,
          tax_percentage_per_product: Number(p.tax_percentage_per_product || p.taxPercentage || p.tax || 0),
@@ -66,6 +81,7 @@ export const createOrder = async ({
       // 🔄 refresh stock from server
       await productStore.fetchProductsFromAPI();
       await fetchOrdersFromAPI();
+      await softDeleteZeroStockAfterOrder(cartData);
       const serverOrderId = res.data?.data?.orderId;
       if (serverOrderId) {
         await markOrderSyncedDB(localOrder.localId, serverOrderId);

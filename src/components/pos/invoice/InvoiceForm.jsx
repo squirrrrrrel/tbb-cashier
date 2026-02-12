@@ -162,7 +162,7 @@ const isDisabled = shouldDisableRefund() || shouldDisableByCategory();
                   {item.productName || item.name}
                 </p>
                 <div className="flex gap-2">
-                  P{item.unitPrice || item.price} × {item.quantity} {item.category_name === "Butchery" ? "kg" : "pcs"}
+                  P{item.unitPrice || item.price} × {item.shots ? item.shots : item.quantity} {item.category_name === "Butchery" ? "kg" : item.shots ? `(${item.quantity/item.shots}ml each)` : "pcs"}
 
                   {/* --- REFUND HISTORY SECTION --- */}
                   {selectedOrder.refunded > 0 && (

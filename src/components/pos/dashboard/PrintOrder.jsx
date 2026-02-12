@@ -232,7 +232,7 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                             <tr key={index}>
                                 <td>{item.name || item.productName || item.product?.product_name}</td>
                                 <td className="text-right">P{item.price || item.unit_price}</td>
-                                <td className="text-right">{whole(item.quantity)}</td>
+                                <td className="text-right">{item.shots ? `${item.shots}-${whole(item.quantity/item.shots)}` : whole(item.quantity)}</td>
                                 <td className="text-right">P{parseFloat(item.totalPrice || (item.price * item.quantity) || item.total_amount || 0).toFixed(2)}</td>
                             </tr>
                         ))}

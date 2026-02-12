@@ -20,16 +20,23 @@ export const usePromotionStore = create((set, get) => ({
 
   hydrate: async () => {
     try {
-      const promotions = await getPromotionsDB();
+      const allPromotions = await getPromotionsDB();
+      // 1. Strictly filter out anything marked deleted immediately
+      const cleanPromotions = allPromotions.filter(p => !p.isDeleted);
+
       set({
-        promotions: promotions.filter(p => !p.isDeleted),
+        promotions: cleanPromotions,
         hydrated: true,
       });
 
       if (navigator.onLine) {
+        // Run sync first to remove deleted items from server 
+        // before fetching the new list
+        await get().syncPromotions();
         await get().fetchPromotionsFromAPI();
       }
-    } catch {
+    } catch (error) {
+      console.error("Hydration failed", error);
       set({ hydrated: true });
     }
   },
@@ -138,6 +145,11 @@ export const usePromotionStore = create((set, get) => ({
       const apiPromotions = res.data.data || [];
 
       const existing = await getPromotionsDB();
+      // Create a map of items that are marked as deleted locally
+      const deletedLocally = new Set(
+        existing.filter(p => p.isDeleted).map(p => String(p.serverId))
+      );
+
       const byServerId = new Map(
         existing.filter(p => p.serverId).map(p => [String(p.serverId), p])
       );
@@ -146,9 +158,14 @@ export const usePromotionStore = create((set, get) => ({
 
       for (const p of apiPromotions) {
         const serverId = String(p.promotion_id || p.id);
-        const local = byServerId.get(serverId);
 
+        // 2. CRITICAL: If this item is marked as deleted locally, 
+        // do NOT add it to the merged list, even if the API returned it.
+        if (deletedLocally.has(serverId)) continue;
+
+        const local = byServerId.get(serverId);
         const mapped = mapApiResponseToPromotion(p, local?.localId);
+
         await updatePromotionDB(mapped);
         merged.push(mapped);
       }
