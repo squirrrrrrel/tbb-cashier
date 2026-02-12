@@ -12,7 +12,7 @@ const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => 
   const [mlQuantity, setMlQuantity] = useState("");
 
   const unitPrice = Number(product?.price || 0);
-  const quantityValue = isShots ? Number(mlQuantity || 0) : unit === "kg" ? Number(quantity || 0) : Number(quantity || 0) / 1000;
+  const quantityValue = isShots ? Number(mlQuantity || 0) * Number(shots || 0) : unit === "kg" ? Number(quantity || 0) : Number(quantity || 0) / 1000;
   const totalPrice = isShots
     ? Number(quantityValue || 0) * unitPrice
     : Number(quantityValue || 0) * unitPrice;

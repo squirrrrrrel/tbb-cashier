@@ -11,7 +11,7 @@ import { useProductStore } from "../../../store/useProductStore";
 import { useRetail } from "../../../hooks/useRetail";
 import { transferProductAPI } from "../../../api/transferProductAPI";
 import { useAuthStore } from "../../../store/useAuthStore";
-
+import { useNotification } from "../../../hooks/useNotification";
 
 const category = [
   {
@@ -54,6 +54,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
   const [isTransferProductOpen, setIsTransferProductOpen] = useState(false);
   const [selectedTransferProduct, setSelectedTransferProduct] = useState("");
   const { setIsRetail, setIsRetailOpen } = useRetail();
+  const { notifyError, notifySuccess } = useNotification();
   const [isFullScreen, setIsFullScreen] = useState(
     !!document.fullscreenElement
   );
@@ -79,7 +80,7 @@ const [isTransferring, setIsTransferring] = useState(false);
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
   };
 }, []);
-  const { products, ready, hydrate } = useProductStore();
+  const { products, ready, hydrate ,fetchProductsFromAPI} = useProductStore();
   useEffect(() => {
     if (isTransferProductOpen && !ready) {
       hydrate();
@@ -141,7 +142,7 @@ const [isTransferring, setIsTransferring] = useState(false);
       unitPurchaseValue: String(product.sellingPrice),
       selling_price_markup: String(product.sellingPricePerShotMarkupPercentage || "100.0000000000"),
       price: String(product.sellingPrice),
-      selling_price: String(product.sellingPrice),
+      selling_price: String((product.sellingPricePerShot / product.shotsvolumeml)),
       is_tax_inclusive_for_unit_sales_price: true,
       inclusive_tax_percentage_per_unit: String(product.tax || "0.00"),
       sales_price_tax_value_per_unit: String((product.sellingPrice * (product.tax || 0)) / 100),
@@ -163,11 +164,13 @@ const [isTransferring, setIsTransferring] = useState(false);
   setIsTransferring(true);
   try {
     await transferProductAPI(payload);
-    alert("Product transferred successfully!");
+    notifySuccess("Product transferred successfully!");
     setSelectedTransferProduct("");
+    await fetchProductsFromAPI();
     setIsTransferProductOpen(false);
+
   } catch (error) {
-    alert(error.message || "Transfer failed. Please try again.");
+    notifyError(error.message || "Transfer failed. Please try again.");
   } finally {
     setIsTransferring(false);
   }
