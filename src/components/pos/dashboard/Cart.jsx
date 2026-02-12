@@ -27,12 +27,25 @@ const CartProdctComponent = ({
   const totalPrice = product.unit === "ml" ? (price * quantity * product.shots).toFixed(2) : (price * quantity).toFixed(2);
 
   const [qty, setQty] = useState(quantity);
+  const [shots, setShots] = useState(Number(product.shots) || 1);
   useEffect(() => {
     setQty(quantity);
   }, [quantity]);
+  useEffect(() => {                        // <-- NEW
+    setShots(Number(product.shots) || 1);
+  }, [product.shots]);
 
+  // const onUpdateHandler = () => {
+  //   onQuantityChange(product.id, product.unit === "ml" ? shots : qty);
+  //   onToggle();
+  // };
   const onUpdateHandler = () => {
-    onQuantityChange(product.id, qty);
+    // Pass shots for ml products
+    onQuantityChange(
+      product.cartKey || product.id,
+      qty,
+      product.unit === "ml" ? shots : undefined
+    );
     onToggle();
   };
   // const divBG = matchBG % 2 === 0 ? "bg-gray-100" : "bg-white";
@@ -86,7 +99,37 @@ const CartProdctComponent = ({
       </div>
       {isExpanded && product.categoryName !== "Butchery" &&
         <div className={`flex justify-between gap-4 items-end px-2 pt-1 pb-1 ${expandedDivBG}`}>
-          <div className="flex flex-col gap-1 flex-1">
+          {product.unit === "ml" ? (
+            <div className="flex flex-col gap-1 flex-1">
+          <p className="text-sm font-semibold text-[#555555]">No. of Shots</p>
+          <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden border border-gray-200">
+            <div
+              onClick={() => setShots(Math.max(1, shots - 1))}
+              className="w-10 pb-0.5 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
+            >
+              -
+            </div>
+            <span>
+              <input
+                type="number"
+                value={shots}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val < 1) return;
+                  setShots(val);
+                }}
+                className="w-14 h-full text-center text-sm outline-none"
+              />
+            </span>
+            <div
+              onClick={() => setShots(shots + 1)}
+              className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
+            >
+              +
+            </div>
+          </div>
+        </div>
+          ): ( <div className="flex flex-col gap-1 flex-1">
             <p className="text-sm font-semibold text-[#555555]">Quantity</p>
             <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden  border border-gray-200">
               <div
@@ -114,7 +157,7 @@ const CartProdctComponent = ({
                 +
               </div>
             </div>
-          </div>
+          </div>)}
           <div className="flex flex-col gap-1 flex-1">
             <p className="text-sm font-semibold text-[#555555]">Discount (%)</p>
             <div className="h-10 flex items-center px-3 shadow-[0_0_3px_#00000028] text-sm">
@@ -308,14 +351,14 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
             cartData?.map((p, index) => (
               expandedProductId === index ? matchBG+=2 : matchBG++,
               <div
-                key={p.id}
+                key={p.id || p.cartKey}
                 className={matchBG % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"}
               >
                 <CartProdctComponent
                   product={p}
                   isExpanded={expandedProductId === index}
                   onToggle={() => handleToggleExpand(index)}
-                  onRemove={() => {removeFromCart(p.id); handleToggleExpand(-1); }}
+                  onRemove={() => {removeFromCart(p.id,p.cartKey); handleToggleExpand(-1); }}
                   onQuantityChange={updateQuantity}
                   notifyError={notifyError}
                   matchBG={matchBG}

@@ -21,7 +21,8 @@ const ProductComp = ({
   tax,
   mute,
   originalPrice,
-  lowStockThreshold
+  lowStockThreshold,
+  isautoFill
 }) => {
   const playBeepSound = () => {
     const audio = new Audio("/sounds/add-to-cart.mp3");
@@ -142,7 +143,7 @@ const ProductComp = ({
           </h2>
           {price === originalPrice ? (
             <span className="text-sm text-secondary">
-              P{price} / {unit}
+              P{price} / {unit === "ml" ? isautoFill ? "per shot" : unit : unit}
             </span>
           ) : (
             <span className="text-sm text-secondary flex items-center gap-1">
@@ -153,7 +154,7 @@ const ProductComp = ({
                 P{price}
               </span>
               <span>
-                / {unit}
+                / {isautoFill ? "shot" : unit}
               </span>
             </span>
           )}

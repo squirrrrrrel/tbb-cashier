@@ -626,6 +626,7 @@ Hope to see you again soon!
                         tax={p.tax}
                         originalPrice={p.sellingPrice}
                         lowStockThreshold={p.lowStockThreshold}
+                        isautoFill={p.isautoFillVolumeDetails}
                       />
                     );
                   })

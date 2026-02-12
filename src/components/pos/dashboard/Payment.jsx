@@ -149,7 +149,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                 </div>
                 <div className="flex-1 p-4 rounded-md shadow-[0_0_3px_#00000028] bg-white ">
                     <div className="text-lg">Pay Left</div>
-                    <div className="text-[#d42c20] text-3xl">P{payLeft.toFixed(2)}</div>
+                    <div className="text-[#d42c20] text-3xl">P{payLeft}</div>
                 </div>
                 <div className="flex-1 p-4 rounded-md shadow-[0_0_3px_#00000028] bg-white ">
                     <div className="text-lg">Change</div>
