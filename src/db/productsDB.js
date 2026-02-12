@@ -15,7 +15,13 @@ const dbPromise = openDB(DB_NAME, 1, {
 
 export const getProductsDB = async () => {
   const db = await dbPromise;
-  return db.getAll(STORE);
+  const all = await db.getAll(STORE);
+  return all.filter((p) => {
+    if (p.is_deleted) return false;
+    const totalStock = Number(p.stock || 0) + Number(p.stockQueue || 0);
+    if (totalStock <= 0) return false;
+    return true;
+  });
 };
 
 export const updateProductStockDB = async (serverId, newStock) => {
@@ -59,4 +65,24 @@ export const getProductByServerIdDB = async (serverId) => {
   await tx.done;
 
   return product || null;
+};
+
+export const softDeleteProductDB = async (serverId) => {
+  const db = await dbPromise;
+  const tx = db.transaction(STORE, "readwrite");
+  const store = tx.objectStore(STORE);
+  const index = store.index("serverId");
+
+  const product = await index.get(serverId);
+  if (!product) {
+    console.warn("Product not found for soft delete:", serverId);
+    return;
+  }
+
+  product.is_deleted = true;
+  product.deletedAt = Date.now();
+  product.isSynced = false;
+
+  await store.put(product);
+  await tx.done;
 };
