@@ -1,9 +1,6 @@
 import { useState } from "react";
-import { useTableStore } from "../../../store/useTableStore";
 
-const AddNewTable = ({ onClose }) => {
-  const addTable = useTableStore((s) => s.addTable);
-
+const AddNewTable = ({ onClose, onSave }) => {
   const [tableNumber, setTableNumber] = useState("");
   const [seats, setSeats] = useState("");
 
@@ -22,13 +19,13 @@ const AddNewTable = ({ onClose }) => {
   const handleSave = async () => {
     if (isSaveDisabled) return;
 
-    await addTable({
+    // Use the onSave callback passed from parent to handle save and notifications
+    await onSave({
       tableNumber: Number(tableNumber),
       seats: Number(seats),
     });
 
     resetForm();
-    onClose();
   };
 
   return (

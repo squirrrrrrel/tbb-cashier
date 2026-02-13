@@ -21,7 +21,7 @@ const Tables = () => {
   useEffect(() => {
     loadHoldOrdersFromDB();
   }, []);
-// to find the table ids which are on hold
+  // to find the table ids which are on hold
   const holdOrderTableIds = holdOrders?.map((order) => order.cartData.table?.localId);
 
 
@@ -43,8 +43,10 @@ const Tables = () => {
     try {
       await addTable({ tableNumber, seats });
       notifySuccess("Table Added");
-    } catch {
+      setAddNewModal(false); // Close modal after successful addition
+    } catch (error) {
       notifyError("Something went wrong");
+      console.error("Error adding table:", error);
     }
   };
 
@@ -64,7 +66,13 @@ const Tables = () => {
     setFilter(filterType);
   };
 
-  const filteredTableList = tables
+  // Ensure tables are shown in ascending table number so newly created (with higher numbers) appear at the end
+  const filteredTableList = [...tables]
+    .sort((a, b) => {
+      const aNum = Number(a.tableNumber) || 0;
+      const bNum = Number(b.tableNumber) || 0;
+      return aNum - bNum;
+    })
     .filter((item) => {
       const isOccupied =
         item.localId === selectedTable?.localId ||
