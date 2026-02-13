@@ -8,6 +8,10 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     const [exchangeRows, setExchangeRows] = useState([]);
     const [restock, setRestock] = useState(true);
     const { notifyError, notifySuccess } = useNotification();
+    console.log("items", items);
+    console.log("products", products);
+    console.log("exchangeRows", exchangeRows);
+
 
     useEffect(() => {
         if (open) {
@@ -22,6 +26,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
                     newQty: 0,         // <--- Added: Number of new items taken
                     newUnitValue: 0,
                     newDiscount: 0,
+                    newTax: 0,
                 }))
             );
         }
@@ -55,6 +60,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
 
                 updated[index].selectedNewProductId = value;
                 updated[index].newProductName = prod?.name || "";
+                updated[index].newTax = prod?.tax || 0;
                 updated[index].newUnitValue = Number(
                     prod?.sellingPrice ?? prod?.price ?? 0
                 );
@@ -66,16 +72,17 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
         });
     };
     const prevtotalOldValue = exchangeRows.reduce((sum, row) =>
-        sum + (Number(row.quantity) * Number(row.unitPrice)), 0
+        sum + (Number(row.quantity) * Number(row.unitPrice)) + (Number(row.quantity) * Number(row.unitPrice) * (row.taxPercentagePerProduct || 0)) / 100, 0
     );
     // Calculations
     const totalOldValue = exchangeRows.reduce((sum, row) =>
-        sum + (Number(row.returnQty) * Number(row.unitPrice)), 0
+        sum + (Number(row.returnQty) * Number(row.unitPrice)) + (Number(row.returnQty) * Number(row.unitPrice) * (row.taxPercentagePerProduct || 0)) / 100, 0
     );
     const totalNewValue = exchangeRows.reduce((sum, row) => {
         const subtotal = row.newQty * row.newUnitValue; // Based on newQty
         const discountAmt = (subtotal * (row.newDiscount || 0)) / 100;
-        return sum + (subtotal - discountAmt);
+        const taxAmt = ((subtotal - discountAmt) * (row.newTax || 0)) / 100;
+        return sum + (subtotal - discountAmt + taxAmt); // Add tax to the new total
     }, 0);
 
     const diff = totalNewValue - totalOldValue;
@@ -133,25 +140,25 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
             const exchangeItems = exchangeRows
                 .filter(row => row.returnQty > 0)
                 .map(row => {
-                    const oldTotal = row.returnQty * row.unitPrice;
+                    // Calculate Old Total (Including Tax if that's your business rule)
+                    const oldTax = (row.returnQty * row.unitPrice * (row.taxPercentagePerProduct || 0)) / 100;
+                    const oldTotal = (row.returnQty * row.unitPrice) + oldTax;
 
+                    // Calculate New Total (Including Tax)
                     const newSubtotal = row.newQty * row.newUnitValue;
-                    const discountAmt =
-                        (newSubtotal * (row.newDiscount || 0)) / 100;
-                    const newTotal = newSubtotal - discountAmt;
+                    const discountAmt = (newSubtotal * (row.newDiscount || 0)) / 100;
+                    const newTaxAmt = ((newSubtotal - discountAmt) * (row.newTax || 0)) / 100;
+                    const newTotal = (newSubtotal - discountAmt) + newTaxAmt;
 
-                    const diff = newTotal - oldTotal;
+                    const rowDiff = newTotal - oldTotal;
 
                     return {
                         old_product_id: row.productId,
                         old_product_quantity: row.returnQty,
-
                         new_product_id: row.selectedNewProductId,
                         new_product_quantity: row.newQty,
-
-                        refundAmount: diff < 0 ? Math.abs(diff) : 0,
-                        receiveAmount: diff > 0 ? diff : 0,
-
+                        refundAmount: rowDiff < 0 ? Math.abs(rowDiff) : 0,
+                        receiveAmount: rowDiff > 0 ? rowDiff : 0,
                         reason: "Customer Exchange",
                     };
                 });
