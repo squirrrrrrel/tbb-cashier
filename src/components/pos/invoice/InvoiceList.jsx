@@ -6,7 +6,7 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
     const user = useAuthStore((u) => u.user);
 // Helper to get a consistent ID from an order object
     const getOrderId = (o) => o?.localId || o?.serverOrderId || o?.orderId;
-
+    
     // Helper to sort orders by date (Newest first)
     const sortOrders = (data) => {
         return [...data].sort((a, b) => {
@@ -94,7 +94,7 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
 
                                         <div>
                                             <h3 className="text-lg font-semibold flex gap-4 items-center">
-                                                Invoice #{order?.display_id || order?.invoiceNo || order?.serverOrderId || order?.localId?.slice(0, 8) || "-"} Cashier: {user?.first_name} {user?.last_name}
+                                                Invoice #{order?.display_id || order?.invoiceNo || order?.serverOrderId || order?.localId?.slice(0, 8) || "-"} Cashier: {order?.cashierName || user?.name || "N/A"}
                                                 {order?.isSynced === false && (
                                                     <svg className="animate-spin duration-[3000] flex-shrink-0" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e73636" title="Not synced"><path d="M482-160q-134 0-228-93t-94-227v-7l-64 64-56-56 160-160 160 160-56 56-64-64v7q0 100 70.5 170T482-240q26 0 51-6t49-18l60 60q-38 22-78 33t-82 11Zm278-161L600-481l56-56 64 64v-7q0-100-70.5-170T478-720q-26 0-51 6t-49 18l-60-60q38-22 78-33t82-11q134 0 228 93t94 227v7l64-64 56 56-160 160Z" /></svg>
                                                 )}

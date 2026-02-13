@@ -4,7 +4,7 @@ import { useNotification } from "../../../hooks/useNotification";
 import { useHoldOrderStore } from "../../../store/useHoldOrderStore";
 import { useManagerAuth } from "../../../hooks/useManagerAuth";
 
-const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discount, total}) => {
+const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discount, total, setPayToProceed}) => {
     const [showDiscount, setShowDiscount] = useState(false);
     const [discountType, setDiscountType] = useState("percentage");
     const [discountValue, setDiscountValue] = useState(0.00);
@@ -89,6 +89,7 @@ const DiscountHoldOrderPopup = ({activeModal, closeModal, subtotal, tax, discoun
             resetCart();
             setWaiterName(waiterName);
             closeModal();
+            setPayToProceed(false);
             notifySuccess("Order placed on hold");
         } catch (err) {
             console.log(err);

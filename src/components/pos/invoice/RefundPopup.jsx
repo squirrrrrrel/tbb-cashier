@@ -43,7 +43,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     );
 
     const refundTax = refundItems.reduce(
-        (sum, i) => sum + (Number(i.taxPercentagePerProduct || 0) * i.refundQty / 100),
+        (sum, i) => sum + (Number(i.taxPercentagePerProduct || 0) * i.refundQty * i.unitPrice / 100),
         0
     );
     const refundAmount = refundSubtotal + refundTax;
