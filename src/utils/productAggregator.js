@@ -18,9 +18,12 @@ export const aggregateInventoryToProducts = (apiData, outletId) => {
 
         unit: item.unit,
         tax: item.purchasePriceTaxPercentage || 0,
+        purchasePriceTaxType: item.purchasePriceTaxType || false,
         stock: Number(item.quantity),
         stockQueue: Number(item.remaining_quantity || 0),
+        purchasePriceTaxPercentage: String(item.purchasePriceTaxPercentage || "0.00"),
         isautoFillVolumeDetails: item.is_auto_fill_volume_details || false,
+        is_tax_inclusive_for_unit_sales_price: item.is_tax_inclusive_for_unit_sales_price || false,
         bottleVolumeML: item.bottle_volume_ml || null,
         pricePerML: item.price_per_ml || null,
         shotsperbottel: item.shots_per_bottle || null,

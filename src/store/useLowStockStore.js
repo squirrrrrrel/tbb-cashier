@@ -86,7 +86,7 @@ export const useLowStockStore = create((set) => ({
       lowStock: updated.filter(d => d.outletId === outletId),
     });
 
-    console.log(`✅ Low stock synced: ${apiData.length} items`);
+   // console.log(`✅ Low stock synced: ${apiData.length} items`);
   },
 
 }));

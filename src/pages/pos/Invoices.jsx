@@ -12,9 +12,9 @@ import { useCartStore } from "../../store/useCartStore";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
   const { setCartFromHold } = useCartStore();
-   
+
   const [givenDate, setGivenDate] = useState(new Date());
-  const [dateRange, setDateRange] = useState( {start: null,end: null} );
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
 
   // const holdOrders = [
   //   {
@@ -251,18 +251,26 @@ const Invoices = () => {
   const loadHoldOrdersFromDB = useHoldOrderStore(
     state => state.loadHoldOrdersFromDB
   );
-  useEffect(() => {
-    loadOrdersFromDB();
-    loadHoldOrdersFromDB();
-  }, []);
 
   const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
   const setOrders = useOrderStore(state => state.setOrders);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  // 🔹 Initial load: sync from API (if online) then hydrate from IndexedDB
   useEffect(() => {
-    loadOrdersFromDB(); // IndexedDB → Zustand
-  }, []);
+    (async () => {
+      try {
+        if (navigator.onLine) {
+          await fetchOrdersFromAPI(); // Server → IndexedDB
+        }
+        await loadOrdersFromDB();      // IndexedDB → Zustand
+        await loadHoldOrdersFromDB();  // Load hold invoices as well
+      } catch (err) {
+        console.error("Failed to load invoices on mount:", err);
+      }
+    })();
+  }, [loadOrdersFromDB, loadHoldOrdersFromDB]);
 
   // useEffect(() => {
   //   if (orders.length && !selectedOrderId) {
@@ -318,35 +326,44 @@ const Invoices = () => {
 
 
   const filteredOrders = currentOrders.filter((order) => {
-
     if (!order) return false;
 
     // --- 1. DATE FILTERING LOGIC ---
     const orderDate = new Date(order.createdAt || order.orderDate);
     const now = new Date();
-    if (activeBtn === "invoiceBTN") {
-      // If 'givenDate' exists, use it; otherwise, use today
-      const targetDate = givenDate ? new Date(givenDate) : new Date();
 
-      const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-      const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+    if (activeBtn === "invoiceBTN") {
+      const targetDate = givenDate ? new Date(givenDate) : new Date();
+      const startOfDay = new Date(targetDate).setHours(0, 0, 0, 0);
+      const endOfDay = new Date(targetDate).setHours(23, 59, 59, 999);
 
       if (orderDate < startOfDay || orderDate > endOfDay) return false;
 
     } else if (activeBtn === "weekInvoiceBTN") {
-      // Default: 2 weeks (14 days) from now backwards
-      // If a custom range exists, you'd apply that here
-      const fourteenDaysAgo = new Date();
-      fourteenDaysAgo.setDate(now.getDate() - 14);
+      let start, end;
 
-      // If user provided a range, use it, otherwise use the 14-day window
-      const start = dateRange?.start ? new Date(dateRange.start) : fourteenDaysAgo;
-      const end = dateRange?.end ? new Date(dateRange.end) : new Date();
+      if (dateRange?.start && dateRange?.end) {
+        // Scenario: Range selected (Includes same-day range)
+        start = new Date(dateRange.start).setHours(0, 0, 0, 0);
+        end = new Date(dateRange.end).setHours(23, 59, 59, 999);
+      }
+      else if (dateRange?.start) {
+        // Scenario: Only 'From' date exists - show data for that specific day only
+        start = new Date(dateRange.start).setHours(0, 0, 0, 0);
+        end = new Date(dateRange.start).setHours(23, 59, 59, 999);
+      }
+      else {
+        // Default: Last 14 days
+        const fourteenDaysAgo = new Date();
+        fourteenDaysAgo.setDate(now.getDate() - 14);
+        start = fourteenDaysAgo.setHours(0, 0, 0, 0);
+        end = now.setHours(23, 59, 59, 999);
+      }
 
       if (orderDate < start || orderDate > end) return false;
     }
 
-    // --- 2. SEARCH FILTERING LOGIC (Your existing code) ---
+    // --- 2. SEARCH FILTERING LOGIC ---
     const search = searchTerm.trim().toLowerCase();
     const holdSearch = holdSearchTerm.trim().toLowerCase();
 
@@ -354,6 +371,8 @@ const Invoices = () => {
       const firstName = order?.cartData?.customer?.firstName;
       const phoneNumber = order?.cartData?.customer?.phoneNumber;
       const note = order?.note;
+
+      if (holdSearch === "") return true;
 
       return (
         (firstName && String(firstName).toLowerCase().includes(holdSearch)) ||
