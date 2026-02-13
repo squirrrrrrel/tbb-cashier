@@ -8,6 +8,8 @@ import {
 import api from "../utils/api";
 import { mapCustomerToApiPayload, mapApiResponseToCustomer } from "../utils/customerMapper";
 import { v4 as uuidv4 } from "uuid";
+import { useAuthStore } from "./useAuthStore";
+
 
 export const useCustomerStore = create((set, get) => ({
   customers: [],
@@ -76,6 +78,7 @@ export const useCustomerStore = create((set, get) => ({
       serverId: null,               // backend ID comes later
       isSynced: false,
       isDeleted: false,
+      outlet_id: useAuthStore.getState().user?.outlet_id || null,
       createdAt: Date.now(),
     };
 
@@ -212,7 +215,8 @@ export const useCustomerStore = create((set, get) => ({
     try {
     //  console.log("🔄 Fetching customers from API...");
       // Fetch customers from API
-      const res = await api.get("/tenant/customer");
+      const outletId = useAuthStore.getState().user?.outlet_id;
+      const res = await api.get(`/tenant/customer/${outletId}`);
      // console.log("📦 API Response:", res.data);
 
       // Handle different possible response structures

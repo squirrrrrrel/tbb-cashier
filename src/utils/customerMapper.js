@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 export const mapCustomerToApiPayload = (customer) => ({
   first_name: customer.firstName,
   last_name: customer.lastName,
+  outlet_id: customer.outlet_id,
   phone_code: customer.phoneCode,
   phone_number: customer.phone,
   email: customer.email,
@@ -44,6 +45,7 @@ export const mapApiResponseToCustomer = (apiCustomer, existingLocalId = null) =>
     address2: apiCustomer.address_line_2 || "",
     city: apiCustomer.city || "",
     state: apiCustomer.state || "",
+    outlet_id: apiCustomer.outlet_id || null,
     pincode: apiCustomer.pincode || "",
     country: apiCustomer.country || "",
     isSynced: true, // Data from server is always synced
