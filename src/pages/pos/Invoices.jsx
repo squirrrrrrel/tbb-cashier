@@ -251,18 +251,26 @@ const Invoices = () => {
   const loadHoldOrdersFromDB = useHoldOrderStore(
     state => state.loadHoldOrdersFromDB
   );
-  useEffect(() => {
-    loadOrdersFromDB();
-    loadHoldOrdersFromDB();
-  }, []);
 
   const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
   const setOrders = useOrderStore(state => state.setOrders);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  // 🔹 Initial load: sync from API (if online) then hydrate from IndexedDB
   useEffect(() => {
-    loadOrdersFromDB(); // IndexedDB → Zustand
-  }, []);
+    (async () => {
+      try {
+        if (navigator.onLine) {
+          await fetchOrdersFromAPI(); // Server → IndexedDB
+        }
+        await loadOrdersFromDB();      // IndexedDB → Zustand
+        await loadHoldOrdersFromDB();  // Load hold invoices as well
+      } catch (err) {
+        console.error("Failed to load invoices on mount:", err);
+      }
+    })();
+  }, [loadOrdersFromDB, loadHoldOrdersFromDB]);
 
   // useEffect(() => {
   //   if (orders.length && !selectedOrderId) {
