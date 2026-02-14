@@ -384,11 +384,13 @@ const Invoices = () => {
       const customerName = order?.customerName;
       const customerPhone = order?.customerPhone;
       const userId = order?.userId;
+      const displayId = order?.display_id || order.displayId;
 
       return (
         (customerName && String(customerName).toLowerCase().includes(search)) ||
         (customerPhone && String(customerPhone).includes(search)) ||
-        (userId && String(userId).toLowerCase().includes(search))
+        (userId && String(userId).toLowerCase().includes(search)) ||
+        (displayId && String(displayId).toLowerCase().includes(search)) 
       );
     }
   });

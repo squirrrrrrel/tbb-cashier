@@ -98,14 +98,6 @@ const LowStock = () => {
         </thead>
 
         <tbody className="text-center text-sm text-gray-600">
-          {filtered.length === 0 && (
-            <tr>
-              <td colSpan={4} className="p-3">
-                No Low Stock Found
-              </td>
-            </tr>
-          )}
-
           {filtered.map((ls) => (
             <tr key={ls.localId} className="even:bg-gray-100">
               <td className="p-2 flex items-center justify-center">
@@ -133,6 +125,13 @@ const LowStock = () => {
           ))}
         </tbody>
       </table>
+        {filtered.length === 0 && (
+          <div className="text-center text-[#555555]">
+            <p colSpan={4} className="p-3">
+              No Low Stock Found
+            </p>
+          </div>
+        )}
     </div>
   );
 };
