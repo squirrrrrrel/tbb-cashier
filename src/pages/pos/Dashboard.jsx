@@ -196,7 +196,7 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-     // console.log("Order details after creating it:", result.order);
+      // console.log("Order details after creating it:", result.order);
       setOrderData(result.order);
       openPaySuccess(result.order.display_id);
       notifySuccess(
@@ -626,7 +626,8 @@ Hope to see you again soon!
                         tax={p.tax}
                         originalPrice={p.sellingPrice}
                         lowStockThreshold={p.lowStockThreshold}
-                        isautoFill={p.isautoFillVolumeDetails}
+                        isautoFill={p.isautoFillVolumeDetails || false}
+                        shotsvolumeml={p.shotsvolumeml || null}
                       />
                     );
                   })

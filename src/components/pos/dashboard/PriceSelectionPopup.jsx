@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCartStore } from "../../../store/useCartStore";
 import { useNotification } from "../../../hooks/useNotification";
-const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => {
+const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor, shotsvolumeml }) => {
   const addToCart = useCartStore((state) => state.addToCart);
   const isShots = selectPriceFor?.toLowerCase() === "shots";
   const { notifyError } = useNotification();
@@ -17,6 +17,12 @@ const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => 
     ? Number(quantityValue || 0) * unitPrice
     : Number(quantityValue || 0) * unitPrice;
 
+// its sets the volume of the shotis autofill is true
+    useEffect(() => {
+  if (product?.isautoFill && shotsvolumeml) {
+    setMlQuantity(parseFloat(shotsvolumeml).toFixed(2));
+  }
+}, [product?.isautoFill,shotsvolumeml]);
 
   const handleAdd = () => {
     if (!product) return;
@@ -96,7 +102,7 @@ const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor }) => 
               </div>
 
               <div>
-                <label className="font-medium">Quantity</label>
+                <label className="font-medium">Quantity{product?.isautoFill? ` (${product.unit})` : ""}</label>
                 <input
                   type="number"
                   placeholder="Enter Quantity (ml)"

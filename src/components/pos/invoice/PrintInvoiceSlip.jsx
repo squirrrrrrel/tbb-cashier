@@ -300,28 +300,20 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                            
 
                               {ri.type === "RETURN" && (
-                               <>
-                                return (
                                 <tr key={`ret-${exIdx}`}>
                                   <td>{ri.productName || "Returned Item"} (Ret)</td>
                                   <td>P{ri.unitPrice}</td>
                                   <td className="inputvalue">{ri.quantity}{ri.unit}</td>
-                                  <td className="inputvalue">-P{Math.abs(ri.subtotal)}</td>
-                                </tr>
-                              );
-                               </>                             
+                                  <td className="inputvalue">-P{parseFloat(Math.abs(ri.subtotal || 0)).toFixed(2)}</td>
+                                </tr>                           
                                )}
                                {ri.type === "EXCHANGE_NEW" && (
-                               <>
-                                return (
                                 <tr key={`new-${exIdx}`}>
                                   <td>{ri.productName || "Returned Item"} (New)</td>
                                   <td>P{ri.unitPrice}</td>
                                   <td className="inputvalue">{ri.quantity}{ri.unit}</td>
-                                  <td className="inputvalue">P{Math.abs(ri.subtotal)}</td>
-                                </tr>
-                              );
-                               </>                             
+                                  <td className="inputvalue">P{parseFloat(ri.subtotal).toFixed(2)}</td>
+                                </tr>                  
                                )}
                           
                           </React.Fragment>
