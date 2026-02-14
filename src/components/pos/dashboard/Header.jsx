@@ -114,7 +114,15 @@ const [isTransferring, setIsTransferring] = useState(false);
   if (!product) return;
 
   const outletId = useAuthStore.getState().user?.outlet_id;
-
+if (product.bottleVolumeML == null || product.pricePerML == null) {
+    notifyError(
+      <>
+          Product does not have required volume
+          <br />
+          price details for transferring Shots
+        </>);
+    return;
+  }
   const payload = {
     insert_into_shot_products_table: {
       parent_product_id: product.serverId,

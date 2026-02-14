@@ -22,7 +22,8 @@ const ProductComp = ({
   mute,
   originalPrice,
   lowStockThreshold,
-  isautoFill
+  isautoFill,
+  shotsvolumeml,
 }) => {
   const playBeepSound = () => {
     const audio = new Audio("/sounds/add-to-cart.mp3");
@@ -55,7 +56,8 @@ const ProductComp = ({
         barcode,
         stockQueue,
         categoryName,
-        discount
+        discount,
+        isautoFill,
       });
 
       setSelectPriceFor(
@@ -82,7 +84,7 @@ const ProductComp = ({
       stock,
       barcode,
       stockQueue, 
-      discount
+      discount,
     });
 
     if (result?.success === false) {
@@ -198,6 +200,7 @@ const ProductComp = ({
           product={selectedProduct}
           selectPriceFor={selectPriceFor}
           setSelectPriceFor={setSelectPriceFor}
+          shotsvolumeml={shotsvolumeml}
         />
       )}
     </div>
