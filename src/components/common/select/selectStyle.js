@@ -10,8 +10,8 @@ export const commonSelectStyles = {
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isSelected ? "var(--color-secondary)" : "white",
-    color: state.isSelected ? "white" : "black",
+    backgroundColor: state.isSelected ? "var(--color-secondary)" : state.isFocused ? "var(--color-hover-color)" : "white",
+    color: (state.isSelected || state.isFocused) ? "white" : "black",
     "&:hover": {
       backgroundColor: "var(--color-hover-color)",
       color: "white",
