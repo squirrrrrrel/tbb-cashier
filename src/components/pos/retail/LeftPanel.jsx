@@ -85,7 +85,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
       </div>
 
       {/* TABLE BODY */}
-      <div className="flex-1 overflow-y-auto text-sm text-[#555555]">
+      <div className="flex-1 overflow-y-auto text-sm bg-white text-[#555555]">
         {cartData.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-50">
             <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" strokeWidth="1" className="mb-4">

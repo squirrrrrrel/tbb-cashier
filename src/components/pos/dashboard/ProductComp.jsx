@@ -145,12 +145,12 @@ const ProductComp = ({
           </h2>
           {price === originalPrice ? (
             <span className="text-sm text-secondary">
-              P{price} / {unit === "ml" ? isautoFill ? "per shot" : unit : unit}
+              P{parseFloat(price).toFixed(2)} / {unit === "ml" ? isautoFill ? "per shot" : unit : unit}
             </span>
           ) : (
             <span className="text-sm text-secondary flex items-center gap-1">
               <span className="line-through text-gray-400">
-                P{originalPrice}
+                P{parseFloat(originalPrice).toFixed(2)}
               </span>
               <span>
                 P{price}

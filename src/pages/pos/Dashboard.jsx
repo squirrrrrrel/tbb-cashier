@@ -196,7 +196,7 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-      // console.log("Order details after creating it:", result.order);
+     // console.log("Order details after creating it:", result.order);
       setOrderData(result.order);
       openPaySuccess(result.order.display_id);
       notifySuccess(
@@ -566,8 +566,8 @@ Hope to see you again soon!
 
 
   return (
-    <div className="flex">
-      <div className="home flex-grow bg-background">
+    <div className="flex overflow-x-hidden">
+      <div className="home flex-grow bg-background flex flex-col h-screen p-3 gap-2">
         {payToProceed ? (
           <Payment setPayToProceed={setPayToProceed} total={total} onPay={handlePay} tax={tax} discount={discount} subtotal={subtotal} cartProducts={cartData} />
         ) : (
@@ -584,9 +584,9 @@ Hope to see you again soon!
                 setIsPettyClicked={setIsPettyClicked}
               />
             </div>
-            <div className="product-list-container p-4">
+            <div className="product-list-container flex-1 overflow-y-auto no-scrollbar">
               <div
-                className="product-list overflow-scroll max-h-[calc(100vh-180px)] no-scrollbar"
+                className="product-list"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
@@ -626,8 +626,7 @@ Hope to see you again soon!
                         tax={p.tax}
                         originalPrice={p.sellingPrice}
                         lowStockThreshold={p.lowStockThreshold}
-                        isautoFill={p.isautoFillVolumeDetails || false}
-                        shotsvolumeml={p.shotsvolumeml || null}
+                        isautoFill={p.isautoFillVolumeDetails}
                       />
                     );
                   })
