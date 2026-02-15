@@ -78,13 +78,14 @@ const Customers = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar pl-2.5">
-          <CustomerList
+          {filteredCustomers.length === 0 ? <div>No Customer Found</div> : <CustomerList
             customers={filteredCustomers}
             onSelectEditCustomer={setFocusedCustomer}
             onDeleteCustomer={deleteCustomer}
             setSelectedCustomer={setSelectedCustomer}
             selectedCustomer={selectedCustomer}
-          />
+          />}
+
         </div>
       </div>
 
