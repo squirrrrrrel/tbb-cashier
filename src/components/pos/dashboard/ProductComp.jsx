@@ -83,7 +83,7 @@ const ProductComp = ({
       tax,
       stock,
       barcode,
-      stockQueue, 
+      stockQueue,
       discount,
     });
 
@@ -103,7 +103,7 @@ const ProductComp = ({
   };
 
   return (
-    <div onClick={handleAddToCart} className="product bg-white border border-gray-300 rounded-lg w-36 h-[270px] hover:border-secondary cursor-pointer">
+    <div onClick={handleAddToCart} className="product bg-white border border-gray-300 rounded-lg w-36 h-[290px] hover:border-secondary cursor-pointer">
       {img ? (
         <img
           src={img}
@@ -127,7 +127,7 @@ const ProductComp = ({
           className="rounded-t-lg border-b border-b-gray-300"
         />
       )}
-      <div className="product-details p-3 flex h-[120px] items-center">
+      <div className="product-details p-3 flex h-[140px] items-center">
         <div className="flex flex-col gap-1 font-semibold">
           <h2
             className="text-sm text-gray-700"
@@ -148,16 +148,16 @@ const ProductComp = ({
               P{parseFloat(price).toFixed(2)} / {unit === "ml" ? isautoFill ? "per shot" : unit : unit}
             </span>
           ) : (
-            <span className="text-sm text-secondary flex items-center gap-1">
-              <span className="line-through text-gray-400">
-                P{parseFloat(originalPrice).toFixed(2)}
+            <span className="text-sm text-secondary flex flex-col justify-center gap-1">
+              <span className="line-through">
+                P{parseFloat(originalPrice).toFixed(2)} / {isautoFill ? "shot" : unit}
               </span>
               <span>
-                P{price}
+                P{parseFloat(price).toFixed(2)} / {isautoFill ? "shot" : unit}
               </span>
-              <span>
+              {/* <span>
                 / {isautoFill ? "shot" : unit}
-              </span>
+              </span> */}
             </span>
           )}
           <span className="text-xs text-pos-green">
@@ -169,31 +169,31 @@ const ProductComp = ({
         </div>
       </div>
       {lowStockThreshold >= stock && (
-  <div className="relative">
-    {/* Local Styles for this component only */}
-    <style>
-      {`
+        <div className="relative">
+          {/* Local Styles for this component only */}
+          <style>
+            {`
         @keyframes fadeInOut {
           0% { opacity: 0; }
           50% { opacity: 1; }
           100% { opacity: 0; }
         }
       `}
-    </style>
-    
-    <div
-      className="low-stock-badge text-xs py-px px-2 absolute text-[#ff0000]"
-      style={{
-        right: 8,
-        bottom: 8,
-        position: "absolute",
-        animation: "fadeInOut 1.5s ease-in-out infinite",
-      }}
-    >
-      Low
-    </div>
-  </div>
-)}
+          </style>
+
+          <div
+            className="low-stock-badge text-xs py-px px-2 absolute text-[#ff0000]"
+            style={{
+              right: 8,
+              bottom: 8,
+              position: "absolute",
+              animation: "fadeInOut 1.5s ease-in-out infinite",
+            }}
+          >
+            Low
+          </div>
+        </div>
+      )}
 
       {selectPriceFor && selectedProduct && (
         <PriceSelectionPopup
