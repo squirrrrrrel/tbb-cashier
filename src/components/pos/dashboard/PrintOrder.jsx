@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { useAuthStore } from "../../../store/useAuthStore";
 // import { getProductByServerIdDB } from "../../../db/productsDB";
-const PrintOrder = ({ show, setShow, finalOrderData }) => {
-    console.log(finalOrderData);
+const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
     const user = useAuthStore((u) => u.user);
-    console.log(user);
     
     const printRef = useRef();
     const isPrinting = useRef(false) // Flag to prevent double printing
@@ -14,6 +12,8 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
     const whole = (num) => {
         return Math.floor(num);
     }
+    // console.log(finalOrderData.discount.value, finalOrderData?.orderDiscountAmount);
+    
     //  useEffect(() => {
     //     if (!show || !finalOrderData?.orderItems?.length) return;
 
@@ -209,7 +209,7 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
     return (
         <div ref={printRef} style={{ display: "none" }}>
             <div className="receipt-content">
-                <h3>Sales Receipt</h3>
+                <h3>{isHold ? "Hold Order Receipt" : "Sales Receipt"}</h3>
 
                 {/* Fixed typo: oderId -> orderId */}
                 <p><b>Order:</b> #{finalOrderData?.orderId || finalOrderData?.display_id}</p>
@@ -267,7 +267,7 @@ const PrintOrder = ({ show, setShow, finalOrderData }) => {
                             <td>Discount</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.discount || finalOrderData?.orderDiscountAmount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.discount?.value || finalOrderData?.orderDiscountAmount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Total</td>

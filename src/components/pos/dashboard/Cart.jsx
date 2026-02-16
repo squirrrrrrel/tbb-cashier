@@ -49,8 +49,8 @@ const CartProdctComponent = ({
     onToggle();
   };
   // const divBG = matchBG % 2 === 0 ? "bg-gray-100" : "bg-white";
-  const divBG = isExpanded && (matchBG % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]") ;
-  const expandedDivBG = isExpanded && (matchBG % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white") ;
+  const divBG = isExpanded && (matchBG % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]");
+  const expandedDivBG = isExpanded && (matchBG % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white");
   return (
     <>
       <div className={`cart-product w-full p-2 flex justify-between items-center ${divBG}`}>
@@ -77,7 +77,7 @@ const CartProdctComponent = ({
           )}
           <div className="product_heading">
             <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
-            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.unit === "ml" ? `${product.shots} (${product.quantity}ml each)` : product.quantity} {product.categoryName === "Butchery" ? "kg" : product.unit ==="ml"? "" : product.unit}</h3>
+            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.unit === "ml" ? `${product.shots} (${product.quantity}ml each)` : product.quantity} {product.categoryName === "Butchery" ? "kg" : product.unit === "ml" ? "" : product.unit}</h3>
           </div>
         </div>
         <div className="product-amount flex items-center gap-4">
@@ -101,35 +101,35 @@ const CartProdctComponent = ({
         <div className={`flex justify-between gap-4 items-end px-2 pt-1 pb-1 ${expandedDivBG}`}>
           {product.unit === "ml" ? (
             <div className="flex flex-col gap-1 flex-1">
-          <p className="text-sm font-semibold text-[#555555]">No. of Shots</p>
-          <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden border border-gray-200">
-            <div
-              onClick={() => setShots(Math.max(1, shots - 1))}
-              className="w-10 pb-0.5 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
-            >
-              -
+              <p className="text-sm font-semibold text-[#555555]">No. of Shots</p>
+              <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden border border-gray-200">
+                <div
+                  onClick={() => setShots(Math.max(1, shots - 1))}
+                  className="w-10 pb-0.5 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
+                >
+                  -
+                </div>
+                <span>
+                  <input
+                    type="number"
+                    value={shots}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (val < 1) return;
+                      setShots(val);
+                    }}
+                    className="w-14 h-full text-center text-sm outline-none"
+                  />
+                </span>
+                <div
+                  onClick={() => setShots(shots + 1)}
+                  className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
+                >
+                  +
+                </div>
+              </div>
             </div>
-            <span>
-              <input
-                type="number"
-                value={shots}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  if (val < 1) return;
-                  setShots(val);
-                }}
-                className="w-14 h-full text-center text-sm outline-none"
-              />
-            </span>
-            <div
-              onClick={() => setShots(shots + 1)}
-              className="w-10 h-full flex items-center justify-center text-white font-bold text-xl bg-gradient-to-b from-secondary to-primary cursor-pointer"
-            >
-              +
-            </div>
-          </div>
-        </div>
-          ): ( <div className="flex flex-col gap-1 flex-1">
+          ) : (<div className="flex flex-col gap-1 flex-1">
             <p className="text-sm font-semibold text-[#555555]">Quantity</p>
             <div className="flex w-full h-10 items-center justify-between bg-white overflow-hidden  border border-gray-200">
               <div
@@ -185,7 +185,7 @@ const CartProdctComponent = ({
 
 /* ---------------- CART ---------------- */
 
-const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
+const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
   let matchBG = 0;
   const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotification();
@@ -205,7 +205,7 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   const openModal = (modalName) => {
     setActiveModal(modalName);
   };
- // const [expandedId, setExpandedId] = useState(null);
+  // const [expandedId, setExpandedId] = useState(null);
 
   const cartEndRef = useRef(null);
 
@@ -215,8 +215,21 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   );
   const [expandedProductId, setExpandedProductId] = useState(null);
 
-  const handleToggleExpand = (id) => {
-    setExpandedProductId(prev => (prev === id ? -1 : id));
+  const handleToggleExpand = (index) => {
+    setExpandedProductId((prev) => {
+      const nextIndex = prev === index ? -1 : index;
+
+      // If we are expanding (not closing), scroll to that item
+      if (nextIndex !== -1) {
+        setTimeout(() => {
+          // Find the element by index and scroll it into view
+          const elements = document.querySelectorAll(".cart-item-container");
+          elements[index]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100); // Small timeout to wait for the expanded div to render
+      }
+
+      return nextIndex;
+    });
   };
   useEffect(() => {
     cartEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -226,15 +239,15 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
   useEffect(() => {
     const handleStatusChange = () => {
-        setIsOnline(navigator.onLine);
+      setIsOnline(navigator.onLine);
     };
     window.addEventListener('online', handleStatusChange);
     window.addEventListener('offline', handleStatusChange);
     return () => {
-        window.removeEventListener('online', handleStatusChange);
-        window.removeEventListener('offline', handleStatusChange);
+      window.removeEventListener('online', handleStatusChange);
+      window.removeEventListener('offline', handleStatusChange);
     };
-}, []);
+  }, []);
 
   const handleProceed = () => {
     if (totalItems === 0) {
@@ -251,7 +264,7 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   //     if (e.key === "Enter") {
   //       // Prevent default behavior (like form submissions)
   //       e.preventDefault();
-        
+
   //       // Check same conditions as your button: 
   //       // 1. Not a manager
   //       // 2. Cart is not empty
@@ -264,32 +277,32 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
   //   window.addEventListener("keydown", handleGlobalKeyDown);
   //   return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   // }, [totalItems, user, handleProceed]); // Dependencies ensure logic stays current
-  const handleDiscountClick = ()=>{
-            if (cartData.length === 0) {
-                notifyError("Please add items in the cart to apply discount");
-                return;
-            }
-            openModal("discount");
-    };
+  const handleDiscountClick = () => {
+    if (cartData.length === 0) {
+      notifyError("Please add items in the cart to apply discount");
+      return;
+    }
+    openModal("discount");
+  };
 
   return (
     <div className="h-full flex flex-col border-l border-gray-200">
       <div className="cart-header sticky top-0 flex items-center justify-between px-3 py-2.5 border-b border-gray-200 text-[#555555]">
         <div className="icons flex gap-3 fill-gray-600">
           <div className="cart-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer">
-                            <svg
-                                viewBox="0 0 1024 1024"
-                                focusable="false"
-                                data-icon="shopping-cart"
-                                width="26"
-                                height="26"
-                                fill="currentColor"
-                                aria-hidden="true"
-                                color={isOnline ? "green" : "red"}
-                            >
-                                <path d="M723 620.5C666.8 571.6 593.4 542 513 542s-153.8 29.6-210.1 78.6a8.1 8.1 0 00-.8 11.2l36 42.9c2.9 3.4 8 3.8 11.4.9C393.1 637.2 450.3 614 513 614s119.9 23.2 163.5 61.5c3.4 2.9 8.5 2.5 11.4-.9l36-42.9c2.8-3.3 2.4-8.3-.9-11.2zm117.4-140.1C751.7 406.5 637.6 362 513 362s-238.7 44.5-327.5 118.4a8.05 8.05 0 00-1 11.3l36 42.9c2.8 3.4 7.9 3.8 11.2 1C308 472.2 406.1 434 513 434s205 38.2 281.2 101.6c3.4 2.8 8.4 2.4 11.2-1l36-42.9c2.8-3.4 2.4-8.5-1-11.3zm116.7-139C835.7 241.8 680.3 182 511 182c-168.2 0-322.6 59-443.7 157.4a8 8 0 00-1.1 11.4l36 42.9c2.8 3.3 7.8 3.8 11.1 1.1C222 306.7 360.3 254 511 254c151.8 0 291 53.5 400 142.7 3.4 2.8 8.4 2.3 11.2-1.1l36-42.9c2.9-3.4 2.4-8.5-1.1-11.3zM448 778a64 64 0 10128 0 64 64 0 10-128 0z"></path>
-                            </svg>
-                        </div>
+            <svg
+              viewBox="0 0 1024 1024"
+              focusable="false"
+              data-icon="shopping-cart"
+              width="26"
+              height="26"
+              fill="currentColor"
+              aria-hidden="true"
+              color={isOnline ? "green" : "red"}
+            >
+              <path d="M723 620.5C666.8 571.6 593.4 542 513 542s-153.8 29.6-210.1 78.6a8.1 8.1 0 00-.8 11.2l36 42.9c2.9 3.4 8 3.8 11.4.9C393.1 637.2 450.3 614 513 614s119.9 23.2 163.5 61.5c3.4 2.9 8.5 2.5 11.4-.9l36-42.9c2.8-3.3 2.4-8.3-.9-11.2zm117.4-140.1C751.7 406.5 637.6 362 513 362s-238.7 44.5-327.5 118.4a8.05 8.05 0 00-1 11.3l36 42.9c2.8 3.4 7.9 3.8 11.2 1C308 472.2 406.1 434 513 434s205 38.2 281.2 101.6c3.4 2.8 8.4 2.4 11.2-1l36-42.9c2.8-3.4 2.4-8.5-1-11.3zm116.7-139C835.7 241.8 680.3 182 511 182c-168.2 0-322.6 59-443.7 157.4a8 8 0 00-1.1 11.4l36 42.9c2.8 3.3 7.8 3.8 11.1 1.1C222 306.7 360.3 254 511 254c151.8 0 291 53.5 400 142.7 3.4 2.8 8.4 2.3 11.2-1.1l36-42.9c2.9-3.4 2.4-8.5-1.1-11.3zM448 778a64 64 0 10128 0 64 64 0 10-128 0z"></path>
+            </svg>
+          </div>
           <div className="reset-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer" onClick={resetCart}>
             <svg
               viewBox="64 64 896 896"
@@ -345,124 +358,130 @@ const Cart = ({setPayToProceed, subtotal, tax, discount, total}) => {
           </button>
         </div>
       </div>
-        {/* Cart items will be rendered here */}
-        <div className="p-2 flex-1 flex flex-col overflow-y-auto overflow-hidden no-scrollbar">
-          {cartData?.length > 0 ? (
-            cartData?.map((p, index) => (
-              expandedProductId === index ? matchBG+=2 : matchBG++,
+      {/* Cart items will be rendered here */}
+      <div className="p-2 flex-1 flex flex-col overflow-y-auto overflow-hidden no-scrollbar">
+        {cartData?.length > 0 ? (
+          cartData?.map((p, index) => {
+            const currentBG = expandedProductId === index ? (matchBG += 2) : (matchBG += 1);
+
+            return (
               <div
                 key={p.id || p.cartKey}
-                className={matchBG % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"}
+                className={`cart-item-container ${currentBG % 2 === 0 ? "bg-[#f8f8f8]" : "bg-white"}`}
               >
                 <CartProdctComponent
                   product={p}
                   isExpanded={expandedProductId === index}
                   onToggle={() => handleToggleExpand(index)}
-                  onRemove={() => {removeFromCart(p.id,p.cartKey); handleToggleExpand(-1); }}
+                  onRemove={() => {
+                    removeFromCart(p.id, p.cartKey);
+                    handleToggleExpand(-1);
+                  }}
                   onQuantityChange={updateQuantity}
                   notifyError={notifyError}
-                  matchBG={matchBG}
+                  matchBG={currentBG}
                 />
-                <div ref={cartEndRef} />
               </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-700">No Products in Cart</p>
-          )}
-        </div>
-        <div className="sticky bottom-0 cart-details border-t-1 border-gray-200 px-4 py-2 bg-white">
-          {/* Cart details like subtotal, tax, total will be shown here */}
-          <div className="cart-summary flex flex-col gap-2 text-gray-600 text-sm">
-            <div className="subtotal flex justify-between ">
-              <span>Subtotal</span>
-              <span>P{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="subtotal flex justify-between ">
-              <span>Tax</span>
-              <span>P{tax.toFixed(2)}</span>
-            </div>
-            <div className="subtotal flex justify-between ">
-              <span>Discount</span>
-              <span>P{Number(discount) < 1 ?`${((subtotal + tax) * (discount)).toFixed(2)}`: `${Number(discount).toFixed(2)}`}</span>
-            </div>
+            );
+          })
+        ) : (
+          <p className="text-sm text-gray-700">No Products in Cart</p>
+        )}
+        <div ref={cartEndRef} />
+      </div>
+      <div className="sticky bottom-0 cart-details border-t-1 border-gray-200 px-4 py-2 bg-white">
+        {/* Cart details like subtotal, tax, total will be shown here */}
+        <div className="cart-summary flex flex-col gap-2 text-gray-600 text-sm">
+          <div className="subtotal flex justify-between ">
+            <span>Subtotal</span>
+            <span>P{subtotal.toFixed(2)}</span>
           </div>
-          <div className="cart-btns mt-4 flex gap-2">
-            <div onClick={() => handleDiscountClick()} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="percentage"
-                width="24"
-                height="24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M855.7 210.8l-42.4-42.4a8.03 8.03 0 00-11.3 0L168.3 801.9a8.03 8.03 0 000 11.3l42.4 42.4c3.1 3.1 8.2 3.1 11.3 0L855.6 222c3.2-3 3.2-8.1.1-11.2zM304 448c79.4 0 144-64.6 144-144s-64.6-144-144-144-144 64.6-144 144 64.6 144 144 144zm0-216c39.7 0 72 32.3 72 72s-32.3 72-72 72-72-32.3-72-72 32.3-72 72-72zm416 344c-79.4 0-144 64.6-144 144s64.6 144 144 144 144-64.6 144-144-64.6-144-144-144zm0 216c-39.7 0-72-32.3-72-72s32.3-72 72-72 72 32.3 72 72-32.3 72-72 72z"></path>
-              </svg>
-              <p>Discount</p>
-            </div>
-            <div onClick={() => navigate("/pos/invoices")} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="swap"
-                width="24"
-                height="24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M938 458.8l-29.6-312.6c-1.5-16.2-14.4-29-30.6-30.6L565.2 86h-.4c-3.2 0-5.7 1-7.6 2.9L88.9 557.2a9.96 9.96 0 000 14.1l363.8 363.8c1.9 1.9 4.4 2.9 7.1 2.9s5.2-1 7.1-2.9l468.3-468.3c2-2.1 3-5 2.8-8zM699 387c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"></path>
-              </svg>
-              <p>Exchange</p>
-            </div>
-            <div onClick={() => openModal('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
-              <svg
-                viewBox="64 64 896 896"
-                focusable="false"
-                data-icon="pause"
-                width="24"
-                height="24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M304 176h80v672h-80zm408 0h-64c-4.4 0-8 3.6-8 8v656c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V184c0-4.4-3.6-8-8-8z"></path>
-              </svg>
-              <p>Hold Order</p>
-            </div>
-            {/* popup for hold order and manager discount */}
-            <DiscountHoldOrderPopup
-                activeModal={activeModal}
-                closeModal={()=>setActiveModal(null)}
-                subtotal={subtotal}
-                tax={tax}
-                discount={discount}
-                total={total}
-                setPayToProceed={setPayToProceed}
-            />
+          <div className="subtotal flex justify-between ">
+            <span>Tax</span>
+            <span>P{tax.toFixed(2)}</span>
           </div>
-          <div onClick={() => user?.role?.name === "manager" ? "" : handleProceed()} className={`${user?.role?.name === "manager" ? "opacity-70 cursor-not-allowed" : "cursor-pointer"} cart-checkout flex justify-between items-center bg-linear-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg `}>
-            <div className="proceed">
-              <h3 className="text-xl font-semibold">Proceed to Pay</h3>
-              <h4 className="text-sm">{totalItems} {totalItems === 1 ? 'Item' : 'Items'}</h4>
-            </div>
-            <div className="proceed flex gap-2 items-center">
-              <div className="price text-xl font-semibold">P{total.toFixed(2)}</div>
-              <div className="icon">
-                <svg
-                  viewBox="64 64 896 896"
-                  focusable="false"
-                  data-icon="double-right"
-                  width="32"
-                  height="32"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M533.2 492.3L277.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H188c-6.7 0-10.4 7.7-6.3 12.9L447.1 512 181.7 851.1A7.98 7.98 0 00188 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5zm304 0L581.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H492c-6.7 0-10.4 7.7-6.3 12.9L751.1 512 485.7 851.1A7.98 7.98 0 00492 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5z"></path>
-                </svg>
-              </div>
-            </div>
+          <div className="subtotal flex justify-between ">
+            <span>Discount</span>
+            <span>P{Number(discount) < 1 ? `${((subtotal + tax) * (discount)).toFixed(2)}` : `${Number(discount).toFixed(2)}`}</span>
           </div>
         </div>
+        <div className="cart-btns mt-4 flex gap-2">
+          <div onClick={() => handleDiscountClick()} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <svg
+              viewBox="64 64 896 896"
+              focusable="false"
+              data-icon="percentage"
+              width="24"
+              height="24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M855.7 210.8l-42.4-42.4a8.03 8.03 0 00-11.3 0L168.3 801.9a8.03 8.03 0 000 11.3l42.4 42.4c3.1 3.1 8.2 3.1 11.3 0L855.6 222c3.2-3 3.2-8.1.1-11.2zM304 448c79.4 0 144-64.6 144-144s-64.6-144-144-144-144 64.6-144 144 64.6 144 144 144zm0-216c39.7 0 72 32.3 72 72s-32.3 72-72 72-72-32.3-72-72 32.3-72 72-72zm416 344c-79.4 0-144 64.6-144 144s64.6 144 144 144 144-64.6 144-144-64.6-144-144-144zm0 216c-39.7 0-72-32.3-72-72s32.3-72 72-72 72 32.3 72 72-32.3 72-72 72z"></path>
+            </svg>
+            <p>Discount</p>
+          </div>
+          <div onClick={() => navigate("/pos/invoices")} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <svg
+              viewBox="64 64 896 896"
+              focusable="false"
+              data-icon="swap"
+              width="24"
+              height="24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M938 458.8l-29.6-312.6c-1.5-16.2-14.4-29-30.6-30.6L565.2 86h-.4c-3.2 0-5.7 1-7.6 2.9L88.9 557.2a9.96 9.96 0 000 14.1l363.8 363.8c1.9 1.9 4.4 2.9 7.1 2.9s5.2-1 7.1-2.9l468.3-468.3c2-2.1 3-5 2.8-8zM699 387c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"></path>
+            </svg>
+            <p>Exchange</p>
+          </div>
+          <div onClick={() => openModal('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
+            <svg
+              viewBox="64 64 896 896"
+              focusable="false"
+              data-icon="pause"
+              width="24"
+              height="24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M304 176h80v672h-80zm408 0h-64c-4.4 0-8 3.6-8 8v656c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V184c0-4.4-3.6-8-8-8z"></path>
+            </svg>
+            <p>Hold Order</p>
+          </div>
+          {/* popup for hold order and manager discount */}
+          <DiscountHoldOrderPopup
+            activeModal={activeModal}
+            closeModal={() => setActiveModal(null)}
+            subtotal={subtotal}
+            tax={tax}
+            discount={discount}
+            total={total}
+            setPayToProceed={setPayToProceed}
+          />
+        </div>
+        <div onClick={() => user?.role?.name === "manager" ? "" : handleProceed()} className={`${user?.role?.name === "manager" ? "opacity-70 cursor-not-allowed" : "cursor-pointer"} cart-checkout flex justify-between items-center bg-linear-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg `}>
+          <div className="proceed">
+            <h3 className="text-xl font-semibold">Proceed to Pay</h3>
+            <h4 className="text-sm">{totalItems} {totalItems === 1 ? 'Item' : 'Items'}</h4>
+          </div>
+          <div className="proceed flex gap-2 items-center">
+            <div className="price text-xl font-semibold">P{total.toFixed(2)}</div>
+            <div className="icon">
+              <svg
+                viewBox="64 64 896 896"
+                focusable="false"
+                data-icon="double-right"
+                width="32"
+                height="32"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M533.2 492.3L277.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H188c-6.7 0-10.4 7.7-6.3 12.9L447.1 512 181.7 851.1A7.98 7.98 0 00188 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5zm304 0L581.9 166.1c-3-3.9-7.7-6.1-12.6-6.1H492c-6.7 0-10.4 7.7-6.3 12.9L751.1 512 485.7 851.1A7.98 7.98 0 00492 864h77.3c4.9 0 9.6-2.3 12.6-6.1l255.3-326.1c9.1-11.7 9.1-27.9 0-39.5z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -55,16 +55,38 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const customerOptions = [
         ...(customers?.map(c => ({
             value: c.localId,
-            label: `${c.firstName} ${c.lastName} (${c.phoneCode}-${c.phone})`,
+            label: `${c.firstName} ${c.lastName} [${c.phoneCode}-${c.phone}]`,
             data: c
         })) || [])
     ];
 
+    const formatCustomerLabel = ({ label, data }, { context }) => (
+  <div className="flex justify-between items-center w-full text-[#555555] gap-4">
+    <span className="text-sm truncate">
+      {data.firstName} {data.lastName}
+    </span>
+    <span className="text-xs whitespace-nowrap">
+      [{data.phoneCode}-{data.phone}]
+    </span>
+  </div>
+);
 
-    const productOptions = products?.map(p => ({
+
+// Define the categories you want to hide
+const excludedCategories = ["shots", "butchery"];
+
+
+const productOptions = products
+    ?.filter(p => {
+        // Ensure category exists and isn't in our "blocked" list
+        // We use .toLowerCase() to make the check case-insensitive
+        const category = p?.categoryName?.toLowerCase() || ""; 
+        return !excludedCategories.includes(category);
+    })
+    .map(p => ({
         value: p?.serverId,
         label: p?.name || "Unknown Product",
-        data: p // Keep original object
+        data: p 
     }));
 
     // --- Custom Styles to match your existing UI ---
@@ -76,7 +98,6 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
             borderRadius: '0.375rem', // rounded-md
             fontSize: '0.875rem', // text-sm
             padding: '2px',
-            cursor: 'pointer'
         }),
         placeholder: (base) => ({
             ...base,
@@ -85,7 +106,25 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         menuPortal: (base) => ({
             ...base,
             zIndex: 9999
-        })
+        }),
+        option: (base, state) => ({
+            ...base,
+            // Use isSelected first, then isFocused (which is the hover state)
+            backgroundColor: state.isSelected
+                ? "var(--color-secondary)"
+                : state.isFocused
+                    ? "var(--color-hover-color)"
+                    : "white",
+
+            color: state.isSelected || state.isFocused ? "white" : "black",
+
+            // Explicitly handle the active (click) state
+            "&:active": {
+                backgroundColor: "var(--color-primary)",
+            },
+
+            cursor: "pointer",
+        }),
     };
 
     const handleProductSelect = (data) => {
@@ -142,7 +181,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
 
             {/* HEADER (STICKY TOP) */}
             <div className="sticky top-0 z-20 bg-white border-b border-gray-300 py-2.5 px-3">
-                <div className="flex items-center justify-between">
+                <div className="flex gap-2 items-center justify-between">
 
                     {/* Left Icons */}
                     <div className="flex gap-3">
@@ -176,10 +215,10 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                     </div>
 
                     {/* Right Buttons */}
-                    <div className="flex gap-2">
-                        <button className="flex items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary">
-                            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer?.firstName} ${selectedCustomer?.lastName}  (${selectedCustomer?.phoneCode}-${selectedCustomer?.phone})` : "Select Customer"}</p>
-                            {!selectedCustomer &&
+                    <div className="flex flex-1 gap-2">
+                        <button className="flex flex-1 justify-between items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary">
+                            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer?.firstName} ${selectedCustomer?.lastName} ` : "Select Customer"}</p>
+                            {selectedCustomer? `[${selectedCustomer?.phoneCode}-${selectedCustomer?.phone}]` :
                                 <svg
                                     viewBox="64 64 896 896"
                                     focusable="false"
@@ -210,8 +249,9 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                         options={customerOptions}
                         placeholder="Select Customer"
                         styles={customSelectStyles}
-                        value={customerOptions?.find(opt => (selectedCustomer?.localId && opt.value === selectedCustomer.localId) || null)}
-                        onChange={(selected) => setSelectedCustomer(selected.data)}
+                        formatOptionLabel={formatCustomerLabel}
+                        value={selectedCustomer ? customerOptions.find(opt => opt.value === selectedCustomer.localId) : null}
+                        onChange={(selected) => { setSelectedCustomer(selected ? selected.data : null); }}
                         isSearchable
                         isClearable
                         menuPortalTarget={document.body}
@@ -235,8 +275,8 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                                 <div className="text-right">
                                     <div className="text-sm">[P{option.data.sellingPrice.toFixed(2)}]</div>
                                     <div className="text-xs text-gray-400 space-x-2">
-                                        <span className={`font-semibold ${option.data.stockQueue < option.data.lowStockThreshold ? "text-red-500" : "text-green-500"}`}>In Stock: [{option.data.stockQueue}]</span>
-                                        Stock: <span className="font-semibold">[{option.data.stock}]</span>
+                                        <span className={`font-semibold ${option.data.stockQueue < option.data.lowStockThreshold ? "text-red-500" : "text-green-500"}`}>Stock: [{option.data.stockQueue}]</span>
+                                        In Stock: <span className="font-semibold">[{option.data.stock}]</span>
                                     </div>
                                 </div>
                             </div>

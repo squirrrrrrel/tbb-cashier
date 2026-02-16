@@ -93,7 +93,6 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
   useEffect(() => {
     hydrateCategories();
   }, [categories, isCategoryHydrated]);
-  console.log(categories);
   
 
   const transferableProducts = products.filter(
@@ -197,7 +196,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
   return (
     <div className="header">
       <div className="pb-4 pt-2 px-2 flex gap-10 items-center">
-        <div className="logo bg-white p-2 text-2xl rounded-md font-bold">
+        <div className="logo bg-white p-2 text-2xl rounded-md h-10 flex items-center font-bold">
           <img src={qkartsLogo} className="w-36 object-cover" />
         </div>
         <div className="product-categories flex gap-4">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import InvoiceList from "../../components/pos/invoice/InvoiceList";
 import InvoiceForm from "../../components/pos/invoice/InvoiceForm";
 import HoldInvoiceList from "../../components/pos/invoice/HoldInvoiceList";
@@ -256,6 +256,9 @@ const Invoices = () => {
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
   const setOrders = useOrderStore(state => state.setOrders);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  // useEffect(() => {
+  //   setSelectedOrder(null);
+  // }, [orders]);
 
   // 🔹 Initial load: sync from API (if online) then hydrate from IndexedDB
   useEffect(() => {
@@ -292,18 +295,23 @@ const Invoices = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedHoldOrder, setSelectedHoldOrder] = useState(null);
 
+  // 1. First, create a sorted version of the hold orders at the top of your component
+  const sortedHoldOrders = [...holdOrders].sort((a, b) =>
+    new Date(b.timestamp) - new Date(a.timestamp)
+  );
+
+  // 2. Update the useEffect that handles default selection
   useEffect(() => {
-    if (!holdOrders.length) {
-      // No hold orders → clear form
+    if (!sortedHoldOrders.length) {
       setSelectedHoldOrder(null);
     } else if (
       !selectedHoldOrder ||
-      !holdOrders.find(o => o.localId === selectedHoldOrder.localId)
+      !sortedHoldOrders.find(o => o.localId === selectedHoldOrder.localId)
     ) {
-      // Select first available hold order
-      setSelectedHoldOrder(holdOrders[0]);
+      // Select the first item of the SORTED array (the newest one)
+      setSelectedHoldOrder(sortedHoldOrders[0]);
     }
-  }, [holdOrders]);
+  }, [sortedHoldOrders]);
 
 
   const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
@@ -322,7 +330,7 @@ const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [holdSearchTerm, setHoldSearchTerm] = useState("");
 
-  const currentOrders = activeBtn === "holdInvoiceBTN" ? holdOrders : orders;
+  const currentOrders = activeBtn === "holdInvoiceBTN" ? sortedHoldOrders : orders;
 
 
   const filteredOrders = currentOrders.filter((order) => {
@@ -390,7 +398,7 @@ const Invoices = () => {
         (customerName && String(customerName).toLowerCase().includes(search)) ||
         (customerPhone && String(customerPhone).includes(search)) ||
         (userId && String(userId).toLowerCase().includes(search)) ||
-        (displayId && String(displayId).toLowerCase().includes(search)) 
+        (displayId && String(displayId).toLowerCase().includes(search))
       );
     }
   });

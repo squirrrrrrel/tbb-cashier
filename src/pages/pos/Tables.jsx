@@ -40,6 +40,11 @@ const Tables = () => {
   };
 
   const handleAddTableSave = async ({ tableNumber, seats }) => {
+    const isDuplicate = tables.some((table) => table.tableNumber == tableNumber);
+    if (isDuplicate) {
+      notifyError("Table already exists");
+      return;
+    }
     try {
       await addTable({ tableNumber, seats });
       notifySuccess("Table Added");
@@ -129,7 +134,7 @@ const Tables = () => {
 
           {/* Tables Grid Wrapper */}
           {filteredTableList.length > 0 ? (
-            <div className="flex flex-wrap gap-10 overflow-y-auto overflow-x-hidden py-5 px-3 h-full m-2">
+            <div className="flex flex-wrap gap-10 overflow-y-auto overflow-x-hidden py-5 px-3 h-full m-2 no-scrollbar">
               {filteredTableList.map((item) => {
                 const isSelected = selectedTable?.localId === item?.localId;
                 const isOnHold = holdOrderTableIds?.includes(item.localId);
