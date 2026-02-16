@@ -102,8 +102,8 @@ const DiscountHoldOrderPopup = ({ activeModal, closeModal, subtotal, tax, discou
                 subtotal,
                 taxAmount: tax,
                 discount: {
-                    type: "FIXED",
-                    value: discount,
+                    type: discount < 1 ? "PERCENT" : "FIXED",
+                    value: discount < 1 ? parseFloat((discount * 100).toFixed(2)) : parseFloat(discount.toFixed(2)),
                 },
                 totalAmountToPay: total,
             },
@@ -114,10 +114,11 @@ const DiscountHoldOrderPopup = ({ activeModal, closeModal, subtotal, tax, discou
             resetCart();
             setWaiterName("");
             closeModal();
-            setPayToProceed(false);
+            setPayToProceed?.(false);
             notifySuccess("Order placed on hold");
         } catch (err) {
             notifyError("Failed to hold order");
+            console.log(err);
         }
     };
 

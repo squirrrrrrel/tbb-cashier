@@ -189,7 +189,7 @@ const Dashboard = () => {
         totals: {
           subtotal,
           tax,
-          discount,
+          discount:managerDiscount < 1 ? (subtotal + tax) * (managerDiscount) : managerDiscount,
           total
         },
         paymentMethods: finalOrderData?.paymentMethods || [],

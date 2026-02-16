@@ -57,7 +57,7 @@ export const createOrder = async ({
         table_id: table?.serverId || null,
         subtotal: totals.subtotal,
         outlet_id: outletId || null,
-        discountAmount: 0,
+        discountAmount: totals?.discount || 0,
         discount_percentage:  0,
         taxAmount: totals.taxAmount || totals.tax || 0,
         amount: totals.amount || totals.total || 0,

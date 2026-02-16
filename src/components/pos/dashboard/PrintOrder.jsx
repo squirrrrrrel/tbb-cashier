@@ -206,6 +206,25 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
             setShow(false);
         }
     }, [show, finalOrderData]);
+
+    const getDiscountValue = () => {
+  const { discount, subtotal, taxAmound, discount_amount } = finalOrderData || {};
+  
+  // 1. Handle "No Discount" early
+  if (!discount?.type) return discount_amount || 0;
+
+  // 2. Calculate based on type
+  if (discount.type === "PERCENT") {
+    const baseAmount = (subtotal || 0) + (taxAmound || 0);
+    return baseAmount * (discount.value / 100);
+  }
+
+  // 3. Flat value (Note: Verify if you meant discount.value instead of finalOrderData.value)
+  return discount.value || 0;
+};
+
+const discountValue = getDiscountValue();
+
     return (
         <div ref={printRef} style={{ display: "none" }}>
             <div className="receipt-content">
@@ -267,7 +286,7 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
                             <td>Discount</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.discount?.value || finalOrderData?.orderDiscountAmount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(discountValue).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Total</td>
