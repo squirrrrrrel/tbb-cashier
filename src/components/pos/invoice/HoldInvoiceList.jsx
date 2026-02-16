@@ -1,6 +1,10 @@
 import SearchBar from "../../searchBar/SearchBar";
 const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, searchTerm, setSearchTerm }) => {
     //   const { dateAsPerTimezone } = useDate();
+    // 1. Sort orders: Newest (largest timestamp) to Oldest (smallest timestamp)
+    const sortedOrders = [...orders].sort((a, b) => {
+        return new Date(b.timestamp) - new Date(a.timestamp);
+    });
     return (
         <div className="px-1 flex flex-col h-full min-h-0">
             <div className="px-1 pb-2">
@@ -8,16 +12,16 @@ const HoldInvoiceList = ({ orders, selectedHoldOrder, setSelectedHoldOrder, sear
                 value={searchTerm}
                 onChange={setSearchTerm}
                 placeholder="Search by Customer Name, Customer Mobile Number...."
-                resultCount={orders.length}
+                resultCount={sortedOrders.length}
             /></div>
 
-            {orders.length === 0 ? (
+            {sortedOrders.length === 0 ? (
                 <p className="text-center text-gray-500 py-2 bg-white mx-2 mt-2">
                     No order Details found
                 </p>
             ) : (
                 <ul className="flex-grow overflow-y-auto no-scrollbar min-h-0 py-0.5 px-1">
-                    {orders.map((order) => {
+                    {sortedOrders.map((order) => {
                         const isActive = order?.localId === selectedHoldOrder?.localId;
                         return (
                             <li

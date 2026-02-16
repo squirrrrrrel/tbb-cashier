@@ -8,9 +8,6 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     const [exchangeRows, setExchangeRows] = useState([]);
     const [restock, setRestock] = useState(true);
     const { notifyError, notifySuccess } = useNotification();
-    console.log("items", items);
-    console.log("products", products);
-    console.log("exchangeRows", exchangeRows);
 
 
     useEffect(() => {

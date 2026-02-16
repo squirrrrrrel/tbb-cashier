@@ -147,17 +147,13 @@ const AddCustomersForm = ({
         await onAddCustomer(payload);
         notifySuccess("Customer added successfully");
       }
+      setFormData(initialFormData);
+      clearSelection();
 
     } catch (error) {
       notifyError("An error occurred. Please try again.");
       console.log(error);
-    } finally {
-      setFormData(initialFormData);
-      clearSelection();
     }
-
-
-
   };
 
 

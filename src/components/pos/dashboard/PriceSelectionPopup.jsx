@@ -104,6 +104,7 @@ const PriceSelectionPopup = ({ product, selectPriceFor, setSelectPriceFor, shots
               <div>
                 <label className="font-medium">Quantity{product?.isautoFill? ` (${product.unit})` : ""}</label>
                 <input
+                disabled={product?.isautoFill}
                   type="number"
                   placeholder="Enter Quantity (ml)"
                   value={mlQuantity}

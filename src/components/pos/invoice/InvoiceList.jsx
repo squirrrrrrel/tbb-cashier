@@ -5,7 +5,7 @@ import { useAuthStore } from "../../../store/useAuthStore";
 const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, searchTerm, dateRange, givenDate, setDateRange, setGivenDate, activeBtn }) => {
     const user = useAuthStore((u) => u.user);
 // Helper to get a consistent ID from an order object
-    const getOrderId = (o) => o?.localId || o?.serverOrderId || o?.orderId;
+    const getOrderId = (o) => o?.orderId;
     
     // Helper to sort orders by date (Newest first)
     const sortOrders = (data) => {
@@ -16,15 +16,16 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
         });
     };
 
+      useEffect(() => {
+    setSelectedOrder(null);
+  }, [orders.length]);
+
     useEffect(() => {
         if (orders.length === 0) {
             setSelectedOrder(null);
             return;
         }
-
         const currentSelectedId = getOrderId(selectedOrder);
-        
-        // Check if current selected order exists in the list
         const isSelectedOrderValid = selectedOrder && orders.some(o => getOrderId(o) === currentSelectedId);
 
         // If nothing is selected OR the selection is no longer in the list
@@ -32,7 +33,7 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
             const sorted = sortOrders(orders);
             setSelectedOrder(sorted[0]);
         }
-    }, [orders, selectedOrder, setSelectedOrder]);
+    }, [orders]);
 
 
     return (

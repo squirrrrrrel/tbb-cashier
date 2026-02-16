@@ -226,6 +226,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           show={isPrinting}
           setShow={setIsPrinting}
           finalOrderData={selectedHoldOrder?.cartData}
+          isHold={true}
         />
       )}
     </div>
