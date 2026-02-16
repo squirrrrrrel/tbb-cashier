@@ -192,6 +192,18 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
     }
   };
 
+  const preferredOrder = ["All", "Shots", "Butchery"];
+
+  const sortedCategories = [...categories].sort((a, b) => {
+    let indexA = preferredOrder.indexOf(a.category_name);
+    let indexB = preferredOrder.indexOf(b.category_name);
+
+    // If a category isn't in our list, move it to the end
+    if (indexA === -1) indexA = 999;
+    if (indexB === -1) indexB = 999;
+
+    return indexA - indexB;
+  });
 
   return (
     <div className="header">
@@ -200,7 +212,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
           <img src={qkartsLogo} className="w-36 object-cover" />
         </div>
         <div className="product-categories flex gap-4">
-          {categories.toReversed().map((cat) => (
+          {sortedCategories.map((cat) => (
             <ProductCategoryComp
               key={cat.id}
               category={cat}
