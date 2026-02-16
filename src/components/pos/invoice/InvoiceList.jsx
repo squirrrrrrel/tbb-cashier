@@ -44,7 +44,7 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                 <SearchBar
                     value={searchTerm}
                     onChange={setSearchTerm}
-                    placeholder="Search by Invoice No, Customer Name, Phone Number...."
+                    placeholder="Search by Invoice No, Customer Name, Phone No ...."
                     resultCount={orders.length}
                     dateRange={dateRange}
                     givenDate={givenDate}

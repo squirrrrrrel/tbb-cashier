@@ -12,6 +12,8 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
     const whole = (num) => {
         return Math.floor(num);
     }
+    // console.log(finalOrderData.discount.value, finalOrderData?.orderDiscountAmount);
+    
     //  useEffect(() => {
     //     if (!show || !finalOrderData?.orderItems?.length) return;
 
@@ -265,7 +267,7 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
                             <td>Discount</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.discount || finalOrderData?.orderDiscountAmount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.discount?.value || finalOrderData?.orderDiscountAmount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Total</td>
