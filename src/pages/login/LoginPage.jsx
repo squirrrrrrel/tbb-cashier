@@ -13,6 +13,7 @@ import henikenImage from "../../assets/images/heniken.png";
 import bombayImage from "../../assets/images/bombay.png";
 import tullemoreImage from "../../assets/images/tullemore.png";
 import smrinoffImage from "../../assets/images/smrinoff.png";
+import { useCartStore } from "../../store/useCartStore";
 
 /**
  * Config for floating items behind the login card.
@@ -125,6 +126,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const loginWithCredentials = useAuthStore((s) => s.loginWithCredentials);
+  const resetCart = useCartStore((s) => s.resetCart);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -145,6 +147,7 @@ console.log("User role:", role);
      if (role === "manager") {
       navigate("/select-outlet");
     } else if (role === "cashier") {
+      resetCart(); // Clear any existing cart data on login
       navigate("/pos/dashboard");
     } else {
       navigate("/");

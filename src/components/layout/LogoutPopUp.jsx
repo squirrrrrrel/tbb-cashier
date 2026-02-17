@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useCartStore } from "../../store/useCartStore";
 
 const LogoutPopUp = ({ setIsLogoutClicked }) => {
   const [open, setOpen] = useState(false);
   const logout = useAuthStore((l) => l.logout);
   const user = useAuthStore((u) => u.user);
+  const resetCart = useCartStore((s) => s.resetCart);
 
   useEffect(() => {
     // trigger animation after mount
@@ -14,6 +16,7 @@ const LogoutPopUp = ({ setIsLogoutClicked }) => {
   const handleLogout = () => {
     try {
       logout();
+      resetCart();
       setIsLogoutClicked(false);
     } catch (err) {
       console.log(err);
