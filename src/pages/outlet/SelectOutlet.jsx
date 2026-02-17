@@ -14,6 +14,7 @@ import { useOutletStore } from "../../store/useOutletStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useCartStore } from "../../store/useCartStore";
 
 /**
  * Config for floating items behind the login card.
@@ -121,6 +122,7 @@ const SelectOutlet = () => {
     const { outlets, hydrate } = useOutletStore();
     const setOutlet = useAuthStore((s) => s.setOutlet);
     const navigate = useNavigate();
+    const resetCart = useCartStore((s) => s.resetCart);
 
     useEffect(() => {
         hydrate();
@@ -130,6 +132,7 @@ const SelectOutlet = () => {
 
     const handleSelectOutlet = async (outletId, outletName) => {
     await setOutlet(outletId, outletName);   // save to IndexedDB + Zustand
+    resetCart(); // Clear any existing cart data on outlet change
     navigate("/pos/dashboard");  // normal navigation
   };
 

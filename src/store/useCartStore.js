@@ -187,6 +187,7 @@ removeFromCart: (id, cartKey) =>
           cartData: cartData.orderItems,
           selectedCustomer: cartData.customer || null,
           selectedTable: cartData.table || null,
+          managerDiscount: cartData?.discount?.type ==="PERCENT" ? cartData.discount.value/100 : cartData.discount.value || 0,
         }),
       // ===== OTHER =====
       setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),

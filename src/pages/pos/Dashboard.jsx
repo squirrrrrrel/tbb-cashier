@@ -189,7 +189,7 @@ const Dashboard = () => {
         totals: {
           subtotal,
           tax,
-          discount,
+          discount:managerDiscount < 1 ? (subtotal + tax) * (managerDiscount) : managerDiscount,
           total
         },
         paymentMethods: finalOrderData?.paymentMethods || [],
@@ -628,6 +628,7 @@ Hope to see you again soon!
                         lowStockThreshold={p.lowStockThreshold}
                         isautoFill={p.isautoFillVolumeDetails}
                         shotsvolumeml={p.shotsvolumeml}
+                        shotsperbottel={p.shotsperbottel}
                       />
                     );
                   })
