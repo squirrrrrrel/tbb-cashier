@@ -166,7 +166,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
         addedTaxPercentageToSalesPrice: null,
         mfgDate: new Date().toISOString().substring(0, 10),
         expDate: null,
-        is_auto_fill_volume_details: product.isautoFillVolumeDetails || true,
+        is_auto_fill_volume_details: product.isautoFillVolumeDetails || false,
         bottle_volume_ml: String(product.bottleVolumeML || "750.0000000000"),
         price_per_ml: String(product.pricePerML || "0.0000000000"),
         shot_volume_ml: String(product.shotsvolumeml || "30.0000000000"),

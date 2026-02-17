@@ -26,6 +26,8 @@ const ProductComp = ({
   shotsvolumeml,
   shotsperbottel,
 }) => {
+  console.log(name, isautoFill);
+
   const playBeepSound = () => {
     const audio = new Audio("/sounds/add-to-cart.mp3");
     audio.volume = 1;
@@ -162,12 +164,17 @@ const ProductComp = ({
             </span>
           )}
           <span className="text-xs text-pos-green">
-            In Stock {unit === "ml" ? isautoFill ? `(${parseFloat(shotsperbottel).toFixed(2)} shots)` : `(${stock} ${unit})`: `(${stock} ${unit})`}
+            In Stock ({stock} {unit})
           </span>
           <span className="text-xs text-gray-700">
             + Stock ({stockQueue} {unit})
           </span>
         </div>
+      </div>
+      <div className="relative">
+        <p className=" text-pos-green font-bold px-1 absolute text-xs  text-right bottom-[-4px] right-1">
+          {unit === "ml" ? isautoFill ? `(${Number(stock / shotsvolumeml).toFixed()} sh)` : "" : ""}
+        </p>
       </div>
       {lowStockThreshold >= stock && (
         <div className="relative">
