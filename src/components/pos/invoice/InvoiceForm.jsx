@@ -68,25 +68,26 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
 
 
   const shouldDisableRefund = () => {
-  return (
-    selectedOrder?.orderItems?.filter(
-      (item) => item?.quantity - (item?.refundQuantity) > 0
-    )?.length === 0
-  );
-};
+    return (
+      selectedOrder?.orderItems?.filter(
+        (item) => item?.quantity - (item?.refundQuantity) > 0
+      )?.length === 0
+    );
+  };
 
-const shouldDisableByCategory = () => {
-  const categories =
-    selectedOrder?.orderItems?.map((item) =>
-      (item?.category_name || "").toLowerCase()
-    ) || [];
-  return (
-    categories.length > 0 &&
-    categories.every((cat) => ["butchery", "shots"].includes(cat))
-  );
-};
+  const shouldDisableByCategory = () => {
+    const categories =
+      selectedOrder?.orderItems?.map((item) =>
+        (item?.category_name || "").toLowerCase()
+      ) || [];
+    return (
+      categories.length > 0 &&
+      categories.every((cat) => ["butchery", "shots"].includes(cat))
+    );
+  };
 
-const isDisabled = shouldDisableRefund() || shouldDisableByCategory();
+  // const isDisabled = shouldDisableRefund() || shouldDisableByCategory();
+  const isDisabled = selectedOrder?.orderStatus === "REFUNDED" || shouldDisableRefund() || shouldDisableByCategory();
 
   const exchangeableItems =
     normalizeOrderItemsForExchange(selectedOrder?.orderItems || []);
@@ -162,7 +163,7 @@ const isDisabled = shouldDisableRefund() || shouldDisableByCategory();
                   {item.productName || item.name}
                 </p>
                 <div className="flex gap-2">
-                  P{item.unitPrice || item.price} × {item.shots ? item.shots : item.quantity} {item.category_name === "Butchery" ? "kg" : item.shots ? `(${item.quantity/item.shots}ml each)` : "pcs"}
+                  P{item.unitPrice || item.price} × {item.shots ? item.shots : item.quantity} {item.category_name === "Butchery" ? "kg" : item.shots ? `(${item.quantity / item.shots}ml each)` : "pcs"}
 
                   {/* --- REFUND HISTORY SECTION --- */}
                   {selectedOrder.refunded > 0 && (
@@ -245,8 +246,23 @@ const isDisabled = shouldDisableRefund() || shouldDisableByCategory();
                       <img src={item.imageUrl || defaultImg} className="w-12 h-12" />
                       <div className="flex flex-col gap-1">
                         <span className="text-[#15b71a]">{item.productName}</span>
-                        <span className="text-gray-500">
+                        <span className="text-gray-500 flex gap-2">
                           P{item.unitPrice} × {item.quantity} (New Item)
+                          {item.refundQuantity > 0 && (
+                            <div>
+                                  <div className="flex items-center font-bold text-sm text-[#15b71a] ">
+                                    <svg
+                                      viewBox="64 64 896 896"
+                                      width="14px"
+                                      height="14px"
+                                      fill="currentColor"
+                                    >
+                                      <path d="M511.4 124C290.5 124.3 112 303 112 523.9c0 128 60.2 242 153.8 315.2l-37.5 48c-4.1 5.3-.3 13 6.3 12.9l167-.8c5.2 0 9-4.9 7.7-9.9L369.8 727a8 8 0 00-14.1-3L315 776.1c-10.2-8-20-16.7-29.3-26a318.64 318.64 0 01-68.6-101.7C200.4 609 192 567.1 192 523.9s8.4-85.1 25.1-124.5c16.1-38.1 39.2-72.3 68.6-101.7 29.4-29.4 63.6-52.5 101.7-68.6C426.9 212.4 468.8 204 512 204s85.1 8.4 124.5 25.1c38.1 16.1 72.3 39.2 101.7 68.6 29.4 29.4 52.5 63.6 68.6 101.7 16.7 39.4 25.1 81.3 25.1 124.5s-8.4 85.1-25.1 124.5a318.64 318.64 0 01-68.6 101.7c-7.5 7.5-15.3 14.5-23.4 21.2a7.93 7.93 0 00-1.2 11.1l39.4 50.5c2.8 3.5 7.9 4.1 11.4 1.3C854.5 760.8 912 649.1 912 523.9c0-221.1-179.4-400.2-400.6-399.9z"></path>
+                                    </svg>
+                                    <span>{item.refundQuantity}</span>
+                                  </div>
+                            </div>
+                          )}
                         </span>
                       </div>
                     </div>
@@ -279,21 +295,21 @@ const isDisabled = shouldDisableRefund() || shouldDisableByCategory();
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Refunded</p>
-            <span>P{selectedOrder.refunded|| 0.00}</span>
+            <span>P{selectedOrder.refunded || 0.00}</span>
           </div>
           <div className="flex justify-between text-[#15b71a]">
             <p>Exchanged{exchangeRefundAmount ? "(Refund)" : exchangeReceiveAmount ? "(Receive)" : ""}</p>
             <span>P{exchangeReceiveAmount ? exchangeReceiveAmount.toFixed(2) : exchangeRefundAmount.toFixed(2)}</span>
           </div>
-          {selectedOrder?.payments?.map((item,i) => (
+          {selectedOrder?.payments?.map((item, i) => (
             <div className="flex justify-between">
-            <p className="capitalize">{item?.paymentMethod || item.name} (tendered Amount)</p>
-            <span>P{item?.amount}</span>
-          </div>
+              <p className="capitalize">{item?.paymentMethod || item.name} (tendered Amount)</p>
+              <span>P{item?.amount}</span>
+            </div>
           ))}
           <div className="flex justify-between">
             <p>Change</p>
-            <span>P{selectedOrder?.isSynced ?selectedOrder?.transactions?.[0]?.cashReturned:selectedOrder?.cashReturned}</span>
+            <span>P{selectedOrder?.isSynced ? selectedOrder?.transactions?.[0]?.cashReturned : selectedOrder?.cashReturned}</span>
           </div>
         </div>
 

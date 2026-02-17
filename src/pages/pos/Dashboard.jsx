@@ -628,6 +628,7 @@ Hope to see you again soon!
                         lowStockThreshold={p.lowStockThreshold}
                         isautoFill={p.isautoFillVolumeDetails}
                         shotsvolumeml={p.shotsvolumeml}
+                        shotsperbottel={p.shotsperbottel}
                       />
                     );
                   })

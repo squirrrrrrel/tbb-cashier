@@ -146,7 +146,7 @@ console.log("User role:", role);
 
      if (role === "manager") {
       navigate("/select-outlet");
-    } else if (role === "cashier") {
+    } else if (role === "cashier" || role === "inventory") {
       resetCart(); // Clear any existing cart data on login
       navigate("/pos/dashboard");
     } else {
