@@ -2,23 +2,54 @@ import React from "react";
 import LeftPanel from "../../components/pos/retail/LeftPanel";
 import RightPanel from "../../components/pos/retail/RightPanel";
 import qKartLogo from "../../assets/images/qkarts-logo.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProductStore } from "../../store/useProductStore";
 import { useCartStore } from "../../store/useCartStore";
 import { useNotification } from "../../hooks/useNotification";
 import { useRetail } from "../../hooks/useRetail";
-import camera from "../../assets/icons/camera.svg";
-
-const Retail = ({ setPayToProceed, getFinalProductPrice }) => {
+// import camera from "../../assets/icons/camera.svg";
+import camera from "../../assets/images/camera.jpg";
+// import fullScreenIcon from "../../../assets/icons/full-screen.svg";
+// import exitFullScreenIcon from "../../../assets/icons/close-full-screen.svg";
+import exitFullScreenIcon from "../../assets/icons/close-full-screen.svg";
+import fullScreenIcon from "../../assets/icons/full-screen.svg";
+import muteIcon from "../../assets/icons/mute.svg";
+import speakerIcon from "../../assets/icons/speaker.svg";
+const Retail = ({ setPayToProceed, getFinalProductPrice, setIsPettyClicked, mute, setMute, }) => {
 
     const { products } = useProductStore();
 
     const [barcodeSearch, setBarcodeSearch] = useState("");
     const [filteredProducts, setFilteredProducts] = useState([]);
-    const {addToCart} = useCartStore();
+    const { addToCart } = useCartStore();
     const [totalAmount, setTotalAmount] = useState(0);
-    const {notifyError}=useNotification();
-    const {setIsRetail, setIsRetailOpen} = useRetail();
+    const { notifyError } = useNotification();
+    const { setIsRetail, setIsRetailOpen } = useRetail();
+    const [isFullScreen, setIsFullScreen] = useState(
+        !!document.fullscreenElement
+    );
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            // Check if there is currently an element in fullscreen
+            setIsFullScreen(!!document.fullscreenElement);
+        };
+
+        // Listen for the change event
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+        // Clean up the listener when the component unmounts
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
+    }, []);
 
     // --- Barcode Search Logic ---
     const handleBarcodeChange = (e) => {
@@ -36,24 +67,24 @@ const Retail = ({ setPayToProceed, getFinalProductPrice }) => {
     };
 
     // --- NEW: Handle Enter Key Press ---
-const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-        // Prevent form submission if this is inside a form
-        e.preventDefault();
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            // Prevent form submission if this is inside a form
+            e.preventDefault();
 
-        // Find an EXACT match for the barcode
-        const exactMatch = products.find(
-            (p) => p.barcode?.toLowerCase() === barcodeSearch.toLowerCase()
-        );
+            // Find an EXACT match for the barcode
+            const exactMatch = products.find(
+                (p) => p.barcode?.toLowerCase() === barcodeSearch.toLowerCase()
+            );
 
-        if (exactMatch) {
-            selectProduct(exactMatch)
-        } else {
-            // Optional: Alert the user if no exact match found on Enter
-            console.log("No product found with this barcode");
+            if (exactMatch) {
+                selectProduct(exactMatch)
+            } else {
+                // Optional: Alert the user if no exact match found on Enter
+                console.log("No product found with this barcode");
+            }
         }
-    }
-};
+    };
 
     const selectProduct = (data) => {
         const addToCartData = {
@@ -107,9 +138,9 @@ const handleKeyDown = (e) => {
                             type="text"
                             placeholder="Scan or Type Barcode..."
                             className="py-2 pl-8 bg-white w-full rounded-md shadow-[0_0_3px_#00000026] outline-0 cursor-text placeholder:text-[#555555] placeholder:text-sm"
-                        value={barcodeSearch}
-                        onChange={handleBarcodeChange}
-                        onKeyDown={handleKeyDown} // Listen for the Enter key
+                            value={barcodeSearch}
+                            onChange={handleBarcodeChange}
+                            onKeyDown={handleKeyDown} // Listen for the Enter key
                         />
 
                         {/* BARCODE SEARCH POPUP */}
@@ -132,16 +163,50 @@ const handleKeyDown = (e) => {
                         )}
                     </div>
 
-                    <div className="w-1/4 flex justify-between items-center text-[#555555]">
-                        <div className="flex gap-3">
-                            <span className="cursor-pointer bg-white rounded-md shadow-[0_0_3px_#00000026] text-3xl font-light px-2.75 py-0.5">+</span>
-                            <span onClick={() => {setIsRetail(false); setIsRetailOpen(false);}} className="cursor-pointer rounded-md shadow-[0_0_3px_#00000026] m-auto p-1 bg-white">
-                        <img src={camera} alt="Camera" className="w-8"/>
-                            </span>
+                    <div className="flex items-center gap-2 text-[#555555]">
+                        {/* Add Icon */}
+                        {/* <span className="cursor-pointer bg-white rounded-md shadow-[0_0_3px_#00000026] text-3xl font-light w-10 h-10 flex items-center justify-center">
+                            +
+                        </span> */}
+
+                        {/* 'P' Icon */}
+                        <div
+                            onClick={() => setIsPettyClicked(true)}
+                            className="cursor-pointer rounded-md shadow-[0_0_3px_#00000026] bg-white text-gray-700 w-10 h-10 flex items-center justify-center"
+                        >
+                            <p className="text-xl font-medium">P</p>
                         </div>
-                        <div>
-                            {filteredProducts.length} Results
+
+                        {/* Fullscreen Icon */}
+                        <div
+                            onClick={toggleFullscreen}
+                            className="cursor-pointer rounded-md shadow-[0_0_3px_#00000026] bg-white text-gray-700 w-10 h-10 flex items-center justify-center"
+                        >
+                            <img
+                                src={isFullScreen ? exitFullScreenIcon : fullScreenIcon}
+                                alt="Full Screen"
+                                className="w-6"
+                            />
                         </div>
+
+                        {/* Mute Icon */}
+                        <div
+                            onClick={() => setMute(!mute)}
+                            className="cursor-pointer rounded-md shadow-[0_0_3px_#00000026] bg-white text-gray-700 w-10 h-10 flex items-center justify-center"
+                        >
+                            <img src={mute ? muteIcon : speakerIcon} alt="Speaker" className="w-6" />
+                        </div>
+                        
+                        {/* Camera Icon */}
+                        <span
+                            onClick={() => { setIsRetail(false); setIsRetailOpen(false); }}
+                            className="cursor-pointer rounded-md shadow-[0_0_3px_#00000026] bg-white w-10 h-10 flex items-center justify-center"
+                        >
+                            <img src={camera} alt="Camera" className="w-6" />
+                        </span>
+                    </div>
+                    <div className="min-w-30 text-right">
+                        {filteredProducts.length} Results
                     </div>
                 </div>
                 <div>
@@ -149,7 +214,7 @@ const handleKeyDown = (e) => {
                 </div>
             </div>
             <div className="w-[35vw] h-full border-l-1 border-gray-200">
-                <RightPanel total={totalAmount} setPayToProceed={setPayToProceed} getFinalProductPrice={getFinalProductPrice}/>
+                <RightPanel total={totalAmount} setPayToProceed={setPayToProceed} getFinalProductPrice={getFinalProductPrice} />
             </div>
         </div>
     );
