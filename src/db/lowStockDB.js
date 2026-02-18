@@ -3,13 +3,13 @@ import { openDB } from "idb";
 const DB_NAME = "pos-lowstock-db";
 const STORE = "lowStock";
 
-const dbPromise = openDB(DB_NAME, 2, {
+const dbPromise = openDB(DB_NAME, 3, {
   upgrade(db, oldVersion) {
-    if (oldVersion < 1) {
+    if (oldVersion < 3) {
       if (db.objectStoreNames.contains(STORE)) {
         db.deleteObjectStore(STORE);
       }
-      db.createObjectStore(STORE, { keyPath: "localId" });
+      db.createObjectStore(STORE, { keyPath: "productId"});
     }
   },
 });

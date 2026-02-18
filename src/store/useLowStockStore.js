@@ -49,10 +49,10 @@ export const useLowStockStore = create((set) => ({
     // ✅ SAFELY NORMALIZE API RESPONSE
     let apiData = [];
 
-    if (Array.isArray(res.data?.data)) {
-      apiData = res.data.data;
-    } else if (Array.isArray(res.data?.data?.data)) {
+    if (Array.isArray(res.data?.data?.data)) {
       apiData = res.data.data.data;
+    } else if (Array.isArray(res.data?.data)) {
+      apiData = res.data.data;
     } else if (Array.isArray(res.data)) {
       apiData = res.data;
     } else {
@@ -66,7 +66,7 @@ export const useLowStockStore = create((set) => ({
     for (const item of apiData) {
       await upsertLowStockDB({
         localId: uuidv4(),
-        serverId: item.id,
+        serverId: item.productId,
         productId: item.productId,
         productName: item.productName,
         categoryId: item.categoryId,
@@ -74,7 +74,7 @@ export const useLowStockStore = create((set) => ({
         outletId,
         outletName: item.outletName,
         stock: item.stockQuantity,
-        threshold: item.threshold,
+        threshold: item.lowStockThreshold,
         img: item.imageUrl,
         isSynced: true,
         updatedAt: Date.now(),
