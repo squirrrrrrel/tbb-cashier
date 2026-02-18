@@ -21,7 +21,7 @@ const CartProdctComponent = ({
   matchBG
 }) => {
   const price = Number(product.price) || 0;
-  const quantity = Number(product.quantity) || 0;
+  const quantity = Number(product.quantity) || 1;
 
   const unitPrice = price.toFixed(2);
   const totalPrice = product.unit === "ml" ? (price * quantity * product.shots).toFixed(2) : (price * quantity).toFixed(2);
@@ -77,7 +77,7 @@ const CartProdctComponent = ({
           )}
           <div className="product_heading">
             <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
-            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.unit === "ml" ? `${product.shots} (${product.quantity}ml each)` : product.quantity} {product.categoryName === "Butchery" ? "kg" : product.unit === "ml" ? "" : product.unit}</h3>
+            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.unit === "ml" ? `${product.shots} (${product.quantity}ml each)` : product.quantity||1} {product.categoryName === "Butchery" ? "kg" : product.unit === "ml" ? "" : product.unit}</h3>
           </div>
         </div>
         <div className="product-amount flex items-center gap-4">
@@ -210,7 +210,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
   const cartEndRef = useRef(null);
 
   const totalItems = cartData.reduce(
-    (sum, p) => sum + (Number(p.quantity) || 0),
+    (sum, p) => sum + (Number(p.quantity) || 1),
     0
   );
   const [expandedProductId, setExpandedProductId] = useState(null);

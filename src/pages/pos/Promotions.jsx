@@ -8,6 +8,8 @@ import { useCategoryStore } from "../../store/useCategoryStore";
 import { useOutletStore } from "../../store/useOutletStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import upDownIcon from '../../assets/icons/swap.svg';
+import { useRetail } from "../../hooks/useRetail";
+import { useNavigate } from "react-router-dom";
 
 const Promotions = () => {
   const { promotions, hydrated: promoHydrated, hydrate: promoHydrate } = usePromotionStore();
@@ -15,6 +17,8 @@ const Promotions = () => {
   const { categories, hydrate: categoriesHydrate, hydrated: categoriesHydrated } = useCategoryStore();
   const { outlets, hydrate: outletHydrate, hydrated: outletHydrated } = useOutletStore();
   const user = useAuthStore((u) => u.user);
+  const navigate = useNavigate();
+  const { setIsRetail, setIsRetailOpen } = useRetail();
 
   const [filters, setFilters] = useState({
     promotionName: "",
@@ -143,37 +147,52 @@ const Promotions = () => {
       <h1 className="text-2xl font-bold text-gray-700">Promotions</h1>
 
       {/* Filters Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 mt-4">
-        <Select
-          options={promoOptions}
-          isClearable
-          placeholder="Select Promotion"
-          styles={commonSelectStyles}
-          // This matches "50 Off" state to "50 Off" option exactly
-          value={promoOptions.find(opt => opt.value === filters.promotionName) || null}
-          onChange={(opt) => setFilters(prev => ({ ...prev, promotionName: opt ? opt.value : "" }))}
-        />
+      <div className="flex gap-2 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 flex-1">
+          <Select
+            options={promoOptions}
+            isClearable
+            placeholder="Select Promotion"
+            styles={commonSelectStyles}
+            // This matches "50 Off" state to "50 Off" option exactly
+            value={promoOptions.find(opt => opt.value === filters.promotionName) || null}
+            onChange={(opt) => setFilters(prev => ({ ...prev, promotionName: opt ? opt.value : "" }))}
+          />
 
-        <Select options={productOptions} isClearable placeholder="Select Product" styles={commonSelectStyles}
-          onChange={(opt) => setFilters(prev => ({ ...prev, product: opt?.value || "" }))} />
+          <Select options={productOptions} isClearable placeholder="Select Product" styles={commonSelectStyles}
+            onChange={(opt) => setFilters(prev => ({ ...prev, product: opt?.value || "" }))} />
 
-        <Select options={categoryOptions} isClearable placeholder="Select Category" styles={commonSelectStyles}
-          onChange={(opt) => setFilters(prev => ({ ...prev, category: opt?.value || "" }))} />
+          <Select options={categoryOptions} isClearable placeholder="Select Category" styles={commonSelectStyles}
+            onChange={(opt) => setFilters(prev => ({ ...prev, category: opt?.value || "" }))} />
 
-        <Select
-          options={outletOptions}
-          isClearable
-          value={outletOptions.find(o => o.value === filters.outlet)}
-          styles={commonSelectStyles}
-          placeholder="Select Outlet"
-          onChange={(opt) => setFilters(prev => ({ ...prev, outlet: opt?.value || "" }))}
-        />
+          <Select
+            options={outletOptions}
+            isClearable
+            value={outletOptions.find(o => o.value === filters.outlet)}
+            styles={commonSelectStyles}
+            placeholder="Select Outlet"
+            onChange={(opt) => setFilters(prev => ({ ...prev, outlet: opt?.value || "" }))}
+          />
 
-        <Select options={typeOptions} isClearable placeholder="Select Type" styles={commonSelectStyles}
-          onChange={(opt) => setFilters(prev => ({ ...prev, type: opt?.value || "" }))} />
+          <Select options={typeOptions} isClearable placeholder="Select Type" styles={commonSelectStyles}
+            onChange={(opt) => setFilters(prev => ({ ...prev, type: opt?.value || "" }))} />
 
-        <Select options={combinedScheduleOptions} isClearable placeholder="Select Schedule" styles={commonSelectStyles}
-          onChange={(opt) => setFilters(prev => ({ ...prev, schedule: opt?.value || "" }))} />
+          <Select options={combinedScheduleOptions} isClearable placeholder="Select Schedule" styles={commonSelectStyles}
+            onChange={(opt) => setFilters(prev => ({ ...prev, schedule: opt?.value || "" }))} />
+        </div>
+        <div className="cart-icons px-1.5 flex items-center text-[#555555] rounded-sm border border-2 border-gray-300 cursor-pointer bg-white" onClick={() => { setIsRetail(true); setIsRetailOpen(true); navigate("/pos/dashboard"); }}>
+          <svg
+            viewBox="0 0 1024 1024"
+            focusable="false"
+            data-icon="shopping-cart"
+            width="26"
+            height="26"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M120 160H72c-4.4 0-8 3.6-8 8v688c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V168c0-4.4-3.6-8-8-8zm833 0h-48c-4.4 0-8 3.6-8 8v688c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V168c0-4.4-3.6-8-8-8zM200 736h112c4.4 0 8-3.6 8-8V168c0-4.4-3.6-8-8-8H200c-4.4 0-8 3.6-8 8v560c0 4.4 3.6 8 8 8zm321 0h48c4.4 0 8-3.6 8-8V168c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v560c0 4.4 3.6 8 8 8zm126 0h178c4.4 0 8-3.6 8-8V168c0-4.4-3.6-8-8-8H647c-4.4 0-8 3.6-8 8v560c0 4.4 3.6 8 8 8zm-255 0h48c4.4 0 8-3.6 8-8V168c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v560c0 4.4 3.6 8 8 8zm-79 64H201c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h112c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm257 0h-48c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm256 0H648c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h178c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm-385 0h-48c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8z"></path>
+          </svg>
+        </div>
       </div>
 
       {/* Table */}
