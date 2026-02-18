@@ -3,10 +3,13 @@ import { openDB } from "idb";
 const DB_NAME = "pos-promotions-db";
 const STORE = "promotions";
 
-const dbPromise = openDB(DB_NAME, 1, {
-  upgrade(db) {
-    if (!db.objectStoreNames.contains(STORE)) {
-      db.createObjectStore(STORE, { keyPath: "localId" });
+const dbPromise = openDB(DB_NAME, 2, {
+  upgrade(db, oldVersion) {
+    if (oldVersion < 2) {
+      if (db.objectStoreNames.contains(STORE)) {
+        db.deleteObjectStore(STORE);
+      }
+      db.createObjectStore(STORE, { keyPath: "serverId"});
     }
   },
 });
