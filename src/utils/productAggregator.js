@@ -17,7 +17,7 @@ export const aggregateInventoryToProducts = (apiData, outletId) => {
         img: item.product.image_url,
 
         unit: item.unit,
-        tax: item.purchasePriceTaxPercentage || 0,
+        tax: item.addedTaxPercentageToSalesPrice || 0,
         purchasePriceTaxType: item.purchasePriceTaxType || false,
         stock: Number(item.quantity),
         stockQueue: Number(item.remaining_quantity || 0),
