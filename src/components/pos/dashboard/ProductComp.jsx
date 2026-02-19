@@ -26,7 +26,6 @@ const ProductComp = ({
   shotsvolumeml,
   shotsperbottel,
 }) => {
-  console.log(name, isautoFill);
 
   const playBeepSound = () => {
     const audio = new Audio("/sounds/add-to-cart.mp3");

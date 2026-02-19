@@ -218,14 +218,14 @@ const Dashboard = () => {
     }
   };
   const subtotal = cartData.reduce(
-    (sum, p) => p.unit === "ml" ? sum + Number(p.price || 0) * Number(p.quantity || 0) * p.shots : sum + Number(p.price || 0) * Number(p.quantity || 0),
+    (sum, p) => p.unit === "ml" ? sum + Number(p.price || 0) * Number(p.quantity || 1) * p.shots : sum + Number(p.price || 0) * Number(p.quantity || 1),
     0
   );
   const tax = cartData.reduce((totalTax, item) => {
     const taxPercent = Number(item.tax || 0);
     return (
       totalTax +
-      (item.price * item.quantity * taxPercent) / 100
+      (item.price * (item.quantity || 1) * taxPercent) / 100
     );
   }, 0);
   const discount = managerDiscount;
@@ -509,7 +509,7 @@ const Dashboard = () => {
       const productLines = orderItems
         .map(
           (item, idx) =>
-            `${idx + 1}. ${item.product.product_name} x ${item.quantity
+            `${idx + 1}. ${item.product.product_name} x ${item.quantity || 0
             } = ${item.total_amount.toLocaleString("en-IN")}`
         )
         .join("\n");
@@ -675,6 +675,9 @@ Hope to see you again soon!
         <Retail
           setPayToProceed={setPayToProceed}
           getFinalProductPrice={getFinalProductPrice}
+          setIsPettyClicked={setIsPettyClicked}
+          mute={mute}
+          setMute={setMute}
         />
       }
       {isPettyClicked && <PettyCash setIsPettyClicked={setIsPettyClicked} />}

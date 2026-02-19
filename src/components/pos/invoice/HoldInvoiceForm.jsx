@@ -136,7 +136,10 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           </div>
           <div className="flex justify-between">
             <p>Discount</p>
-            <span>P{selectedHoldOrder?.cartData?.discount?.value}</span>
+            <span>P{selectedHoldOrder?.cartData?.discount?.value==="FIXED" ? 
+                      selectedHoldOrder.cartData.discount.value :
+                      (selectedHoldOrder?.cartData?.subtotal?.toFixed(2) + selectedHoldOrder?.cartData?.taxAmount) *  (selectedHoldOrder.cartData.discount.value / 100) ||0.00 
+          }</span>
           </div>
           <div className="flex justify-between text-secondary font-bold text-xl">
             <p>Total</p>

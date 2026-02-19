@@ -24,7 +24,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         const taxPercent = Number(item.tax || 0);
         return (
             totalTax +
-            (item.price * item.quantity * taxPercent) / 100
+            (item.price * (item.quantity||1) * taxPercent) / 100
         );
     }, 0);
     const discount = Number(managerDiscount) < 1 ? ((total + tax) * (managerDiscount)).toFixed(2) : Number(managerDiscount).toFixed(2);
@@ -61,19 +61,20 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     ];
 
     const formatCustomerLabel = ({ label, data }, { context }) => (
-  <div className="flex justify-between items-center w-full text-[#555555] gap-4">
-    <span className="text-sm truncate">
-      {data.firstName} {data.lastName}
-    </span>
-    <span className="text-xs whitespace-nowrap">
-      [{data.phoneCode}-{data.phone}]
-    </span>
-  </div>
-);
+        // 'text-inherit' ensures the spans take the color from the option: (base) style
+        <div className="flex justify-between items-center w-full gap-4 text-inherit">
+            <span className="text-sm truncate text-inherit">
+                {data.firstName} {data.lastName}
+            </span>
+            <span className="text-sm whitespace-nowrap text-inherit opacity-80">
+                [{data.phoneCode}-{data.phone}]
+            </span>
+        </div>
+    );
 
 
-// Define the categories you want to hide
-const excludedCategories = ["shots", "butchery"];
+    // Define the categories you want to hide
+    const excludedCategories = ["shots", "butchery"];
 
 
 const productOptions = products
@@ -95,8 +96,8 @@ const productOptions = products
             ...base,
             border: 'none',
             boxShadow: '0 0 3px #00000028',
-            borderRadius: '0.375rem', // rounded-md
-            fontSize: '0.875rem', // text-sm
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
             padding: '2px',
         }),
         placeholder: (base) => ({
@@ -107,22 +108,36 @@ const productOptions = products
             ...base,
             zIndex: 9999
         }),
+        // 1. INCREASE DROPDOWN HEIGHT
+        menuList: (base) => ({
+            ...base,
+            maxHeight: 'calc(100vh - 280px)',
+            // minHeight: '100px',
+            scrollbarWidth: 'thin', // Increased from default 300px
+        }),
+        // 2. PRIMARY BG AND WHITE TEXT ON HOVER/FOCUS
         option: (base, state) => ({
             ...base,
-            // Use isSelected first, then isFocused (which is the hover state)
-            backgroundColor: state.isSelected
-                ? "var(--color-secondary)"
-                : state.isFocused
-                    ? "var(--color-hover-color)"
-                    : "white",
+            backgroundColor: state.isSelected || state.isFocused
+                ? "var(--color-primary)"
+                : "white",
 
-            color: state.isSelected || state.isFocused ? "white" : "black",
+            "&:nth-of-type(even)": {
+                backgroundColor: state.isSelected || state.isFocused
+                    ? "var(--color-primary)"
+                    : "#f8f8f8",
+            },
 
-            // Explicitly handle the active (click) state
+            // Force all nested text to be white when hovered/selected
+            color: state.isSelected || state.isFocused
+                ? "white !important"
+                : "black",
+
+            transition: "background-color 0.2s ease",
+
             "&:active": {
                 backgroundColor: "var(--color-primary)",
             },
-
             cursor: "pointer",
         }),
     };
@@ -218,7 +233,7 @@ const productOptions = products
                     <div className="flex flex-1 gap-2">
                         <button className="flex flex-1 justify-between items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary">
                             <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer?.firstName} ${selectedCustomer?.lastName} ` : "Select Customer"}</p>
-                            {selectedCustomer? `[${selectedCustomer?.phoneCode}-${selectedCustomer?.phone}]` :
+                            {selectedCustomer ? `[${selectedCustomer?.phoneCode}-${selectedCustomer?.phone}]` :
                                 <svg
                                     viewBox="64 64 896 896"
                                     focusable="false"
@@ -266,21 +281,35 @@ const productOptions = products
                         onChange={(selected) => handleProductSelect(selected.data)}
                         isSearchable
                         menuPortalTarget={document.body}
-                        formatOptionLabel={(option) => (
-                            <div className="flex justify-between items-center color-#1684a1">
-                                <div>
-                                    <span className="text-sm text-gray-800">{option.data.name}</span>
-                                    <div className="text-xs text-gray-400">{option.data.barcode}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-sm">[P{option.data.sellingPrice.toFixed(2)}]</div>
-                                    <div className="text-xs text-gray-400 space-x-2">
-                                        <span className={`font-semibold ${option.data.stockQueue < option.data.lowStockThreshold ? "text-red-500" : "text-green-500"}`}>Stock: [{option.data.stockQueue}]</span>
-                                        In Stock: <span className="font-semibold">[{option.data.stock}]</span>
+                        formatOptionLabel={(option, { selectValue, focusedOption }) => {
+                            // Check if this specific option is focused or selected
+                            const isActive = focusedOption?.value === option.value || selectValue?.some(v => v.value === option.value);
+
+                            return (
+                                <div className="flex justify-between items-center text-inherit">
+                                    <div className="text-inherit">
+                                        <span className="text-sm font-medium text-inherit">{option.data.name}</span>
+                                        <div className="text-xs text-inherit opacity-70">{option.data.barcode}</div>
+                                    </div>
+                                    <div className="text-right text-inherit">
+                                        <div className="text-sm font-semibold text-inherit">
+                                            P{option.data.sellingPrice.toFixed(2)}
+                                        </div>
+                                        <div className="text-xs text-inherit space-x-2">
+                                            <span className="opacity-60 text-inherit">In Stock: [{option.data.stockQueue}]</span>
+                                            <span className={`font-semibold ${isActive
+                                                    ? "text-white" // When hovered/selected, force white
+                                                    : option.data.stockQueue < option.data.lowStockThreshold
+                                                        ? "text-red-500"
+                                                        : "text-green-500"
+                                                }`}>
+                                                Stock: [{option.data.stock}]
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        }}
 
                     />
 

@@ -292,7 +292,7 @@ const discountValue = getDiscountValue();
                             <td>Total</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.total || finalOrderData?.total_amount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.total || finalOrderData?.total_amount || finalOrderData?.totalAmountToPay || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Tendered</td>
