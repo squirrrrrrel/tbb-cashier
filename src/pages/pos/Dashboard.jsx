@@ -70,11 +70,14 @@ const Dashboard = () => {
       promotions,
       outletId,
     });
+    const itemDiscount = price < product.sellingPrice ? product.sellingPrice - price : 0;
     addToCart({
       id: product.serverId,
       img: product.img,
       name: product.name,
       price,
+      originalPrice: product.sellingPrice,
+      discount: itemDiscount,
       unit: product.unit,
       stock: product.stock,
       stockQueue: product.stockQueue ?? 0,
@@ -190,6 +193,9 @@ const Dashboard = () => {
           subtotal,
           tax,
           discount: managerDiscount < 1 ? (subtotal + tax) * (managerDiscount) : managerDiscount,
+          discount_percentage: managerDiscount < 1
+            ? managerDiscount * 100
+            : (subtotal + tax) > 0 ? (managerDiscount / (subtotal + tax)) * 100 : 0,
           total
         },
         paymentMethods: finalOrderData?.paymentMethods || [],
@@ -219,7 +225,7 @@ const Dashboard = () => {
     const taxPercent = Number(item.tax || 0);
     return (
       totalTax +
-      (item.price * (item.quantity||1) * taxPercent) / 100
+      (item.price * (item.quantity || 1) * taxPercent) / 100
     );
   }, 0);
   const discount = managerDiscount;
@@ -616,19 +622,21 @@ Hope to see you again soon!
                         img={p.img}
                         name={p.name}
                         price={price}
+                        originalPrice={p.sellingPrice}
+                        discount={discount}
                         unit={p.unit}
                         stock={p.stock}
                         barcode={p.barcode}
                         stockQueue={p.stockQueue}
                         categoryName={p.categoryName}
-                        discount={discount}
                         mute={mute}
                         tax={p.tax}
-                        originalPrice={p.sellingPrice}
                         lowStockThreshold={p.lowStockThreshold}
                         isautoFill={p.isautoFillVolumeDetails}
                         shotsvolumeml={p.shotsvolumeml}
                         shotsperbottel={p.shotsperbottel}
+                        // Pass discount+originalPrice into addToCart via ProductComp
+                        extraCartFields={{ originalPrice: p.sellingPrice, discount }}
                       />
                     );
                   })

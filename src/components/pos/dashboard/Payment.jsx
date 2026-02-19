@@ -143,6 +143,14 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                     <div className="text-lg">Total Due</div>
                     <div className="text-secondary text-3xl">P{total.toFixed(2)}</div>
                 </div>
+                {discount > 0 && (
+                    <div className="flex-1 p-4 rounded-md shadow-[0_0_3px_#00000028] bg-white">
+                        <div className="text-lg">Discount</div>
+                        <div className="text-[#15b71a] text-3xl">
+                            -P{(discount < 1 ? (subtotal + tax) * discount : discount).toFixed(2)}
+                        </div>
+                    </div>
+                )}
                 <div className="flex-1 p-4 rounded-md shadow-[0_0_3px_#00000028] bg-white ">
                     <div className="text-lg">Total Paying</div>
                     <div className="text-[#15b71a] text-3xl">P{totalTendered.toFixed(2)}</div>
@@ -173,20 +181,20 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                                 <div className="w-full flex gap-4">
                                     <div className="flex-1">
                                         <input
-                                        ref={index === splits.length - 1 ? inputRef : null}
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={split.amount}
-                                        placeholder="0.00"
-                                        onKeyDown={handleKeyDown}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (val === "" || /^\d*\.?\d*$/.test(val)) {
-                                                updateSplit(split.id, "amount", val);
-                                            }
-                                        }}
-                                        className="w-full outline-secondary rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028]"
-                                    />
+                                            ref={index === splits.length - 1 ? inputRef : null}
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={split.amount}
+                                            placeholder="0.00"
+                                            onKeyDown={handleKeyDown}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                                                    updateSplit(split.id, "amount", val);
+                                                }
+                                            }}
+                                            className="w-full outline-secondary rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028]"
+                                        />
                                     </div>
                                     <div className="flex-1 flex gap-2">
                                         <select
