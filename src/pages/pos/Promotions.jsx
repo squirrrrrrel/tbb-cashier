@@ -57,7 +57,7 @@ const Promotions = () => {
   const typeOptions = [
     { label: "Discount", value: "DISCOUNT" },
     { label: "Hike", value: "HIKE" },
-    { label: "Free", value: "FREE" },
+    // { label: "Free", value: "FREE" },
   ];
 
   const combinedScheduleOptions = [
@@ -85,6 +85,36 @@ const Promotions = () => {
       return item ? item[labelKey] : id;
     });
     return names.join(", ");
+  };
+  console.log(products);
+
+  const getCategoryByProduct = (productIds) => {
+    if (!productIds || (Array.isArray(productIds) && productIds.length === 0)) return "-";
+
+    // Ensure we have an array of IDs
+    const idArray = Array.isArray(productIds) ? productIds : [productIds];
+
+    const catNames = idArray.map(pId => {
+      // 1. Find the product in the store where serverId matches pId
+      const product = products.find(prod => String(prod.serverId) === String(pId));
+
+      if (!product) {
+        return null;
+      }
+
+      // 2. Return the categoryName directly from the product object if it exists
+      // Otherwise, find it in the categories store using product.categoryId
+      if (product.categoryName) {
+        return product.categoryName;
+      }
+
+      const category = categories.find(c => String(c.id) === String(product.categoryId));
+      return category ? category.category_name : null;
+    }).filter(Boolean); // Remove nulls
+
+    // 3. Return unique category names
+    const uniqueNames = [...new Set(catNames)];
+    return uniqueNames.length > 0 ? uniqueNames.join(", ") : "Unknown Category";
   };
 
   const formatSchedulePart = (p, type = "START") => {
@@ -121,15 +151,30 @@ const Promotions = () => {
   };
 
   // Filter Logic
+  // Filter Logic
   const filteredPromotions = useMemo(() => {
     return promotions.filter(p => {
       if (p.isDeleted) return false;
+
+      const promoProductIds = Array.isArray(p.product) ? p.product : [p.product];
+
+      // Get actual product objects for these IDs
+      const associatedProducts = products.filter(prod =>
+        promoProductIds.map(String).includes(String(prod.serverId || prod.id))
+      );
+
+      // Filter: Only show promotion if at least one product exists in our list
+      if (associatedProducts.length === 0) return false;
+
+      // Filter: Category logic (checking product.category instead of p.category)
+      const matchCategory = !filters.category || associatedProducts.some(prod =>
+        String(prod.categoryId) === String(filters.category)
+      );
+
       const matchName = !filters.promotionName || p.promotion_name === filters.promotionName;
       const matchType = !filters.type || p.type === filters.type;
       const matchOutlet = !filters.outlet || p.outlet?.includes(filters.outlet);
-
-      const matchCategory = !filters.category || (Array.isArray(p.category) ? p.category.includes(filters.category) : p.category === filters.category);
-      const matchProduct = !filters.product || (Array.isArray(p.product) ? p.product.includes(filters.product) : p.serverId === filters.product);
+      const matchProduct = !filters.product || promoProductIds.map(String).includes(String(filters.product));
 
       const matchSchedule = !filters.schedule || (() => {
         const [sType, sMode] = filters.schedule.split(":");
@@ -138,7 +183,7 @@ const Promotions = () => {
 
       return matchName && matchType && matchOutlet && matchCategory && matchProduct && matchSchedule;
     });
-  }, [filters, promotions]);
+  }, [filters, promotions, products, categories]); // Added categories to deps
 
   if (!productsHydrated || !promoHydrated || !categoriesHydrated || !outletHydrated) return <OfflineLoader />;
 
@@ -165,6 +210,12 @@ const Promotions = () => {
           <Select options={categoryOptions} isClearable placeholder="Select Category" styles={commonSelectStyles}
             onChange={(opt) => setFilters(prev => ({ ...prev, category: opt?.value || "" }))} />
 
+          <Select options={typeOptions} isClearable placeholder="Select Type" styles={commonSelectStyles}
+            onChange={(opt) => setFilters(prev => ({ ...prev, type: opt?.value || "" }))} />
+
+          <Select options={combinedScheduleOptions} isClearable placeholder="Select Schedule" styles={commonSelectStyles}
+            onChange={(opt) => setFilters(prev => ({ ...prev, schedule: opt?.value || "" }))} />
+
           <Select
             options={outletOptions}
             isClearable
@@ -173,12 +224,6 @@ const Promotions = () => {
             placeholder="Select Outlet"
             onChange={(opt) => setFilters(prev => ({ ...prev, outlet: opt?.value || "" }))}
           />
-
-          <Select options={typeOptions} isClearable placeholder="Select Type" styles={commonSelectStyles}
-            onChange={(opt) => setFilters(prev => ({ ...prev, type: opt?.value || "" }))} />
-
-          <Select options={combinedScheduleOptions} isClearable placeholder="Select Schedule" styles={commonSelectStyles}
-            onChange={(opt) => setFilters(prev => ({ ...prev, schedule: opt?.value || "" }))} />
         </div>
         <div className="cart-icons px-1.5 flex items-center text-[#555555] rounded-sm border border-2 border-gray-300 cursor-pointer bg-white" onClick={() => { setIsRetail(true); setIsRetailOpen(true); navigate("/pos/dashboard"); }}>
           <svg
@@ -200,8 +245,8 @@ const Promotions = () => {
         <table className="w-full">
           <thead className="bg-primary text-white text-center">
             <tr>
-              <th className="p-2">Type</th>
               <th className="p-2">Promotion</th>
+              {/* <th className="p-2">Type</th> */}
               <th className="p-2">Start Details</th>
               <th className="p-2">End Details</th>
               <th className="p-2">Category</th>
@@ -255,12 +300,13 @@ const Promotions = () => {
                 return (
                   <tr key={p.promotion_id} className="even:bg-button-background">
                     <td className="p-2">{p.promotion_name}</td>
-                    <td className="p-2"><span>{p.type}</span></td>
+                    {/* <td className="p-2"><span>{p.type}</span></td> */}
                     <td className="p-2">{formatSchedulePart(p, "START")}</td>
                     <td className="p-2">{formatSchedulePart(p, "END")}</td>
-                    <td className="p-2 max-w-[150px] truncate">{getNameFromId(p.category, categories, "category_name")}</td>
+                    <td className="p-2 max-w-[150px] truncate">{getCategoryByProduct(p.product)}</td>
                     <td className="p-2 max-w-[150px] truncate">{getNameFromId(p.product, products, "name")}</td>
-                    <td className={`p-2 ${p.type === "HIKE" ? "text-green-600" : "text-red-500"}`}>{p.type === "FREE" ? "FREE" : `${p.value}%`}</td>
+                    <td className={`p-2 ${p.type === "HIKE" ? "text-green-600" : "text-red-500"}`}>
+                      {p.type === "Hike" ? "+" : "-"}{p.type === "FREE" ? "FREE" : `${p.value}%`}</td>
                     <td className="p-2">
                       <div className="flex flex-col items-center justify-center">
                         {priceInfo.old && (<span className="line-through">{priceInfo.old}</span>)}
