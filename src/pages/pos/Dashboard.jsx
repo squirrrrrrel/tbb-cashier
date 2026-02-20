@@ -192,10 +192,8 @@ const Dashboard = () => {
         totals: {
           subtotal,
           tax,
-          discount: managerDiscount < 1 ? (subtotal + tax) * (managerDiscount) : managerDiscount,
-          discount_percentage: managerDiscount < 1
-            ? managerDiscount * 100
-            : (subtotal + tax) > 0 ? (managerDiscount / (subtotal + tax)) * 100 : 0,
+          discount: subtotal * discountRate,
+          discount_percentage: discountRate * 100,
           total
         },
         paymentMethods: finalOrderData?.paymentMethods || [],
@@ -218,18 +216,25 @@ const Dashboard = () => {
     }
   };
   const subtotal = cartData.reduce(
-    (sum, p) => p.unit === "ml" ? sum + Number(p.price || 0) * Number(p.quantity || 1) * p.shots : sum + Number(p.price || 0) * Number(p.quantity || 1),
+    (sum, p) => p.unit === "ml"
+      ? sum + Number(p.price || 0) * Number(p.quantity || 1) * (p.shots || 1)
+      : sum + Number(p.price || 0) * Number(p.quantity || 1),
     0
   );
+  const discount = managerDiscount;
+  // discountRate is always 0–1 (fraction of subtotal to remove)
+  const discountRate = discount < 1 ? discount : (subtotal > 0 ? discount / subtotal : 0);
+  // Tax is calculated on the discounted price per item
   const tax = cartData.reduce((totalTax, item) => {
     const taxPercent = Number(item.tax || 0);
-    return (
-      totalTax +
-      (item.price * (item.quantity || 1) * taxPercent) / 100
-    );
+    const itemTotal = item.unit === "ml"
+      ? Number(item.price || 0) * Number(item.quantity || 1) * (item.shots || 1)
+      : Number(item.price || 0) * Number(item.quantity || 1);
+    const discountedItemTotal = itemTotal * (1 - discountRate);
+    return totalTax + (discountedItemTotal * taxPercent) / 100;
   }, 0);
-  const discount = managerDiscount;
-  const total = discount < 1 ? (subtotal + tax) * (1 - discount) : subtotal + tax - discount;
+  const discountedSubtotal = subtotal * (1 - discountRate);
+  const total = discountedSubtotal + tax;
 
 
   //promotion functions
