@@ -124,10 +124,18 @@ const Dashboard = () => {
       useProductStore.getState().fetchProductsFromAPI();
     };
 
+    const handlePromotionRefresh = (payload) => {
+      console.log("Promotion change detected:", payload.source);
+      // Refresh the promotion store
+      usePromotionStore.getState().fetchPromotionsFromAPI();
+    }
+
     socket.on("purchase:product", handleOrderRefresh);
+    socket.on("promotion:refresh", handlePromotionRefresh);
 
     return () => {
       socket.off("purchase:product", handleOrderRefresh);
+      socket.off("promotion:refresh", handlePromotionRefresh);
     };
   }, [socket]);
 
