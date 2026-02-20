@@ -67,7 +67,8 @@ export const createOrder = async ({
         orderItems: cartData.map((p) => {
           const unitPrice = p.price || p.unitPrice || p.sellingPrice || 0;
           // const originalPrice = p.originalPrice || unitPrice;
-          const totalPrice = p.shots ? ((unitPrice * p.shots) * p.quantity) : unitPrice
+          const tax = ((unitPrice * (p.tax || 0) / 100) * (p.quantity || 0)) || 0;
+          const totalPrice = p.shots ? (((unitPrice * p.shots) * p.quantity) + tax) : ((unitPrice * p.quantity) + tax);
           const discount_percentage = totals?.discount_percentage || 0;
           // Fallback: derive discount from price difference if not explicitly stored
           const discountAmount = ((discount_percentage / 100) * totalPrice) || 0;
@@ -78,7 +79,7 @@ export const createOrder = async ({
             quantity: p.quantity || 0,
             shots: p.shots || 0,
             unit: p.unit || null,
-            taxAmountPerProduct: ((unitPrice * (p.tax || 0) / 100) * (p.quantity || 0)) || 0,
+            taxAmountPerProduct: tax,
             discount: discountAmount,
             // discount_percentage: discountPct,
             tax_percentage_per_product: Number(p.tax_percentage_per_product || p.taxPercentage || p.tax || 0),
