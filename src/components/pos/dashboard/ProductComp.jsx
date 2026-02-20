@@ -81,12 +81,14 @@ const ProductComp = ({
       img,
       name,
       price,
+      originalPrice,
+      discount,
       unit,
       tax,
       stock,
       barcode,
       stockQueue,
-      discount,
+      categoryName,
     });
 
     if (result?.success === false) {
