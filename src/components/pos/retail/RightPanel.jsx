@@ -24,7 +24,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         const taxPercent = Number(item.tax || 0);
         return (
             totalTax +
-            (item.price * (item.quantity||1) * taxPercent) / 100
+            (item.price * (item.quantity || 1) * taxPercent) / 100
         );
     }, 0);
     const discount = Number(managerDiscount) < 1 ? ((total + tax) * (managerDiscount)).toFixed(2) : Number(managerDiscount).toFixed(2);
@@ -77,18 +77,18 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const excludedCategories = ["shots", "butchery"];
 
 
-const productOptions = products
-    ?.filter(p => {
-        // Ensure category exists and isn't in our "blocked" list
-        // We use .toLowerCase() to make the check case-insensitive
-        const category = p?.categoryName?.toLowerCase() || ""; 
-        return !excludedCategories.includes(category);
-    })
-    .map(p => ({
-        value: p?.serverId,
-        label: p?.name || "Unknown Product",
-        data: p 
-    }));
+    const productOptions = products
+        ?.filter(p => {
+            // Ensure category exists and isn't in our "blocked" list
+            // We use .toLowerCase() to make the check case-insensitive
+            const category = p?.categoryName?.toLowerCase() || "";
+            return !excludedCategories.includes(category);
+        })
+        .map(p => ({
+            value: p?.serverId,
+            label: p?.name || "Unknown Product",
+            data: p
+        }));
 
     // --- Custom Styles to match your existing UI ---
     const customSelectStyles = {
@@ -293,15 +293,22 @@ const productOptions = products
                                     </div>
                                     <div className="text-right text-inherit">
                                         <div className="text-sm font-semibold text-inherit">
-                                            P{option.data.sellingPrice.toFixed(2)}
+                                            {getFinalProductPrice({ product: option.data, promotions, outletId }) < option.data.sellingPrice ? (
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs line-through opacity-50">P{option.data.sellingPrice.toFixed(2)}</span>
+                                                    <span>P{getFinalProductPrice({ product: option.data, promotions, outletId }).toFixed(2)}</span>
+                                                </div>
+                                            ) : (
+                                                <span>P{option.data.sellingPrice.toFixed(2)}</span>
+                                            )}
                                         </div>
                                         <div className="text-xs text-inherit space-x-2">
                                             <span className="opacity-60 text-inherit">In Stock: [{option.data.stockQueue}]</span>
                                             <span className={`font-semibold ${isActive
-                                                    ? "text-white" // When hovered/selected, force white
-                                                    : option.data.stockQueue < option.data.lowStockThreshold
-                                                        ? "text-red-500"
-                                                        : "text-green-500"
+                                                ? "text-white" // When hovered/selected, force white
+                                                : option.data.stockQueue < option.data.lowStockThreshold
+                                                    ? "text-red-500"
+                                                    : "text-green-500"
                                                 }`}>
                                                 Stock: [{option.data.stock}]
                                             </span>

@@ -9,6 +9,8 @@ import { useNotification } from "../../hooks/useNotification";
 import { useRetail } from "../../hooks/useRetail";
 // import camera from "../../assets/icons/camera.svg";
 import camera from "../../assets/images/camera.jpg";
+import { useAuthStore } from "../../store/useAuthStore";
+import { usePromotionStore } from "../../store/usePromotionStore";
 // import fullScreenIcon from "../../../assets/icons/full-screen.svg";
 // import exitFullScreenIcon from "../../../assets/icons/close-full-screen.svg";
 import exitFullScreenIcon from "../../assets/icons/close-full-screen.svg";
@@ -18,6 +20,8 @@ import speakerIcon from "../../assets/icons/speaker.svg";
 const Retail = ({ setPayToProceed, getFinalProductPrice, setIsPettyClicked, mute, setMute, }) => {
 
     const { products } = useProductStore();
+    const outletId = useAuthStore.getState().user?.outlet_id;
+    const { promotions } = usePromotionStore();
 
     const [barcodeSearch, setBarcodeSearch] = useState("");
     const [filteredProducts, setFilteredProducts] = useState([]);
@@ -87,15 +91,23 @@ const Retail = ({ setPayToProceed, getFinalProductPrice, setIsPettyClicked, mute
     };
 
     const selectProduct = (data) => {
+        const price = getFinalProductPrice({
+            product: data,
+            promotions,
+            outletId
+        });
+        const discount = price < data.sellingPrice ? data.sellingPrice - price : 0
+
         const addToCartData = {
             id: data.serverId,
             img: data.img,
             name: data.name,
-            price: data.sellingPrice,
+            price: price,
             stock: data.stock,
             stockQueue: data.stockQueue,
             unit: data.unit,
-            barcode: data.barcode
+            barcode: data.barcode,
+            discount: discount
         }
         const result = addToCart(addToCartData);
         if (result?.success === false) {
@@ -156,7 +168,16 @@ const Retail = ({ setPayToProceed, getFinalProductPrice, setIsPettyClicked, mute
                                             <span className="text-sm font-bold text-gray-800">{p.name}</span>
                                             <span className="text-xs text-gray-500">SN: {p.barcode}</span>
                                         </div>
-                                        <span className="text-sm font-semibold text-primary">P {p.sellingPrice}</span>
+                                        <div className="flex flex-col items-end">
+                                            {getFinalProductPrice({ product: p, promotions, outletId }) < p.sellingPrice ? (
+                                                <>
+                                                    <span className="text-xs line-through text-gray-400">P {p.sellingPrice}</span>
+                                                    <span className="text-sm font-semibold text-primary">P {getFinalProductPrice({ product: p, promotions, outletId })}</span>
+                                                </>
+                                            ) : (
+                                                <span className="text-sm font-semibold text-primary">P {p.sellingPrice}</span>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -196,7 +217,7 @@ const Retail = ({ setPayToProceed, getFinalProductPrice, setIsPettyClicked, mute
                         >
                             <img src={mute ? muteIcon : speakerIcon} alt="Speaker" className="w-6" />
                         </div>
-                        
+
                         {/* Camera Icon */}
                         <span
                             onClick={() => { setIsRetail(false); setIsRetailOpen(false); }}

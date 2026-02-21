@@ -36,6 +36,7 @@ const Dashboard = () => {
   const productListLength = filteredProducts.length;
   const [cartProducts, setCartProducts] = useState([]);
   const [mute, setMute] = useState(false)
+  const [tick, setTick] = useState(0); // Ticker for live promo updates
   const [payToProceed, setPayToProceed] = useState(false);
   const { notifyError, notifySuccess } = useNotification();
   const [activePopup, setActivePopup] = useState(null); // 'receipt', 'customer', or null
@@ -88,7 +89,8 @@ const Dashboard = () => {
   };
 
   //promotions
-  const outletId = useAuthStore.getState().user?.outlet_id;
+  const user = useAuthStore(state => state.user);
+  const outletId = user?.outlet_id;
   const { promotions, hydrate: promoHydrate, hydrated: promoHydarated } = usePromotionStore();
 
   // condition for open the retail section
@@ -101,6 +103,50 @@ const Dashboard = () => {
   //     setCartProducts(cartData);
   //   }
   // }, []);
+
+  // Sync cart prices when promotions change or time passes
+  useEffect(() => {
+    if (!hydrated || !promoHydarated || cartData.length === 0) return;
+
+    let hasChanged = false;
+    const updatedCart = cartData.map((item) => {
+      const product = products.find((p) => p.serverId === item.id);
+      if (!product) return item;
+
+      const newPrice = getFinalProductPrice({
+        product,
+        promotions,
+        outletId,
+      });
+
+      const calculatedPrice = Number(newPrice);
+      const currentPrice = Number(item.price);
+
+      if (Math.abs(calculatedPrice - currentPrice) > 0.001) {
+        hasChanged = true;
+        const basePrice = item.originalPrice || product.sellingPrice;
+        const itemDiscount = calculatedPrice < basePrice ? (basePrice - calculatedPrice) : 0;
+
+        console.log(`[Sync] Updating Cart Item: ${item.name} | ${currentPrice} -> ${calculatedPrice}`);
+        return {
+          ...item,
+          price: calculatedPrice,
+          discount: itemDiscount,
+        };
+      }
+      return item;
+    });
+
+    if (hasChanged) {
+      setCartData(updatedCart);
+    }
+  }, [tick, promotions, products, hydrated, promoHydarated, outletId, cartData]); // Using cartData instead of length for full sync
+
+  // Update tick every 5 seconds for "Live" accuracy
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // // 2️⃣ Sync local → store
   // useEffect(() => {
@@ -167,7 +213,7 @@ const Dashboard = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [filters, products, hydrate]);
+  }, [filters, products, hydrate, tick, promotions]);
   useEffect(() => {
     hydrate();
     promoHydrate();
@@ -261,12 +307,16 @@ const Dashboard = () => {
 
     // PRODUCT promo
     if (promo.promo_on === "PRODUCT") {
-      return includesId(promo.product, product.serverId);
+      const match = includesId(promo.product, product.serverId);
+      if (!match) console.log(`[Scope Bypass] Product ID mismatch: ${product.serverId} not in ${promo.product}`);
+      return match;
     }
 
     // CATEGORY promo
     if (promo.promo_on === "CATEGORY") {
-      return includesId(promo.category, product.categoryId);
+      const match = includesId(promo.category, product.categoryId);
+      if (!match) console.log(`[Scope Bypass] Category ID mismatch: ${product.categoryId} not in ${promo.category}`);
+      return match;
     }
 
     return false;
@@ -359,12 +409,19 @@ const Dashboard = () => {
 
     const parseToMidnight = (dateStr) => {
       if (!dateStr) return 0;
+      // Force local midnight by parsing components
+      const parts = typeof dateStr === 'string' ? dateStr.split("T")[0].split("-") : [];
+      if (parts.length === 3) {
+        return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).getTime();
+      }
       const d = new Date(dateStr);
       return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     };
 
     // Helper to check if a promotion is configured to be overnight
-    const isOvernightConfig = promo.schedule_mode === 'TIME_RANGE' && promo.schedule_start_time > promo.schedule_end_time;
+    const startForConfig = (promo.schedule_start_time || "00:00").slice(0, 5);
+    const endForConfig = (promo.schedule_end_time || "00:00").slice(0, 5);
+    const isOvernightConfig = promo.schedule_mode === 'TIME_RANGE' && startForConfig > endForConfig;
 
     /* -------- DAILY -------- */
     if (promo.schedule_type === 'DAILY') {
@@ -375,12 +432,19 @@ const Dashboard = () => {
     if (promo.schedule_type === 'WEEKLY') {
       if (promo.schedule_start_day == null || promo.schedule_end_day == null) return false;
 
+      const endLimit = (promo.schedule_end_time || "00:00").slice(0, 5);
       // If it's early morning and the promo is overnight, check if YESTERDAY was a valid promo day
-      if (isOvernightConfig && currentTime <= promo.schedule_end_time) {
-        if (!isDayBetween(yesterdayDay, promo.schedule_start_day, promo.schedule_end_day)) return false;
+      if (isOvernightConfig && currentTime <= endLimit) {
+        if (!isDayBetween(yesterdayDay, promo.schedule_start_day, promo.schedule_end_day)) {
+          // console.log(`[Schedule Bypass] Weekly Day mismatch (Yesterday): ${yesterdayDay}`);
+          return false;
+        }
       } else {
         // Otherwise, check if TODAY is a valid promo day
-        if (!isDayBetween(currentDay, promo.schedule_start_day, promo.schedule_end_day)) return false;
+        if (!isDayBetween(currentDay, promo.schedule_start_day, promo.schedule_end_day)) {
+          // console.log(`[Schedule Bypass] Weekly Day mismatch (Today): ${currentDay}`);
+          return false;
+        }
       }
 
       return isTimeAllowed(promo, currentTime);
@@ -392,13 +456,20 @@ const Dashboard = () => {
 
       const startTimestamp = parseToMidnight(promo.schedule_start_date);
       const endTimestamp = parseToMidnight(promo.schedule_end_date);
+      const endLimit = (promo.schedule_end_time || "00:00").slice(0, 5);
 
-      if (isOvernightConfig && currentTime <= promo.schedule_end_time) {
+      if (isOvernightConfig && currentTime <= endLimit) {
         // Check if yesterday was within the date range
-        if (!(yesterdayAtMidnight >= startTimestamp && yesterdayAtMidnight <= endTimestamp)) return false;
+        if (!(yesterdayAtMidnight >= startTimestamp && yesterdayAtMidnight <= endTimestamp)) {
+          console.log(`[Schedule Bypass] Date mismatch (Yesterday): ${new Date(yesterdayAtMidnight).toDateString()}`);
+          return false;
+        }
       } else {
         // Check if today is within the date range
-        if (!(todayAtMidnight >= startTimestamp && todayAtMidnight <= endTimestamp)) return false;
+        if (!(todayAtMidnight >= startTimestamp && todayAtMidnight <= endTimestamp)) {
+          console.log(`[Schedule Bypass] Date mismatch (Today): ${new Date(todayAtMidnight).toDateString()}`);
+          return false;
+        }
       }
 
       return isTimeAllowed(promo, currentTime);
@@ -411,14 +482,13 @@ const Dashboard = () => {
     if (promo.schedule_mode === 'ALWAYS' || promo.schedule_mode === 'FULL_DAY') return true;
 
     if (promo.schedule_mode === 'TIME_RANGE') {
-      const start = promo.schedule_start_time;
-      const end = promo.schedule_end_time;
+      const start = (promo.schedule_start_time || "00:00").slice(0, 5);
+      const end = (promo.schedule_end_time || "23:59").slice(0, 5);
 
       if (start <= end) {
         return currentTime >= start && currentTime <= end;
       }
       // Overnight: 22:00 to 04:00
-      // Returns true if time is 23:00 OR if time is 02:00
       return currentTime >= start || currentTime <= end;
     }
     return false;
@@ -459,9 +529,11 @@ const Dashboard = () => {
 
   const getFinalProductPrice = ({
     product,
-    promotions = [],
-    outletId,
+    promotions: manualPromos,
+    outletId: manualOutletId,
   }) => {
+    const activePromos = manualPromos ?? promotions;
+    const activeOutletId = manualOutletId ?? outletId;
     if (!product) {
       console.warn("⚠️ Product missing at pricing stage");
       return product?.sellingPrice ?? 0;
@@ -469,11 +541,25 @@ const Dashboard = () => {
 
     const now = new Date();
 
-    const applicablePromos = promotions.filter(
-      (p) =>
-        p.is_active !== false &&
-        isScopeValid(p, outletId, product) &&
-        isScheduleValid(p, now)
+    const applicablePromos = activePromos.filter(
+      (p) => {
+        // Robust is_active check
+        const activeProp = p.is_active;
+        const isActive = activeProp !== false &&
+          activeProp !== 0 &&
+          activeProp !== "0" &&
+          String(activeProp).toLowerCase() !== "false";
+
+        if (!isActive) return false;
+
+        const match = isScopeValid(p, activeOutletId, product) &&
+          isScheduleValid(p, now);
+
+        if (match) {
+          console.log(`%c [Live Match!] ${p.promotion_name} (ID: ${p.serverId}) at ${now.toLocaleTimeString()}`, "color: #00ff00; font-weight: bold;");
+        }
+        return match;
+      }
     );
 
     if (!applicablePromos.length) {
