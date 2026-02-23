@@ -14,6 +14,7 @@ import PhoneInputWithCode from "../../components/phoneCodeInput/PhoneInputWithCo
 import DashboardPopup from "../../components/pos/dashboard/dashboardPopup";
 import { createOfflineOrder } from "../../utils/createOfflineOrder";
 import { createOrder } from "../../utils/createOrder";
+import { fetchOrdersFromAPI } from "../../utils/fetchOrdersFromAPI";
 // import Retail from "./Retail";
 import Retail from "./Retail";
 import { useRetail } from "../../hooks/useRetail";
@@ -45,6 +46,7 @@ const Dashboard = () => {
   // const { orderData, setOrderData } = useCartStore();
   const orderData = useCartStore(state => state.orderData);
   const setOrderData = useCartStore(state => state.setOrderData);
+  const productStore = useProductStore.getState();
 
   const [isPrinting, setIsPrinting] = useState(false);
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
@@ -256,25 +258,29 @@ const Dashboard = () => {
       });
       // console.log("Order details after creating it:", result.order);
       // console.log(result);
-      if(result.mode ==="online"){
+      if (result.mode === "online") {
         setOrderData(result.order);
         openPaySuccess(result.order.display_id);
+        notifySuccess(
+          result.mode === "online"
+            ? "Order created successfully"
+            : "Order saved offline"
+        );
+        await Promise.all([
+          fetchOrdersFromAPI(),
+          productStore.fetchProductsFromAPI()
+        ]);
       } else {
         // console.log("orderData updated in local", selectedCustomer);
         setOrderData(
           {
-            ...result.order, 
-            customer: selectedCustomer, 
+            ...result.order,
+            customer: selectedCustomer,
             display_id: "Offline order"
           }
         );
         openPaySuccess("Offline order", `${Date.now()}`);
       }
-      notifySuccess(
-        result.mode === "online"
-          ? "Order created successfully"
-          : "Order saved offline"
-      );
       resetCart();
       setPayToProceed(false);
     } catch (err) {
