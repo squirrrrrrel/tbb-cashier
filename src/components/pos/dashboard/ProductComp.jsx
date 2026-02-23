@@ -165,7 +165,7 @@ const ProductComp = ({
             </span>
           )}
           <span className="text-xs text-pos-green">
-            In Stock ({stock} {unit})
+            In Stock ({parseFloat(stock).toFixed(2)} {unit})
           </span>
           <span className="text-xs text-gray-700">
             + Stock ({stockQueue} {unit})

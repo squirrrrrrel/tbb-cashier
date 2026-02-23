@@ -37,6 +37,8 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     const [payLeft, setPayLeft] = useState(total);
     const [change, setChange] = useState("0.00");
     const { selectedTable, selectedCustomer } = useCartStore();
+    const discountAmount = discount < 1 ? (parseFloat(subtotal) + parseFloat(tax)) * parseFloat(discount) : discount ;
+    
 
     // Helper to update a specific row
     const updateSplit = (id, field, value) => {
@@ -141,13 +143,14 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
             <div className="flex justify-between px-5 py-3 gap-6 text-[#555555] font-bold text-center">
                 <div className="flex-1 p-4 rounded-md shadow-[0_0_3px_#00000028] bg-white ">
                     <div className="text-lg">Total Due</div>
-                    <div className="text-secondary text-3xl">P{total.toFixed(2)}</div>
+                    <div className="text-secondary text-3xl">P{parseFloat(total).toFixed(2)}</div>
                 </div>
                 {discount > 0 && (
                     <div className="flex-1 p-4 rounded-md shadow-[0_0_3px_#00000028] bg-white">
                         <div className="text-lg">Discount</div>
                         <div className="text-[#15b71a] text-3xl">
-                            -P{(discount < 1 ? (subtotal + tax) * discount : discount).toFixed(2)}
+                            -P{parseFloat(discountAmount).toFixed(2)}
+                            {/* -P{parseFloat(discountAmount).toFixed(2)} */}
                         </div>
                     </div>
                 )}
@@ -252,7 +255,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                     </div>
                     <div className="bg-white py-4 px-3 shadow-[0_0_3px_#00000028] rounded-md text-[#555555] font-bold text-sm text-center">
                         <div className="flex justify-between gap-5 mb-4">
-                            <div onClick={() => handleBoxClick(total.toFixed(2))} className={`${buttonBase} ${hoverStyle} flex-1`} >P{total.toFixed(2)}</div>
+                            <div onClick={() => handleBoxClick(parseFloat(total).toFixed(2))} className={`${buttonBase} ${hoverStyle} flex-1`} >P{parseFloat(total).toFixed(2)}</div>
                             <div onClick={() => handleBoxClick(Math.ceil(total))} className={`${buttonBase} ${hoverStyle} flex-1`}>P{Math.ceil(total)}</div>
                             <div onClick={() => handleBoxClick(Math.ceil(total / 10) * 10)} className={`${buttonBase} ${hoverStyle} flex-1`}>P{Math.ceil(total / 10) * 10}</div>
                             <div onClick={() => handleBoxClick(Math.ceil(total / 100) * 100)} className={`${buttonBase} ${hoverStyle} flex-1`}>P{Math.ceil(total / 100) * 100}</div>

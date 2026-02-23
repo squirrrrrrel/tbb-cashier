@@ -8,7 +8,7 @@ import { useCartStore } from "../../store/useCartStore";
 import { useNotification } from "../../hooks/useNotification";
 import { useRetail } from "../../hooks/useRetail";
 // import camera from "../../assets/icons/camera.svg";
-import camera from "../../assets/images/camera.jpg";
+import camera from "../../assets/images/camera.png";
 // import fullScreenIcon from "../../../assets/icons/full-screen.svg";
 // import exitFullScreenIcon from "../../../assets/icons/close-full-screen.svg";
 import exitFullScreenIcon from "../../assets/icons/close-full-screen.svg";

@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { useAuthStore } from "../../../store/useAuthStore";
+import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
 // import { getProductByServerIdDB } from "../../../db/productsDB";
 const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
     const user = useAuthStore((u) => u.user);
-    
+    const { paymentMethods } = usePaymentMethodStore();
     const printRef = useRef();
     const isPrinting = useRef(false) // Flag to prevent double printing
     const [productsMap, setProductsMap] = React.useState({});
@@ -208,10 +209,10 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
     }, [show, finalOrderData]);
 
     const getDiscountValue = () => {
-  const { discount, subtotal, taxAmound, discount_amount } = finalOrderData || {};
+  const { discount, subtotal, taxAmound, discount_amount, discountAmount } = finalOrderData || {};
   
   // 1. Handle "No Discount" early
-  if (!discount?.type) return discount_amount || 0;
+  if (!discount?.type) return discount_amount || discountAmount || 0;
 
   // 2. Calculate based on type
   if (discount.type === "PERCENT") {
@@ -225,6 +226,22 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
 
 const discountValue = getDiscountValue();
 
+const totalTendered = finalOrderData?.transactions?.reduce((sum, tx) => {
+  return sum + (tx.tendered_amount || 0);
+}, 0) || 0;
+
+const methodLookup = Object.fromEntries(
+  paymentMethods.map(m => [m.id, m.display_name])
+);
+
+const paymentMethodsString = [
+  ...new Set(
+    finalOrderData?.payments
+      ?.map(p => methodLookup[p.payment_method_id || p.paymentMethodId]) // Look up the name by ID
+      .filter(Boolean) // Remove any undefined results (if an ID isn't found)
+  )
+].join(', ');
+
     return (
         <div ref={printRef} style={{ display: "none" }}>
             <div className="receipt-content">
@@ -235,7 +252,7 @@ const discountValue = getDiscountValue();
                 <p><b>Date:</b> {finalOrderData?.order_date || finalOrderData?.created_at || new Date().toISOString().replace('T', ' ').split('.')[0] }</p>
                 <p><b>Cashier:</b> {finalOrderData?.user?.first_name || user?.first_name || "-"}</p>
                 <p><b>Customer:</b> {finalOrderData?.customer?.firstName || finalOrderData?.customer?.first_name} {finalOrderData?.customer?.lastName || finalOrderData?.customer?.last_name}</p>
-                <p><b>Payment:</b> {finalOrderData?.paymentMethodId}</p>
+                <p><b>Payment:</b> {paymentMethodsString}</p>
 
                 <table>
                     <thead>
@@ -280,7 +297,7 @@ const discountValue = getDiscountValue();
                             <td>Tax</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.tax_amount || finalOrderData?.taxAmound || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.tax_amount || finalOrderData?.taxAmount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Discount</td>
@@ -292,19 +309,19 @@ const discountValue = getDiscountValue();
                             <td>Total</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.total || finalOrderData?.total_amount || finalOrderData?.totalAmountToPay || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.totalAmountToPay || finalOrderData?.total_amount || finalOrderData?.totalAmount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Tendered</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.transactions?.[0]?.tendered_amount || finalOrderData?.total_amount || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(totalTendered || finalOrderData?.tenderedAmount || 0).toFixed(2)}</td>
                         </tr>
                         <tr>
                             <td>Change</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat(finalOrderData?.transactions?.[0]?.cash_returned || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat( finalOrderData?.cashReturned || finalOrderData?.transactions?.[0]?.cash_returned || 0).toFixed(2)}</td>
                         </tr>
                     </tbody>
                 </table>
