@@ -231,7 +231,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
 
                     {/* Right Buttons */}
                     <div className="flex flex-1 gap-2">
-                        <button className="flex flex-1 justify-between items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-gradient-to-b from-secondary to-primary">
+                        <button className="flex flex-1 justify-between items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-linear-to-b from-secondary to-primary">
                             <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer?.firstName} ${selectedCustomer?.lastName} ` : "Select Customer"}</p>
                             {selectedCustomer ? `[${selectedCustomer?.phoneCode}-${selectedCustomer?.phone}]` :
                                 <svg
@@ -248,7 +248,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
                             }
                         </button>
 
-                        <button className="w-10 h-10 flex text-2xl items-center justify-center text-white rounded-md bg-gradient-to-b from-secondary to-primary cursor-pointer" onClick={() => navigate("/pos/customers")}>
+                        <button className="w-10 h-10 flex text-2xl items-center justify-center text-white rounded-md bg-linear-to-b from-secondary to-primary cursor-pointer" onClick={() => navigate("/pos/customers")}>
                             +
                         </button>
                     </div>
