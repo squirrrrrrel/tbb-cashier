@@ -77,7 +77,7 @@ const CartProdctComponent = ({
           )}
           <div className="product_heading">
             <h2 className="text-base font-semibold text-gray-600">{product.name}</h2>
-            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.unit === "ml" ? `${product.shots} (${product.quantity}ml each)` : product.quantity||1} {product.categoryName === "Butchery" ? "kg" : product.unit === "ml" ? "" : product.unit}</h3>
+            <h3 className="text-sm text-gray-500 font-semibold">{unitPrice} × {product.unit === "ml" ? `${product.shots} (${product.quantity}ml each)` : product.quantity || 1} {product.categoryName === "Butchery" ? "kg" : product.unit === "ml" ? "" : product.unit}</h3>
           </div>
         </div>
         <div className="product-amount flex items-center gap-4">
@@ -402,7 +402,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
           </div>
           <div className="subtotal flex justify-between ">
             <span>Discount</span>
-            <span>P{Number(discount) < 1 ? `${((subtotal + tax) * (discount)).toFixed(2)}` : `${Number(discount).toFixed(2)}`}</span>
+            <span>P{Number(discount) < 1 ? `${((subtotal) * (discount)).toFixed(2)}` : `${Number(discount).toFixed(2)}`}</span>
           </div>
         </div>
         <div className="cart-btns mt-4 flex gap-2">

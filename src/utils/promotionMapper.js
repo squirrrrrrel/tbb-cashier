@@ -18,9 +18,9 @@ export const mapPromotionToApiPayload = (promotion) => ({
   schedule_end_date: promotion.schedule_end_date,
   schedule_start_day: promotion.schedule_start_day,
   schedule_end_day: promotion.schedule_end_day,
-  schedule_start_time: promotion.schedule_start_time,
   schedule_end_time: promotion.schedule_end_time,
   free_item_id: promotion.free_item_id,
+  is_active: promotion.is_active,
 });
 
 export const mapApiResponseToPromotion = (apiPromotion, localId = uuidv4()) => ({
@@ -32,6 +32,7 @@ export const mapApiResponseToPromotion = (apiPromotion, localId = uuidv4()) => (
 
   promotion_id: apiPromotion.promotion_id,
   promotion_name: apiPromotion.promotion_name,
+  is_active: apiPromotion.is_active,
   type: apiPromotion.type,
   mode: apiPromotion.mode,
   value: apiPromotion.value,

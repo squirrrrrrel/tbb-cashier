@@ -66,22 +66,32 @@ export const createOrder = async ({
         cashReturned,
         orderItems: cartData.map((p) => {
           const unitPrice = p.price || p.unitPrice || p.sellingPrice || 0;
-          // const originalPrice = p.originalPrice || unitPrice;
-          const totalPrice = p.shots ? ((unitPrice * p.shots) * p.quantity) : unitPrice
-          const discount_percentage = totals?.discount_percentage || 0;
-          // Fallback: derive discount from price difference if not explicitly stored
-          const discountAmount = ((discount_percentage / 100) * totalPrice) || 0;
-          //  const discountPct = originalPrice > 0 ? (discountAmount / originalPrice) * 100 : 0;
+          const qty = p.quantity || 0;
+          const shots = p.shots || 0;
+
+          // Item total before discount+tax
+          const rawTotal = p.unit === "ml"
+            ? unitPrice * shots * qty
+            : unitPrice * qty;
+
+          // Use order-level discount rate (same as Dashboard)
+          const discountRate = (totals?.discount_percentage || 0) / 100;
+          const discountedTotal = rawTotal * (1 - discountRate);
+          const discountAmount = rawTotal * discountRate;
+
+          // Tax on discounted price
+          const taxRate = Number(p.tax || p.taxPercentage || p.tax_percentage_per_product || 0);
+          const taxAmountPerProduct = (discountedTotal * taxRate) / 100;
+
           return {
             productId: p.id || p.productId,
             unitPrice,
-            quantity: p.quantity || 0,
-            shots: p.shots || 0,
+            quantity: qty,
+            shots,
             unit: p.unit || null,
-            taxAmountPerProduct: ((unitPrice * (p.tax || 0) / 100) * (p.quantity || 0)) || 0,
+            taxAmountPerProduct,
             discount: discountAmount,
-            // discount_percentage: discountPct,
-            tax_percentage_per_product: Number(p.tax_percentage_per_product || p.taxPercentage || p.tax || 0),
+            tax_percentage_per_product: taxRate,
           };
         }),
       };

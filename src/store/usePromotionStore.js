@@ -115,13 +115,17 @@ export const usePromotionStore = create((set, get) => ({
     const promotion = get().promotions.find(p => p.localId === localId);
     if (!promotion) return;
 
+    const serverId = promotion.serverId;
+
     promotion.isDeleted = true;
     promotion.isSynced = false;
     promotion.deletedAt = Date.now();
 
     await updatePromotionDB(promotion);
     set(s => ({
-      promotions: s.promotions.filter(p => p.localId !== localId),
+      promotions: s.promotions.filter(p =>
+        p.localId !== localId && (!serverId || String(p.serverId) !== String(serverId))
+      ),
     }));
 
     if (navigator.onLine && promotion.serverId) {
@@ -174,8 +178,15 @@ export const usePromotionStore = create((set, get) => ({
         p => !p.serverId && !p.isDeleted
       );
 
+      const all = [...merged, ...localOnly];
+      const finalMap = new Map();
+      all.forEach(p => {
+        const id = p.serverId ? String(p.serverId) : p.localId;
+        if (!finalMap.has(id)) finalMap.set(id, p);
+      });
+
       set({
-        promotions: [...merged, ...localOnly],
+        promotions: Array.from(finalMap.values()),
       });
     } catch (err) {
       console.error("❌ Failed to fetch promotions", err);
