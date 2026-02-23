@@ -12,13 +12,18 @@ const PettyCash = ({ setIsPettyClicked }) => {
     const { notifySuccess, notifyError } = useNotification();
 
     const sendPettyPayload = async () => {
+        if(!pettyPayload.amount || !pettyPayload.reference){
+            notifyError("Enter Amount and Reason");
+            return;
+        }
         try {
-            await api.post('/outlet/petty-expense', pettyPayload)
-            setPettyPayload({})
-            notifySuccess("Petty Cash Added")
+            await api.post('/outlet/petty-expense', pettyPayload);
+            setPettyPayload({});
+            notifySuccess("Petty Cash Added");
+            setIsPettyClicked(false);
         } catch (err) {
-            console.log(err)
-            notifyError("Error on adding petty cash")
+            console.log(err);
+            notifyError("Error on adding petty cash");
         }
     }
     return (
@@ -42,7 +47,7 @@ const PettyCash = ({ setIsPettyClicked }) => {
                 <input
                     value={pettyPayload.reference}
                     onChange={e => setPettyPayload(prev => ({ ...prev, reference: e.target.value }))}
-                    placeholder='Enter Reason (Optional)'
+                    placeholder='Enter Reason'
                     className='w-full p-2.5 outline-none shadow-[0_0_3px_#00000026] bg-white rounded-md mt-5 text-sm placeholder:text-[#555555]'
                 />
                 <div className="submit-button mt-5 text-[#555555] font-bold flex gap-4">
