@@ -255,8 +255,21 @@ const Dashboard = () => {
         cashReturned: finalOrderData?.cashReturned || 0,
       });
       // console.log("Order details after creating it:", result.order);
-      setOrderData(result.order);
-      openPaySuccess(result.order.display_id);
+      // console.log(result);
+      if(result.mode ==="online"){
+        setOrderData(result.order);
+        openPaySuccess(result.order.display_id);
+      } else {
+        // console.log("orderData updated in local", selectedCustomer);
+        setOrderData(
+          {
+            ...result.order, 
+            customer: selectedCustomer, 
+            display_id: "Offline order"
+          }
+        );
+        openPaySuccess("Offline order", `${Date.now()}`);
+      }
       notifySuccess(
         result.mode === "online"
           ? "Order created successfully"
@@ -674,7 +687,7 @@ Hope to see you again soon!
     <div className="flex overflow-x-hidden">
       <div className="home flex-grow bg-background flex flex-col h-screen p-3 gap-2">
         {payToProceed ? (
-          <Payment setPayToProceed={setPayToProceed} total={total} onPay={handlePay} tax={tax} discount={discount} subtotal={subtotal} cartProducts={cartData} />
+          <Payment setPayToProceed={setPayToProceed} total={parseFloat(total).toFixed(2)} onPay={handlePay} tax={parseFloat(tax).toFixed(2)} discount={parseFloat(discount).toFixed(2)} subtotal={parseFloat(subtotal).toFixed(2)} cartProducts={cartData} />
         ) : (
           <>
             <div className="header">

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) => {
   const printRef = useRef();
+  const user = useAuthStore((u) => u.user);
   const [ReceiveAmount, setReceiveAmount] = useState(0.0);
   const [RefundAmound, setRefundAmount] = useState(0.0);
 
@@ -223,13 +225,13 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
         <div className="receipt-content">
           <h3>Sales Receipt</h3>
           <p>
-            <b>Order:</b> #{orderDetails?.display_id}
+            <b>Order:</b> #{orderDetails?.display_id || "ofline Order"}
           </p>
           <p>
             <b>Date:</b> {new Date()?.toLocaleDateString()}
           </p>
           <p>
-            <b>Cashier:</b> {orderDetails?.cashierName ?? "-"}
+            <b>Cashier:</b> {orderDetails?.cashierName ?? user?.first_name ?? "-"}
           </p>
           <p>
             <b>Customer:</b> {orderDetails?.customerName ?? "-"}
@@ -373,7 +375,9 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td className="inputvalue">
                   {RefundAmound
                     ? RefundAmound.toFixed(2)
-                    : ReceiveAmount.toFixed(2)}
+                    : ReceiveAmount
+                      ? ReceiveAmount.toFixed(2)
+                      : "-"}
                 </td>
               </tr>
               <tr>
@@ -392,7 +396,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
           ))} */}
            {orderDetails?.payments?.map((item,i) => (
               <tr>
-                <td>{item?.paymentMethod}</td>
+                <td>{item?.paymentMethod || `Payment (${i+1})`}</td>
                 <td></td>
                 <td></td>
                 <td className="inputvalue">
@@ -405,9 +409,9 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td></td>
                 <td></td>
                 <td className="inputvalue">
-                  {orderDetails?.transactions?.[0]?.cashReturned
+                  P{orderDetails?.cashReturned ? orderDetails?.cashReturned :orderDetails?.transactions?.[0]?.cashReturned
                     ? `P${orderDetails?.transactions?.[0]?.cashReturned}`
-                    : "-"}
+                    : "0.00"}
                 </td>
               </tr>
             </tbody>

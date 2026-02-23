@@ -32,7 +32,9 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
     );
   }
 
-  const tax = 0;
+  const discountValue = selectedHoldOrder?.cartData?.discount?.value==="FIXED" ? 
+                      selectedHoldOrder.cartData.discount.value :
+                      (parseFloat(selectedHoldOrder?.cartData?.subtotal)?.toFixed(2) + parseFloat(selectedHoldOrder?.cartData?.taxAmount)?.toFixed(2)) *  (parseFloat(selectedHoldOrder.cartData.discount.value)?.toFixed(2) / 100) ||0.00 ;
  const handleAddToCart = async () => {
     // 1️⃣ Restore cart
     onAddToCart(selectedHoldOrder.cartData);
@@ -136,10 +138,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           </div>
           <div className="flex justify-between">
             <p>Discount</p>
-            <span>P{selectedHoldOrder?.cartData?.discount?.value==="FIXED" ? 
-                      selectedHoldOrder.cartData.discount.value :
-                      (selectedHoldOrder?.cartData?.subtotal?.toFixed(2) + selectedHoldOrder?.cartData?.taxAmount) *  (selectedHoldOrder.cartData.discount.value / 100) ||0.00 
-          }</span>
+            <span>P{parseFloat(discountValue)?.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-secondary font-bold text-xl">
             <p>Total</p>

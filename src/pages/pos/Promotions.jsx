@@ -7,7 +7,7 @@ import { useProductStore } from "../../store/useProductStore";
 import { useCategoryStore } from "../../store/useCategoryStore";
 import { useOutletStore } from "../../store/useOutletStore";
 import { useAuthStore } from "../../store/useAuthStore";
-import upDownIcon from '../../assets/icons/swap.svg';
+import upDownIcon from '../../assets/images/upDown.png';
 import { useRetail } from "../../hooks/useRetail";
 import { useNavigate } from "react-router-dom";
 
@@ -86,7 +86,6 @@ const Promotions = () => {
     });
     return names.join(", ");
   };
-  console.log(products);
 
   const getCategoryByProduct = (productIds) => {
     if (!productIds || (Array.isArray(productIds) && productIds.length === 0)) return "-";
@@ -217,8 +216,9 @@ const Promotions = () => {
             onChange={(opt) => setFilters(prev => ({ ...prev, schedule: opt?.value || "" }))} />
 
           <Select
+            isDisabled
             options={outletOptions}
-            isClearable
+            // isClearable
             value={outletOptions.find(o => o.value === filters.outlet)}
             styles={commonSelectStyles}
             placeholder="Select Outlet"
@@ -254,7 +254,7 @@ const Promotions = () => {
               <th className="p-2">
                 <div className="flex items-center justify-center gap-1">
                   <span>%</span>
-                  <img src={upDownIcon} alt="upDownIcon" className="w-6 h-6 invert" />
+                  <img src={upDownIcon} alt="upDownIcon" className="w-6 h-6 " />
                 </div>
               </th>
               <th className="p-2">Price</th>
@@ -304,7 +304,7 @@ const Promotions = () => {
                     <td className="p-2">{formatSchedulePart(p, "START")}</td>
                     <td className="p-2">{formatSchedulePart(p, "END")}</td>
                     <td className="p-2 max-w-[150px] truncate">{getCategoryByProduct(p.product)}</td>
-                    <td className="p-2 max-w-[150px] truncate">{getNameFromId(p.product, products, "name")}</td>
+                    <td className="p-2 max-w-[150px]">{getNameFromId(p.product, products, "name")}</td>
                     <td className={`p-2 ${p.type === "HIKE" ? "text-green-600" : "text-red-500"}`}>
                       {p.type === "Hike" ? "+" : "-"}{p.type === "FREE" ? "FREE" : `${p.value}%`}</td>
                     <td className="p-2">
