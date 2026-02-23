@@ -99,15 +99,15 @@ export const createOrder = async ({
       const res = await api.post("/outlet/order", payload);
 
       // 🔄 refresh stock from server
-      await productStore.fetchProductsFromAPI();
-      await fetchOrdersFromAPI();
+      // await productStore.fetchProductsFromAPI();
+      // await fetchOrdersFromAPI();
       await softDeleteZeroStockAfterOrder(cartData);
       const serverOrderId = res.data?.data?.orderId;
       if (serverOrderId) {
         await markOrderSyncedDB(localOrder.localId, serverOrderId);
       }
 
-      await productStore.fetchProductsFromAPI();
+      // await productStore.fetchProductsFromAPI();
       return {
         mode: "online",
         orderId: res.data?.data?.orderId,
