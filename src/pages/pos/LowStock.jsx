@@ -107,7 +107,7 @@ const LowStock = () => {
 
       {/* Table */}
       <table className="w-full mt-4">
-        <thead className="bg-linear-to-r from-primary to-secondary text-white">
+        <thead className="bg-gradient-to-b to-primary from-secondary text-white">
           <tr>
             <th className="p-2">Image</th>
             <th className="p-2">Product</th>

@@ -219,6 +219,28 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
     }
   }, [show, orderDetails]);
 
+  const formatOrderDate = (dateSource) => {
+  if (!dateSource) return "";
+  
+  const date = new Date(dateSource);
+  
+  if (isNaN(date.getTime())) return dateSource;
+
+  const day = date.getDate().toString().padStart(2, '0');
+  // Use '2-digit' for numeric month (01, 02, etc.)
+  const month = date.toLocaleString('en-GB', { month: '2-digit' }); 
+  const year = date.getFullYear();
+  
+  const time = date.toLocaleTimeString('en-GB', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit',
+    hour12: false 
+  });
+
+  return `${day}-${month}-${year} ${time}`;
+};
+
   return (
     <>
       <div ref={printRef} style={{ display: "none" }}>
@@ -228,7 +250,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
             <b>Order:</b> #{orderDetails?.display_id || "ofline Order"}
           </p>
           <p>
-            <b>Date:</b> {new Date()?.toLocaleDateString()}
+            <b>Date:</b> {formatOrderDate(orderDetails?.orderDate || orderDetails?.createdAt || new Date())}
           </p>
           <p>
             <b>Cashier:</b> {orderDetails?.cashierName ?? user?.first_name ?? "-"}

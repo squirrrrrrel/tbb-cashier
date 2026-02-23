@@ -321,14 +321,14 @@ const Dashboard = () => {
     // PRODUCT promo
     if (promo.promo_on === "PRODUCT") {
       const match = includesId(promo.product, product.serverId);
-      if (!match) console.log(`[Scope Bypass] Product ID mismatch: ${product.serverId} not in ${promo.product}`);
+      // if (!match) console.log(`[Scope Bypass] Product ID mismatch: ${product.serverId} not in ${promo.product}`);
       return match;
     }
 
     // CATEGORY promo
     if (promo.promo_on === "CATEGORY") {
       const match = includesId(promo.category, product.categoryId);
-      if (!match) console.log(`[Scope Bypass] Category ID mismatch: ${product.categoryId} not in ${promo.category}`);
+      // if (!match) console.log(`[Scope Bypass] Category ID mismatch: ${product.categoryId} not in ${promo.category}`);
       return match;
     }
 

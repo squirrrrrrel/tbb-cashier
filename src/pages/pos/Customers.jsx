@@ -52,16 +52,21 @@ const Customers = () => {
 
   if (!hydrated) return <OfflineLoader />;
 
-  const filteredCustomers = customers.filter((customer) => {
-    const search = searchTerm.toLowerCase();
+const filteredCustomers = React.useMemo(() => {
+  const search = searchTerm.toLowerCase();
 
-    return (
-      customer.firstName?.toLowerCase().includes(search) ||
-      customer.lastName?.toLowerCase().includes(search) ||
-      customer.email?.toLowerCase().includes(search) ||
-      customer.phone?.includes(search)
-    );
-  });
+  return customers
+    .filter((customer) => {
+      return (
+        customer.firstName?.toLowerCase().includes(search) ||
+        customer.lastName?.toLowerCase().includes(search) ||
+        customer.email?.toLowerCase().includes(search) ||
+        customer.phone?.includes(search)
+      );
+    })
+    // STABILIZE: Sort by localId or Date created so they never swap
+    .sort((a, b) => (a.localId > b.localId ? -1 : 1)); 
+}, [customers, searchTerm]);
 
   return (
     <div className="w-full h-full flex">

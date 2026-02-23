@@ -242,6 +242,28 @@ const paymentMethodsString = [
   )
 ].join(', ');
 
+const formatOrderDate = (dateSource) => {
+  if (!dateSource) return "";
+  
+  const date = new Date(dateSource);
+  
+  if (isNaN(date.getTime())) return dateSource;
+
+  const day = date.getDate().toString().padStart(2, '0');
+  // Use '2-digit' for numeric month (01, 02, etc.)
+  const month = date.toLocaleString('en-GB', { month: '2-digit' }); 
+  const year = date.getFullYear();
+  
+  const time = date.toLocaleTimeString('en-GB', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit',
+    hour12: false 
+  });
+
+  return `${day}-${month}-${year} ${time}`;
+};
+
     return (
         <div ref={printRef} style={{ display: "none" }}>
             <div className="receipt-content">
@@ -249,7 +271,7 @@ const paymentMethodsString = [
 
                 {/* Fixed typo: oderId -> orderId */}
                 <p><b>Order:</b> #{finalOrderData?.orderId || finalOrderData?.display_id}</p>
-                <p><b>Date:</b> {finalOrderData?.order_date || finalOrderData?.created_at || new Date().toISOString().replace('T', ' ').split('.')[0] }</p>
+                <p><b>Date:</b> {formatOrderDate(finalOrderData?.order_date || finalOrderData?.created_at || new Date())}</p>
                 <p><b>Cashier:</b> {finalOrderData?.user?.first_name || user?.first_name || "-"}</p>
                 <p><b>Customer:</b> {finalOrderData?.customer?.firstName || finalOrderData?.customer?.first_name} {finalOrderData?.customer?.lastName || finalOrderData?.customer?.last_name}</p>
                 <p><b>Payment:</b> {paymentMethodsString}</p>
