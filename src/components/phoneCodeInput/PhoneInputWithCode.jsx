@@ -94,12 +94,12 @@ const PhoneInputWithCode = ({
                         option: (provided, state) => ({
                             ...provided,
                             backgroundColor: state.isFocused
-                                ? "var(--color-hover-color)"
+                                ? "var(--color-secondary)"
                                 : state.isSelected
                                     ? "var(--color-secondary)"
                                     : "white",
                             color: state.isFocused || state.isSelected ? "white" : "black", "&:hover": {
-                                backgroundColor: "var(--color-hover-color)",
+                                backgroundColor: "var(--color-secondary)",
                                 color: "white",
                             },
                         }),

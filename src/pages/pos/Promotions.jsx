@@ -142,9 +142,9 @@ const Promotions = () => {
 
     return (
       <div className="flex flex-col text-xs">
-        <span>{formattedDate || "-"}</span>
-        <span>{formattedTime || "-"}</span>
-        <span className="">{formattedDay || "-"}</span>
+        <span>{formattedDate ? `🗓️${formattedDate}` : "-"}</span>
+        <span>{formattedTime ? `🕛${formattedTime}` : "-"}</span>
+        <span className="">{formattedDay ? `🗓️${formattedDay}` : "-"}</span>
       </div>
     );
   };
@@ -243,7 +243,7 @@ const Promotions = () => {
       {/* Table */}
       <div className="table-container overflow-x-auto mt-6">
         <table className="w-full">
-          <thead className="bg-primary text-white text-center">
+          <thead className="bg-gradient-to-b from-secondary to-primary text-white text-center">
             <tr>
               <th className="p-2">Promotion</th>
               {/* <th className="p-2">Type</th> */}

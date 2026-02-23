@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import allProductsImage from "../../../assets/images/all-product.png";
 import shotsImage from "../../../assets/images/shots.png";
 import butcheryImage from "../../../assets/images/butchery.png";
@@ -13,7 +13,8 @@ import { transferProductAPI } from "../../../api/transferProductAPI";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { useNotification } from "../../../hooks/useNotification";
 import { useCategoryStore } from "../../../store/useCategoryStore";
-
+import Select from 'react-select';
+import { commonSelectStyles } from "../../common/select/selectStyle";
 const category = [
   {
     id: 1,
@@ -33,7 +34,7 @@ const category = [
 ];
 
 const ProductCategoryComp = ({ category, filters, setFilters }) => {
-  const imgUrl = category.img_url || category.category_name ==="All" ? allProductsImage : category.category_name === "Shots" ? shotsImage : butcheryImage;
+  const imgUrl = category.img_url || category.category_name === "All" ? allProductsImage : category.category_name === "Shots" ? shotsImage : butcheryImage;
   return (
     <div
       onClick={() =>
@@ -93,11 +94,19 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
   useEffect(() => {
     hydrateCategories();
   }, [categories, isCategoryHydrated]);
-  
+
 
   const transferableProducts = products.filter(
     (p) => p.stock > 0
   );
+  const productOptions = useMemo(() => {
+    return products
+      .filter(product => product.stock > 0 && product.categoryName === "Shots" && product.unit === "btl")
+      .map(product => ({
+        value: product.serverId,
+        label: product.name
+      }));
+  }, [products]);
   // const handleTransfer = () => {
   //   if (!selectedTransferProduct) return;
 
@@ -123,12 +132,7 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
 
     const outletId = useAuthStore.getState().user?.outlet_id;
     if (product.bottleVolumeML == null || product.pricePerML == null) {
-      notifyError(
-        <>
-          Product does not have required volume
-          <br />
-          price details for transferring Shots
-        </>);
+      notifyError("Product was not added to Shots");
       return;
     }
     const payload = {
@@ -303,21 +307,25 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
             <div className="text-center mb-6  text-[#555555] text-2xl font-bold">Transfer Product</div>
             <div className="grid grid-cols-1 gap-4 text-sm">
               <div>
-                <label className="font-medium">Product Name</label>
-                <select
-                  value={selectedTransferProduct}
-                  onChange={(e) => setSelectedTransferProduct(e.target.value)}
-                  className="w-full mt-1 rounded-md px-3 py-2 shadow-[0_0_3px_#00000026] outline-none text-[#555555]"
-                >
-                  <option value="">Select Product</option>
-
-                  {ready &&
-                    transferableProducts.filter(product => product.categoryName === "Shots" && product.unit == "btl").map((product) => (
-                      <option key={product.serverId} value={product.serverId}>
-                        {product.name}
-                      </option>
-                    ))}
-                </select>
+                <label className="font-medium text-[#555555]">Product Name</label>
+                <Select
+                  className="mt-1"
+                  options={productOptions}
+                  value={productOptions.find(opt => opt.value === selectedTransferProduct) || null}
+                  onChange={(option) => setSelectedTransferProduct(option?.value || "")}
+                  placeholder="Search or Select Product..."
+                  isClearable
+                  isSearchable
+                  autoFocus
+                  blurInputOnSelect={false}
+                  closeMenuOnSelect={true}
+                  tabSelectsValue={true}
+                  menuPortalTarget={document.body}
+                  styles={{
+                    ...commonSelectStyles,
+                    menuPortal: base => ({ ...base, zIndex: 9999 })
+                  }}
+                />
               </div>
             </div>
             <div className="flex gap-4 mt-6 text-sm">

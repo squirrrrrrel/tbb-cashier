@@ -15,7 +15,6 @@ const Invoices = () => {
 
   const [givenDate, setGivenDate] = useState(new Date());
   const [dateRange, setDateRange] = useState({ start: null, end: null });
-
   const holdOrders = useHoldOrderStore(state => state.holdOrders);
   const loadHoldOrdersFromDB = useHoldOrderStore(
     state => state.loadHoldOrdersFromDB
@@ -245,7 +244,7 @@ const Invoices = () => {
               className={getBtnClass("weekInvoiceBTN")}
               onClick={() => setActiveBtn("weekInvoiceBTN")}
             >
-              2 Week Invoice
+              2-Week Invoices
             </button>
             <button
               className={getBtnClass("holdInvoiceBTN")}
