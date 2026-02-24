@@ -98,7 +98,7 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                             return (
                                 <li
                                     key={orderKey}
-                                    onClick={() => {setSelectedOrder({...order, customerName: {fullName}, customerPhone: {phoneNumber}})}}
+                                    onClick={() => { setSelectedOrder({ ...order, customerName: { fullName }, customerPhone: { phoneNumber } }) }}
                                     className={`flex justify-between items-center gap-2 mb-2 px-2 py-0.5 rounded-md cursor-pointer relative bg-white shadow-[0_0_3px_#00000028] border${isActive ? " border border-primary" : " border-white"}`}
                                 >
                                     {/* LEFT */}
@@ -201,7 +201,7 @@ const invoiceList = ({ orders, selectedOrder, setSelectedOrder, setSearchTerm, s
                                     {/* RIGHT */}
                                     <div className="text-right">
                                         <h3 className="text-lg font-semibold">
-                                            P{order?.subtotal}
+                                            P{parseFloat(order.totalAmount || order?.subtotal).toFixed(2)}
                                         </h3>
                                         <small className="text-sm text-gray-500">
                                             {(order?.orderItems?.length ?? order?.items?.length ?? 0)} Items

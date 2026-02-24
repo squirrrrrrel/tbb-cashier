@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
 // import { getProductByServerIdDB } from "../../../db/productsDB";
-const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
+const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
     const user = useAuthStore((u) => u.user);
     const { paymentMethods } = usePaymentMethodStore();
     const printRef = useRef();
@@ -14,7 +14,7 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
         return Math.floor(num);
     }
     // console.log(finalOrderData.discount.value, finalOrderData?.orderDiscountAmount);
-    
+
     //  useEffect(() => {
     //     if (!show || !finalOrderData?.orderItems?.length) return;
 
@@ -209,64 +209,74 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold=false }) => {
     }, [show, finalOrderData]);
 
     const getDiscountValue = () => {
-  const { discount, subtotal, taxAmound, discount_amount, discountAmount } = finalOrderData || {};
-  
-  // 1. Handle "No Discount" early
-  if (!discount?.type) return discount_amount || discountAmount || 0;
+        const { discount, subtotal, taxAmound, discount_amount, discountAmount } = finalOrderData || {};
 
-  // 2. Calculate based on type
-  if (discount.type === "PERCENT") {
-    const baseAmount = (subtotal || 0) + (taxAmound || 0);
-    return baseAmount * (discount.value / 100);
-  }
+        // 1. Handle "No Discount" early
+        if (!discount?.type) return discount_amount || discountAmount || 0;
 
-  // 3. Flat value (Note: Verify if you meant discount.value instead of finalOrderData.value)
-  return discount.value || 0;
-};
+        // 2. Calculate based on type
+        if (discount.type === "PERCENT") {
+            const baseAmount = (subtotal || 0) + (taxAmound || 0);
+            return baseAmount * (discount.value / 100);
+        }
 
-const discountValue = getDiscountValue();
+        // 3. Flat value (Note: Verify if you meant discount.value instead of finalOrderData.value)
+        return discount.value || 0;
+    };
 
-const totalTendered = finalOrderData?.transactions?.reduce((sum, tx) => {
-  return sum + (tx.tendered_amount || 0);
-}, 0) || 0;
+    const discountValue = getDiscountValue();
 
-const methodLookup = Object.fromEntries(
-  paymentMethods.map(m => [m.id, m.display_name])
-);
+    const totalTendered = finalOrderData?.transactions?.reduce((sum, tx) => {
+        return sum + (tx.tendered_amount || 0);
+    }, 0) || 0;
 
-const paymentMethodsString = [
-  ...new Set(
-    finalOrderData?.payments
-      ?.map(p => methodLookup[p.payment_method_id || p.paymentMethodId]) // Look up the name by ID
-      .filter(Boolean) // Remove any undefined results (if an ID isn't found)
-  )
-].join(', ');
+    const methodLookup = Object.fromEntries(
+        paymentMethods.map(m => [m.id, m.display_name])
+    );
 
-const formatOrderDate = (dateSource) => {
-  if (!dateSource) return "";
-  
-  const date = new Date(dateSource);
-  
-  if (isNaN(date.getTime())) return dateSource;
+    const paymentMethodsString = [
+        ...new Set(
+            finalOrderData?.payments
+                ?.map(p => methodLookup[p.payment_method_id || p.paymentMethodId]) // Look up the name by ID
+                .filter(Boolean) // Remove any undefined results (if an ID isn't found)
+        )
+    ].join(', ');
 
-  const day = date.getDate().toString().padStart(2, '0');
-  // Use '2-digit' for numeric month (01, 02, etc.)
-  const month = date.toLocaleString('en-GB', { month: '2-digit' }); 
-  const year = date.getFullYear();
-  
-  const time = date.toLocaleTimeString('en-GB', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit',
-    hour12: false 
-  });
+    const formatOrderDate = (dateSource) => {
+        if (!dateSource) return "";
 
-  return `${day}-${month}-${year} ${time}`;
-};
+        const date = new Date(dateSource);
 
-const getname =(item)=>{
-    return item.name || item.productName || item.product?.product_name || "unknown item";
-}
+        if (isNaN(date.getTime())) return dateSource;
+
+        const day = date.getDate().toString().padStart(2, '0');
+        // Use '2-digit' for numeric month (01, 02, etc.)
+        const month = date.toLocaleString('en-GB', { month: '2-digit' });
+        const year = date.getFullYear();
+
+        const time = date.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+
+        return `${day}-${month}-${year} ${time}`;
+    };
+
+    const getname = (item) => {
+        return item.name || item.productName || item.product?.product_name || "unknown item";
+    }
+
+    const formatQty = (data) => {
+        const isShot = data.shots ? true : false ;
+        if(isShot) return data.shots
+
+        const isButchery = data?.category_name?.toLowerCase() === "butchery" ? true : data.unit==="gm" ? true : data.unit ==="kg" ? true : false; 
+        if(isButchery) return `${data.quantity} kg`;
+
+        return `${data.quantity} pcs`;
+    }
 
     return (
         <div ref={printRef} style={{ display: "none" }}>
@@ -292,13 +302,14 @@ const getname =(item)=>{
                     <tbody>
                         {finalOrderData?.orderItems?.map((item, index) => {
                             const productName = item.name || item.productName || item.product?.product_name || "unknown item";
-                            return(
-                            <tr key={index}>
-                                <td>{item.shots ? `${productName} (${whole(item.quantity/item.shots)}ml each)` : productName}</td>
-                                <td className="text-right">P{item.price || item.unit_price}</td>
-                                <td className="text-right">{item.shots ? item.shots : whole(item.quantity)}</td>
-                                <td className="text-right">P{parseFloat(item.totalPrice || (item.price * item.quantity) || item.total_amount || 0).toFixed(2)}</td>
-                            </tr>
+                            return (
+                                <tr key={index}>
+                                    <td>{item.shots ? `${productName} (${whole(item.quantity / item.shots)}ml each)` : productName}</td>
+                                    <td className="text-right">P{Number(item.price || item.unit_price).toFixed(2)}</td>
+                                    {/* <td className="text-right">{item.shots ? item.shots : item.quantity}</td> */}
+                                    <td className="text-right">{formatQty(item)}</td>
+                                    <td className="text-right">P{parseFloat(item.totalPrice || (item.price * item.quantity) || item.total_amount || 0).toFixed(2)}</td>
+                                </tr>
                             );
                         })}
                     </tbody>
@@ -350,7 +361,7 @@ const getname =(item)=>{
                             <td>Change</td>
                             <td></td>
                             <td></td>
-                            <td className="inputvalue">P{parseFloat( finalOrderData?.cashReturned || finalOrderData?.transactions?.[0]?.cash_returned || 0).toFixed(2)}</td>
+                            <td className="inputvalue">P{parseFloat(finalOrderData?.cashReturned || finalOrderData?.transactions?.[0]?.cash_returned || 0).toFixed(2)}</td>
                         </tr>
                     </tbody>
                 </table>

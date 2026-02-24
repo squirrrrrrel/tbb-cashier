@@ -13,7 +13,7 @@ export const createOfflineOrder = async ({
   discount_percentage = null,
 }) => {
   const outletId = useAuthStore.getState().user?.outlet_id;
-  
+
   const order = {
     localId: uuid(),
     createdAt: Date.now(),
@@ -31,9 +31,10 @@ export const createOfflineOrder = async ({
       unitPrice: p.unitPrice || p.price || p.sellingPrice || 0,
       quantity: p.quantity || 0,
       unit: p.unit || null,
+      shots: p.shots || 0,
       discount: p.discount || 0,
       tax_percentage_per_product: Number(p.tax_percentage_per_product || p.taxPercentage || 0),
-      total: (p.price || p.unitPrice || 0) * (p.quantity || 0),
+      total: p.unit === "ml" ? (p.price || p.unitPrice || 0) * (p.quantity || 0) * (p.shots || 0) : (p.price || p.unitPrice || 0) * (p.quantity || 0),
     })),
 
     subtotal: totals.subtotal || 0,
@@ -44,7 +45,7 @@ export const createOfflineOrder = async ({
     discount_percentage: Number(discount_percentage || totals.discount_percentage || 0),
     totalAmount: totals.total || 0,
     amount: totals.amount || totals.total || 0,
-    
+
     payments: paymentMethods,
     tenderedAmount: tenderedAmount,
     cashReturned: cashReturned,
