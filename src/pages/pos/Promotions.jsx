@@ -254,7 +254,7 @@ const Promotions = () => {
               <th className="p-2">
                 <div className="flex items-center justify-center gap-1">
                   <span>%</span>
-                  <img src={upDownIcon} alt="upDownIcon" className="w-6 h-6 " />
+                  <img src={upDownIcon} alt="upDownIcon" className="w-6 h-6" />
                 </div>
               </th>
               <th className="p-2">Price</th>

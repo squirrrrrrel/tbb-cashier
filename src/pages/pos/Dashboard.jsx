@@ -187,23 +187,17 @@ const Dashboard = () => {
     };
   }, [socket]);
 
-  useEffect(() => {
+useEffect(() => {
     let filtered = [...products];
-    // if (filters.id) {
-    //   filtered = filtered.filter((p) => p.id === filters.id);
-    // }
 
+    // Category Filter
     if (filters.category) {
       filtered = filtered.filter(
-        (p) => p.categoryName.toLowerCase() === filters.category.toLowerCase()
+        (p) => p.categoryName?.toLowerCase() === filters.category.toLowerCase()
       );
     }
 
-
-    // if (filters.outlet) {
-    //   filtered = filtered.filter((p) => p.outlet === filters.outlet);
-    // }
-
+    // Product/Search Filter
     if (filters.product) {
       const q = filters.product.toLowerCase().trim();
       filtered = filtered.filter(
@@ -213,6 +207,12 @@ const Dashboard = () => {
             p.barcode.toString().toLowerCase().includes(q))
       );
     }
+
+    // --- NEW: Alphabetical Sorting ---
+    filtered.sort((a, b) => {
+      // localeCompare is the safest way to sort strings (handles case and accents)
+      return a.name.localeCompare(b.name);
+    });
 
     setFilteredProducts(filtered);
   }, [filters, products, hydrate, tick, promotions]);
@@ -256,8 +256,6 @@ const Dashboard = () => {
         tenderedAmount: finalOrderData?.tenderedAmount || 0,
         cashReturned: finalOrderData?.cashReturned || 0,
       });
-      // console.log("Order details after creating it:", result.order);
-      // console.log(result);
       if (result.mode === "online") {
         setOrderData(result.order);
         openPaySuccess(result.order.display_id);
@@ -271,7 +269,6 @@ const Dashboard = () => {
           productStore.fetchProductsFromAPI()
         ]);
       } else {
-        // console.log("orderData updated in local", selectedCustomer);
         setOrderData(
           {
             ...result.order,

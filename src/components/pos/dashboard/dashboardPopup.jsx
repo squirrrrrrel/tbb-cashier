@@ -1,9 +1,22 @@
-
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import PrintOrder from "./PrintOrder";
 import PhoneInputWithCode from "../../phoneCodeInput/PhoneInputWithCode";
 import { useOrderStore } from "../../../store/useOrderStore";
+
+/* ---------------- HELPER FOR UNDERLINING ---------------- */
+const ShortcutLabel = ({ text, char }) => {
+  const index = text.toLowerCase().indexOf(char.toLowerCase());
+  if (index === -1) return <span>{text}</span>;
+
+  return (
+    <span>
+      {text.substring(0, index)}
+      <span className="underline decoration-1 underline-offset-2">{text[index]}</span>
+      {text.substring(index + 1)}
+    </span>
+  );
+};
+
 const DashboardPopup = ({
   activePopup,
   setActivePopup,
@@ -17,48 +30,66 @@ const DashboardPopup = ({
   resetCart,
   setCartProducts,
   setPayToProceed,
-  handleWhatsApp
+  handleWhatsApp,
 }) => {
-
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const order = useOrderStore(state =>
-    state.orders.find(o =>
-      o.orderId === orderId ||
-      o.serverOrderId === orderId ||
-      o.localId === orderId
-    )
-  );
 
+  // --- ACTIONS ---
+  const onWhatsAppAction = () => {
+    if (isOnline) {
+      if (orderData?.customer?.phone_code && orderData?.customer?.phone_number) {
+        handleWhatsApp();
+      } else {
+        setActivePopup("customer");
+      }
+    }
+  };
+
+  const onCancelAction = () => {
+    setActivePopup(null);
+    setPayToProceed(false);
+    resetCart();
+    setCartProducts([]);
+  };
+
+  const onPrintAction = () => setIsPrinting(true);
+
+  // --- SHORTCUTS ---
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
-      // Only trigger if the receipt popup is the one currently visible
-      if (activePopup === "receipt" && e.key === "Enter") {
-        e.preventDefault();
-        setIsPrinting(true);
+      // Don't trigger if user is typing in the Customer Name input or Phone input
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+      if (activePopup === "receipt") {
+        const key = e.key.toLowerCase();
+
+        if (key === "p") {
+          e.preventDefault();
+          onPrintAction();
+        } else if (key === "w") {
+          e.preventDefault();
+          onWhatsAppAction();
+        } else if (key === "n") {
+          e.preventDefault();
+          onCancelAction();
+        }
       }
     };
 
-    // Add listener when component mounts
     window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [activePopup, isOnline, orderData]);
 
-    // Clean up listener when component unmounts
-    return () => {
-      window.removeEventListener("keydown", handleGlobalKeyDown);
-    };
-  }, [activePopup, setIsPrinting]); // Dependencies ensure logic stays current
-  // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
+  // Online status listener
   useEffect(() => {
-    const handleStatusChange = () => {
-      setIsOnline(navigator.onLine);
-    };
-    window.addEventListener('online', handleStatusChange);
-    window.addEventListener('offline', handleStatusChange);
+    const handleStatusChange = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", handleStatusChange);
+    window.addEventListener("offline", handleStatusChange);
     return () => {
-      window.removeEventListener('online', handleStatusChange);
-      window.removeEventListener('offline', handleStatusChange);
+      window.removeEventListener("online", handleStatusChange);
+      window.removeEventListener("offline", handleStatusChange);
     };
   }, []);
-
 
   return (
     <>
@@ -75,37 +106,26 @@ const DashboardPopup = ({
 
             <div className="flex gap-4 p-2 text-sm">
               <button
-                onClick={() => {
-                  if (isOnline) { // Moved the condition here for cleaner JSX
-                    if (orderData?.customer?.phone_code && orderData?.customer?.phone_number) {
-                      handleWhatsApp();
-                    } else {
-                      setActivePopup("customer");
-                    }
-                  }
-                }}
-                className={`flex-1 py-2 font-semibold text-white bg-[#15b71a] rounded-md ${!isOnline ? "cursor-not-allowed opacity-50" : ""}`}
+                onClick={onWhatsAppAction}
+                className={`flex-1 py-2 font-semibold text-white bg-[#15b71a] rounded-md ${
+                  !isOnline ? "cursor-not-allowed opacity-50" : ""
+                }`}
               >
-                Send WhatsApp
+                Send <ShortcutLabel text="WhatsApp" char="w" />
               </button>
 
               <button
-                onClick={() => setIsPrinting(true)}
+                onClick={onPrintAction}
                 className="flex-1 py-2 font-bold text-white bg-gradient-to-b from-secondary to-primary rounded-md"
               >
-                Print
+                <ShortcutLabel text="Print" char="p" />
               </button>
 
               <button
-                onClick={() => {
-                  setActivePopup(null);
-                  setPayToProceed(false);
-                  resetCart();
-                  setCartProducts([]);
-                }}
+                onClick={onCancelAction}
                 className="flex-1 py-2 font-bold shadow rounded-md"
               >
-                Cancel
+                <ShortcutLabel text="Cancel" char="n" />
               </button>
             </div>
           </div>
@@ -116,12 +136,12 @@ const DashboardPopup = ({
       {activePopup === "customer" && (
         <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/30">
           <div className="bg-white rounded-md shadow-2xl w-[480px] p-6 animate-scale-in">
-            <h2 className="text-2xl font-bold mb-6 text-center">
-              Add Customer Details
-            </h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Add Customer Details</h2>
 
             <div className="space-y-5">
-              <label className="text-sm font-semibold text-gray-600">Customer Name <span className="text-red-500">*</span></label>
+              <label className="text-sm font-semibold text-gray-600">
+                Customer Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="name"

@@ -21,36 +21,11 @@ const Customers = () => {
   const [focusedCustomer, setFocusedCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-
-  // const countriesList = [
-  //   { name: "India", code: "+91" },
-  //   { name: "United States", code: "+1" },
-  //   { name: "United Kingdom", code: "+44" },
-  //   { name: "Canada", code: "+1" },
-  //   { name: "Australia", code: "+61" },
-  //   { name: "Germany", code: "+49" },
-  //   { name: "France", code: "+33" },
-  //   { name: "Italy", code: "+39" },
-  //   { name: "Spain", code: "+34" },
-  //   { name: "Netherlands", code: "+31" },
-  //   { name: "Brazil", code: "+55" },
-  //   { name: "Mexico", code: "+52" },
-  //   { name: "Russia", code: "+7" },
-  //   { name: "China", code: "+86" },
-  //   { name: "Japan", code: "+81" },
-  //   { name: "South Korea", code: "+82" },
-  //   { name: "South Africa", code: "+27" },
-  //   { name: "New Zealand", code: "+64" },
-  //   { name: "Singapore", code: "+65" },
-  //   { name: "United Arab Emirates", code: "+971" },
-  // ];
-
   // 🔹 LOAD CUSTOMERS FROM INDEXEDDB
   useEffect(() => {
     hydrate();
   }, [hydrate]);
 
-  if (!hydrated) return <OfflineLoader />;
 
 const filteredCustomers = React.useMemo(() => {
   const search = searchTerm.toLowerCase();
@@ -67,6 +42,8 @@ const filteredCustomers = React.useMemo(() => {
     // STABILIZE: Sort by localId or Date created so they never swap
     .sort((a, b) => (a.localId > b.localId ? -1 : 1)); 
 }, [customers, searchTerm]);
+
+  if (!hydrated) return <OfflineLoader />;
 
   return (
     <div className="w-full h-full flex">

@@ -220,26 +220,26 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
   }, [show, orderDetails]);
 
   const formatOrderDate = (dateSource) => {
-  if (!dateSource) return "";
-  
-  const date = new Date(dateSource);
-  
-  if (isNaN(date.getTime())) return dateSource;
+    if (!dateSource) return "";
 
-  const day = date.getDate().toString().padStart(2, '0');
-  // Use '2-digit' for numeric month (01, 02, etc.)
-  const month = date.toLocaleString('en-GB', { month: '2-digit' }); 
-  const year = date.getFullYear();
-  
-  const time = date.toLocaleTimeString('en-GB', { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit',
-    hour12: false 
-  });
+    const date = new Date(dateSource);
 
-  return `${day}-${month}-${year} ${time}`;
-};
+    if (isNaN(date.getTime())) return dateSource;
+
+    const day = date.getDate().toString().padStart(2, '0');
+    // Use '2-digit' for numeric month (01, 02, etc.)
+    const month = date.toLocaleString('en-GB', { month: '2-digit' });
+    const year = date.getFullYear();
+
+    const time = date.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+
+    return `${day}-${month}-${year} ${time}`;
+  };
 
   return (
     <>
@@ -301,9 +301,9 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                         </tr>
                         {originalItems.filter(item => item.type === null).map((item, idx) => (
                           <tr key={`orig-${idx}`}>
-                            <td>{item.shots?`${item.productName || item.name} (${item.quantity/item.shots}ml each)`:item.productName || item.name}</td>
+                            <td>{item.shots ? `${item.productName || item.name} (${item.quantity / item.shots}ml each)` : item.productName || item.name}</td>
                             <td>{`P${parseFloat(item.unitPrice || item.price).toFixed(2)}`}</td>
-                            <td className="inputvalue">{item.shots ? item.shots : item.quantity}{ item.category_name === "Butchery" ? " kg" : item.shots ? "" : "pcs"}</td>
+                            <td className="inputvalue">{item.shots ? item.shots : item.quantity}{item.category_name?.toLowerCase() === "butchery" ? " kg" : item.shots ? "" : "pcs"}</td>
                             <td className="inputvalue">{`P${parseFloat(item.subtotal || item.total).toFixed(2)}`}</td>
                           </tr>
                         ))}
@@ -321,25 +321,25 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                         {exchangeGroups.map((ri, exIdx) => (
                           <React.Fragment key={`ex-group-${exIdx}`}>
                             {/* Render Returns */}
-                           
 
-                              {ri.type === "RETURN" && (
-                                <tr key={`ret-${exIdx}`}>
-                                  <td>{ri.productName || "Returned Item"} (Ret)</td>
-                                  <td>P{ri.unitPrice}</td>
-                                  <td className="inputvalue">{ri.quantity}{ri.unit}</td>
-                                  <td className="inputvalue">-P{parseFloat(Math.abs(ri.subtotal || 0)).toFixed(2)}</td>
-                                </tr>                           
-                               )}
-                               {ri.type === "EXCHANGE_NEW" && (
-                                <tr key={`new-${exIdx}`}>
-                                  <td>{ri.productName || "Returned Item"} (New)</td>
-                                  <td>P{ri.unitPrice}</td>
-                                  <td className="inputvalue">{ri.quantity}{ri.unit}</td>
-                                  <td className="inputvalue">P{parseFloat(ri.subtotal).toFixed(2)}</td>
-                                </tr>                  
-                               )}
-                          
+
+                            {ri.type === "RETURN" && (
+                              <tr key={`ret-${exIdx}`}>
+                                <td>{ri.productName || "Returned Item"} (Ret)</td>
+                                <td>P{ri.unitPrice}</td>
+                                <td className="inputvalue">{ri.quantity}{ri.unit}</td>
+                                <td className="inputvalue">-P{parseFloat(Math.abs(ri.subtotal || 0)).toFixed(2)}</td>
+                              </tr>
+                            )}
+                            {ri.type === "EXCHANGE_NEW" && (
+                              <tr key={`new-${exIdx}`}>
+                                <td>{ri.productName || "Returned Item"} (New)</td>
+                                <td>P{ri.unitPrice}</td>
+                                <td className="inputvalue">{ri.quantity}{ri.unit}</td>
+                                <td className="inputvalue">P{parseFloat(ri.subtotal).toFixed(2)}</td>
+                              </tr>
+                            )}
+
                           </React.Fragment>
                         ))}
                       </>
@@ -363,13 +363,13 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td>Sub Total</td>
                 <td></td>
                 <td></td>
-                <td className="inputvalue">{`P${orderDetails?.subtotal}`}</td>
+                <td className="inputvalue">{`P${parseFloat(orderDetails?.subtotal).toFixed(2)}`}</td>
               </tr>
               <tr>
                 <td>Discount</td>
                 <td></td>
                 <td></td>
-                <td className="inputvalue">{`P${orderDetails?.discountAmount}`}</td>
+                <td className="inputvalue">{`P${parseFloat(orderDetails?.discountAmount).toFixed(2)}`}</td>
               </tr>
               <tr>
                 <td>Tax</td>
@@ -377,7 +377,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td></td>
                 <td className="inputvalue">
                   {orderDetails?.taxAmount
-                    ? `P${orderDetails?.taxAmount}`
+                    ? `P${parseFloat(orderDetails?.taxAmount).toFixed(2)}`
                     : "-"}
                 </td>
               </tr>
@@ -385,7 +385,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td>Total</td>
                 <td></td>
                 <td></td>
-                <td className="inputvalue">{`P${orderDetails?.totalAmount}`}</td>
+                <td className="inputvalue">{`P${parseFloat(orderDetails?.totalAmount).toFixed(2)}`}</td>
               </tr>
               <tr>
                 <td>
@@ -407,7 +407,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                 <td></td>
                 <td></td>
                 <td className="inputvalue">
-                  {orderDetails?.refunded ? `P${orderDetails?.refunded}` : "-"}
+                  {orderDetails?.refunded ? `P${parseFloat(orderDetails?.refunded).toFixed(2)}` : "-"}
                 </td>
               </tr>
               {/* {selectedOrder?.payments.map((item,i) => (
@@ -416,22 +416,22 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
             <span>P{selectedOrder?.isSynced ? item?.amount : selectedOrder?.tenderedAmount}</span>
           </div>
           ))} */}
-           {orderDetails?.payments?.map((item,i) => (
-              <tr>
-                <td>{item?.paymentMethod || `Payment (${i+1})`}</td>
-                <td></td>
-                <td></td>
-                <td className="inputvalue">
-                  P{orderDetails?.isSynced ? item?.amount.toFixed(2) : orderDetails?.tenderedAmount}
-                </td>
-              </tr>
-           ))}
+              {orderDetails?.payments?.map((item, i) => (
+                <tr>
+                  <td>{item?.paymentMethod || `Payment (${i + 1})`}</td>
+                  <td></td>
+                  <td></td>
+                  <td className="inputvalue">
+                    P{orderDetails?.isSynced ? item?.amount.toFixed(2) : orderDetails?.tenderedAmount}
+                  </td>
+                </tr>
+              ))}
               <tr>
                 <td>Change</td>
                 <td></td>
                 <td></td>
                 <td className="inputvalue">
-                  P{orderDetails?.cashReturned ? orderDetails?.cashReturned :orderDetails?.transactions?.[0]?.cashReturned
+                  P{orderDetails?.cashReturned ? orderDetails?.cashReturned : orderDetails?.transactions?.[0]?.cashReturned
                     ? `P${orderDetails?.transactions?.[0]?.cashReturned}`
                     : "0.00"}
                 </td>

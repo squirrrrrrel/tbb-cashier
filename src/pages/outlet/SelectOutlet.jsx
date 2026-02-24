@@ -127,7 +127,6 @@ const SelectOutlet = () => {
     useEffect(() => {
         hydrate();
     }, [hydrate]);
-    console.log(outlets);
 
 
     const handleSelectOutlet = async (outletId, outletName) => {

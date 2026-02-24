@@ -1,11 +1,26 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import qkartsLogo from "../../assets/images/qkarts-small-logo.png";
 import { useAuthStore } from "../../store/useAuthStore";
 
-const NavButtons = ({ name, icon, target }) => {
+const NavButtons = ({ name, icon, target, shortcutKey }) => {
   const location = useLocation();
   const isActive = location.pathname === target;
+
+  // Highlights the specific character used for the shortcut
+  const renderNameWithUnderline = (name, key) => {
+    if (!key) return name;
+    const index = name.toLowerCase().indexOf(key.toLowerCase());
+    if (index === -1) return name;
+
+    return (
+      <>
+        {name.substring(0, index)}
+        <span className="underline">{name[index]}</span>
+        {name.substring(index + 1)}
+      </>
+    );
+  };
 
   return (
     <Link to={target}>
@@ -18,11 +33,8 @@ const NavButtons = ({ name, icon, target }) => {
           }`}
       >
         {icon}
-        <p
-          className={`text-sm group-hover:text-white ${isActive ? "text-white" : ""
-            }`}
-        >
-          {name}
+        <p className={`text-sm group-hover:text-white ${isActive ? "text-white" : ""}`}>
+          {renderNameWithUnderline(name, shortcutKey)}
         </p>
       </div>
     </Link>
@@ -31,16 +43,42 @@ const NavButtons = ({ name, icon, target }) => {
 
 const SideHeader = ({ setIsLogoutClicked }) => {
   const user = useAuthStore((u) => u.user);
-  console.log(user);
+  const navigate = useNavigate();
   
+  // Updated shortcut mapping based on your requirements
   const navLinks = [
-    { name: "Home", icon: <HomeIcon />, target: "/pos/dashboard" },
-    { name: "Customers", icon: <CustomersIcon />, target: "/pos/customers" },
-    { name: "Tables", icon: <TablesIcon />, target: "/pos/tables" },
-    { name: "Invoices", icon: <InvoicesIcon />, target: "/pos/invoices" },
-    { name: "Promotions", icon: <PromotionsIcon />, target: "/pos/promotions" },
-    { name: "LowStock", icon: <LowStockIcon />, target: "/pos/lowstock" },
+    { name: "Home", icon: <HomeIcon />, target: "/pos/dashboard", key: "" }, // No shortcut specified for Home in your list
+    { name: "Customers", icon: <CustomersIcon />, target: "/pos/customers", key: "u" },
+    { name: "Tables", icon: <TablesIcon />, target: "/pos/tables", key: "a" },
+    { name: "Invoices", icon: <InvoicesIcon />, target: "/pos/invoices", key: "i" },
+    { name: "Promotions", icon: <PromotionsIcon />, target: "/pos/promotions", key: "r" },
+    { name: "LowStock", icon: <LowStockIcon />, target: "/pos/lowstock", key: "o" },
   ];
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Don't trigger shortcuts if the user is typing in a field
+      if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+
+      const pressedKey = event.key.toLowerCase();
+
+      // Handle Navigation shortcuts
+      const link = navLinks.find(l => l.key === pressedKey);
+      if (link) {
+        event.preventDefault();
+        navigate(link.target);
+      }
+
+      // Handle Logout shortcut (L)
+      if (pressedKey === 'l') {
+        event.preventDefault();
+        setIsLogoutClicked(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate, setIsLogoutClicked]);
 
   return (
     <div className="header w-[109px] p-4 h-screen flex flex-col items-center justify-between gap-4 border-r border-gray-200">
@@ -55,18 +93,24 @@ const SideHeader = ({ setIsLogoutClicked }) => {
               name={link.name}
               icon={link.icon}
               target={link.target}
+              shortcutKey={link.key}
             />
           ))}
         </div>
       </div>
       <div className="logout">
-        <div className="text-center text-xs text-[#555555]">{user.role.name ==="admin" ? "Admin" : user? `${user.first_name}`: ""}</div>
+        <div className="text-center text-xs text-[#555555]">
+          {user?.role?.name === "admin" ? "Admin" : user?.first_name || ""}
+        </div>
         <div
           onClick={() => setIsLogoutClicked(true)}
           className="link px-5 py-3 flex flex-col justify-center items-center bg-transparent hover:bg-linear-to-b hover:from-primary hover:to-secondary rounded-3xl cursor-pointer text-gray-700 group"
         >
           <LogoutIcon />
-          <p className="text-sm group-hover:text-white">Logout</p>
+          <p className="text-sm group-hover:text-white">
+            {/* Underlining 'L' in Logout */}
+            <span className="underline">L</span>ogout
+          </p>
         </div>
       </div>
     </div>
