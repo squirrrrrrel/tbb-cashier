@@ -4,7 +4,7 @@ import { useCustomerStore } from "../../../store/useCustomerStore";
 import { useProductStore } from "../../../store/useProductStore";
 import { useCartStore } from "../../../store/useCartStore";
 import Select from "react-select";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRetail } from "../../../hooks/useRetail";
 import { useNotification } from "../../../hooks/useNotification";
 import { useAuthStore } from "../../../store/useAuthStore";
@@ -37,7 +37,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         customerHydrate();
         productsHydrate();
         promoHydrate();
-    }, [productsHydrate, customerHydrate, promoHydrate])
+    }, [])
     // this is to change the status offline instantly when the user goes offline or online without needing to refresh the page
     useEffect(() => {
         const handleStatusChange = () => {
@@ -52,13 +52,13 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     }, []);
 
     // --- Data Formatting for Searchable Select ---
-    const customerOptions = [
-        ...(customers?.map(c => ({
-            value: c.localId,
-            label: `${c.firstName} ${c.lastName} [${c.phoneCode}-${c.phone}]`,
-            data: c
-        })) || [])
-    ];
+const customerOptions = useMemo(() => {
+    return (customers?.map(c => ({
+        value: c.localId,
+        label: `${c.firstName} ${c.lastName} [${c.phoneCode}-${c.phone}]`,
+        data: c
+    })) || []);
+}, [customers]);
 
     const formatCustomerLabel = ({ label, data }, { context }) => (
         // 'text-inherit' ensures the spans take the color from the option: (base) style
@@ -77,10 +77,9 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
     const excludedCategories = ["shots", "butchery"];
 
 
-    const productOptions = products
+const productOptions = useMemo(() => {
+    return products
         ?.filter(p => {
-            // Ensure category exists and isn't in our "blocked" list
-            // We use .toLowerCase() to make the check case-insensitive
             const category = p?.categoryName?.toLowerCase() || "";
             return !excludedCategories.includes(category);
         })
@@ -89,6 +88,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
             label: p?.name || "Unknown Product",
             data: p
         }));
+}, [products]);
 
     // --- Custom Styles to match your existing UI ---
     const customSelectStyles = {

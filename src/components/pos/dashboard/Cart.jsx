@@ -183,6 +183,20 @@ const CartProdctComponent = ({
   );
 };
 
+/* ---------------- HELPER FOR UNDERLINING ---------------- */
+const ShortcutLabel = ({ text, char }) => {
+  const index = text.toLowerCase().indexOf(char.toLowerCase());
+  if (index === -1) return <span>{text}</span>;
+
+  return (
+    <span>
+      {text.substring(0, index)}
+      <span className="underline decoration-1 underline-offset-2">{text[index]}</span>
+      {text.substring(index + 1)}
+    </span>
+  );
+};
+
 /* ---------------- CART ---------------- */
 
 const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
@@ -285,6 +299,50 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
     openModal("discount");
   };
 
+  /* ---------------- SHORTCUT LOGIC ---------------- */
+  useEffect(() => {
+    const handleShortcuts = (e) => {
+      // Don't trigger if user is typing in any input or textarea
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+      const key = e.key.toLowerCase();
+
+      switch (key) {
+        case "c":
+          e.preventDefault();
+          navigate("/pos/customers");
+          break;
+        case "s":
+          e.preventDefault();
+          navigate("/pos/tables");
+          break;
+        case "d":
+          e.preventDefault();
+          handleDiscountClick();
+          break;
+        case "e":
+          e.preventDefault();
+          navigate("/pos/invoices");
+          break;
+        case "h":
+          e.preventDefault();
+          openModal("holdOrder");
+          break;
+        case "enter":
+          e.preventDefault();
+          if (user?.role?.name !== "manager") {
+            handleProceed();
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleShortcuts);
+    return () => window.removeEventListener("keydown", handleShortcuts);
+  }, [totalItems, user, navigate]);
+
   return (
     <div className="h-full flex flex-col border-l border-gray-200">
       <div className="cart-header sticky top-0 flex items-center justify-between px-3 py-2.5 border-b border-gray-200 text-[#555555]">
@@ -303,7 +361,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
               <path d="M723 620.5C666.8 571.6 593.4 542 513 542s-153.8 29.6-210.1 78.6a8.1 8.1 0 00-.8 11.2l36 42.9c2.9 3.4 8 3.8 11.4.9C393.1 637.2 450.3 614 513 614s119.9 23.2 163.5 61.5c3.4 2.9 8.5 2.5 11.4-.9l36-42.9c2.8-3.3 2.4-8.3-.9-11.2zm117.4-140.1C751.7 406.5 637.6 362 513 362s-238.7 44.5-327.5 118.4a8.05 8.05 0 00-1 11.3l36 42.9c2.8 3.4 7.9 3.8 11.2 1C308 472.2 406.1 434 513 434s205 38.2 281.2 101.6c3.4 2.8 8.4 2.4 11.2-1l36-42.9c2.8-3.4 2.4-8.5-1-11.3zm116.7-139C835.7 241.8 680.3 182 511 182c-168.2 0-322.6 59-443.7 157.4a8 8 0 00-1.1 11.4l36 42.9c2.8 3.3 7.8 3.8 11.1 1.1C222 306.7 360.3 254 511 254c151.8 0 291 53.5 400 142.7 3.4 2.8 8.4 2.3 11.2-1.1l36-42.9c2.9-3.4 2.4-8.5-1.1-11.3zM448 778a64 64 0 10128 0 64 64 0 10-128 0z"></path>
             </svg>
           </div>
-          <div className="reset-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer" onClick={resetCart}>
+          <div className="reset-icons p-2 shadow-[0_0_3px_#00000026] rounded-md cursor-pointer" onClick={()=> {resetCart(); setPayToProceed(false);}}>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -322,7 +380,15 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
             onClick={() => navigate("/pos/customers")}
             className="select-customer cursor-pointer bg-linear-to-b justify-center from-secondary to bg-primary text-white px-4 py-2 rounded mr-2 flex items-center gap-2 w-[180px]"
           >
-            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : "Select Customer"}</p>
+            <p className="text-sm">
+              {selectedCustomer?.firstName ? (
+                `${selectedCustomer.firstName} ${selectedCustomer.lastName}`
+              ) : (
+                <>
+                  Select <ShortcutLabel text="Customer" char="c" />
+                </>
+              )}
+            </p>
             <svg
               viewBox="64 64 896 896"
               focusable="false"
@@ -354,7 +420,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
                 </g>
               </g>
             </svg>
-            <p className="text-[13px]">{selectedTable?.tableNumber ? `Table ${selectedTable.tableNumber}` : "Select Table"}</p>
+            <p className="text-[13px]">{selectedTable?.tableNumber ? `Table ${selectedTable.tableNumber}` : <ShortcutLabel text="Select Table" char="s" />}</p>
           </button>
         </div>
       </div>
@@ -418,7 +484,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
             >
               <path d="M855.7 210.8l-42.4-42.4a8.03 8.03 0 00-11.3 0L168.3 801.9a8.03 8.03 0 000 11.3l42.4 42.4c3.1 3.1 8.2 3.1 11.3 0L855.6 222c3.2-3 3.2-8.1.1-11.2zM304 448c79.4 0 144-64.6 144-144s-64.6-144-144-144-144 64.6-144 144 64.6 144 144 144zm0-216c39.7 0 72 32.3 72 72s-32.3 72-72 72-72-32.3-72-72 32.3-72 72-72zm416 344c-79.4 0-144 64.6-144 144s64.6 144 144 144 144-64.6 144-144-64.6-144-144-144zm0 216c-39.7 0-72-32.3-72-72s32.3-72 72-72 72 32.3 72 72-32.3 72-72 72z"></path>
             </svg>
-            <p>Discount</p>
+            <p><ShortcutLabel text="Discount" char="d" /></p>
           </div>
           <div onClick={() => navigate("/pos/invoices")} className="w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
             <svg
@@ -432,7 +498,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
             >
               <path d="M938 458.8l-29.6-312.6c-1.5-16.2-14.4-29-30.6-30.6L565.2 86h-.4c-3.2 0-5.7 1-7.6 2.9L88.9 557.2a9.96 9.96 0 000 14.1l363.8 363.8c1.9 1.9 4.4 2.9 7.1 2.9s5.2-1 7.1-2.9l468.3-468.3c2-2.1 3-5 2.8-8zM699 387c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"></path>
             </svg>
-            <p>Exchange</p>
+            <p><ShortcutLabel text="Exchange" char="e" /></p>
           </div>
           <div onClick={() => openModal('holdOrder')} className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer">
             <svg
@@ -446,7 +512,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
             >
               <path d="M304 176h80v672h-80zm408 0h-64c-4.4 0-8 3.6-8 8v656c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V184c0-4.4-3.6-8-8-8z"></path>
             </svg>
-            <p>Hold Order</p>
+            <p><ShortcutLabel text="Hold Order" char="h" /></p>
           </div>
           {/* popup for hold order and manager discount */}
           <DiscountHoldOrderPopup

@@ -53,6 +53,19 @@ const ProductCategoryComp = ({ category, filters, setFilters }) => {
   );
 };
 
+/* --- Helper for underlining shortcut letters --- */
+const ShortcutLabel = ({ text, char }) => {
+  const index = text.toLowerCase().indexOf(char.toLowerCase());
+  if (index === -1) return <span>{text}</span>;
+  return (
+    <span>
+      {text.substring(0, index)}
+      <span className="underline decoration-1 underline-offset-2">{text[index]}</span>
+      {text.substring(index + 1)}
+    </span>
+  );
+};
+
 const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToCart, isPettyClicked, setIsPettyClicked }) => {
   const [isTransferProductOpen, setIsTransferProductOpen] = useState(false);
   const [selectedTransferProduct, setSelectedTransferProduct] = useState("");
@@ -209,6 +222,37 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
     return indexA - indexB;
   });
 
+  // --- KEYBOARD SHORTCUTS ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // 1. Ignore if user is typing in an input, textarea, or a select dropdown
+      if (
+        e.target.tagName === "INPUT" || 
+        e.target.tagName === "TEXTAREA" || 
+        e.target.isContentEditable
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      // P for Petty Cash
+      if (key === "p") {
+        e.preventDefault();
+        setIsPettyClicked(true);
+      }
+
+      // T for Transfer (only if in Shots category)
+      if (key === "t" && filters.category.toLowerCase() === "shots") {
+        e.preventDefault();
+        setIsTransferProductOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [filters.category, setIsPettyClicked]);
+
   return (
     <div className="header">
       <div className="pb-4 pt-2 px-2 flex gap-10 items-center">
@@ -262,10 +306,10 @@ const Header = ({ filters, setFilters, productListLength, mute, setMute, scanToC
           </div>
           <div className="button-group flex gap-2">
             <div onClick={() => setIsPettyClicked(true)} className="reset-icons border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer ">
-              <p className="text-xl py-1.5 px-3.5">P</p>
+              <p className="text-xl py-1.5 px-3.5"><ShortcutLabel text="P" char="p" /></p>
             </div>
             {filters.category.toLowerCase() === "shots" &&
-              <div onClick={() => setIsTransferProductOpen(true)} className="text-2xl p-1 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer"><p className="px-2">T</p></div>
+              <div onClick={() => setIsTransferProductOpen(true)} className="text-2xl p-1 border border-gray-300 rounded-md bg-white text-gray-700 cursor-pointer"><p className="px-2"><ShortcutLabel text="T" char="t" /></p></div>
             }
             <div
               onClick={toggleFullscreen}

@@ -264,6 +264,10 @@ const formatOrderDate = (dateSource) => {
   return `${day}-${month}-${year} ${time}`;
 };
 
+const getname =(item)=>{
+    return item.name || item.productName || item.product?.product_name || "unknown item";
+}
+
     return (
         <div ref={printRef} style={{ display: "none" }}>
             <div className="receipt-content">
@@ -286,14 +290,17 @@ const formatOrderDate = (dateSource) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {finalOrderData?.orderItems?.map((item, index) => (
+                        {finalOrderData?.orderItems?.map((item, index) => {
+                            const productName = item.name || item.productName || item.product?.product_name || "unknown item";
+                            return(
                             <tr key={index}>
-                                <td>{item.name || item.productName || item.product?.product_name}</td>
+                                <td>{item.shots ? `${productName} (${whole(item.quantity/item.shots)}ml each)` : productName}</td>
                                 <td className="text-right">P{item.price || item.unit_price}</td>
-                                <td className="text-right">{item.shots ? `${item.shots}-${whole(item.quantity/item.shots)}` : whole(item.quantity)}</td>
+                                <td className="text-right">{item.shots ? item.shots : whole(item.quantity)}</td>
                                 <td className="text-right">P{parseFloat(item.totalPrice || (item.price * item.quantity) || item.total_amount || 0).toFixed(2)}</td>
                             </tr>
-                        ))}
+                            );
+                        })}
                     </tbody>
                 </table>
 
