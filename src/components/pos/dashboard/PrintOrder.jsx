@@ -3,7 +3,6 @@ import { useAuthStore } from "../../../store/useAuthStore";
 import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
 
 const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
-    console.log(finalOrderData);
 
     const user = useAuthStore((u) => u.user);
     const { paymentMethods } = usePaymentMethodStore();
