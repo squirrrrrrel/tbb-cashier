@@ -257,7 +257,7 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
 
                             return (
                                 <tr key={index}>
-                                    <td>{item.shots ? `${productName} (${whole(item.quantity / item.shots)}ml each)` : productName}</td>
+                                    <td>{item.shots ? `${productName} (${whole(item.quantity)}ml each)` : productName}</td>
                                     <td className="text-right">P{unitPrice.toFixed(2)}</td>
                                     <td className="text-right">{formatQty(item)}</td>
                                     <td className="text-right">P{totalPrice.toFixed(2)}</td>
