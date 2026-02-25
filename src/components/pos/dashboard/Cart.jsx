@@ -308,7 +308,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
       const key = e.key.toLowerCase();
 
       switch (key) {
-        case "c":
+        case "u":
           e.preventDefault();
           navigate("/pos/customers");
           break;
@@ -385,7 +385,7 @@ const Cart = ({ setPayToProceed, subtotal, tax, discount, total }) => {
                 `${selectedCustomer.firstName} ${selectedCustomer.lastName}`
               ) : (
                 <>
-                  Select <ShortcutLabel text="Customer" char="c" />
+                  Select <ShortcutLabel text="Customer" char="u" />
                 </>
               )}
             </p>
