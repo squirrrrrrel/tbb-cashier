@@ -2,7 +2,7 @@
 export const mapOrderToApiPayload = (order, userId) => {
   return {
     outlet_id: order.outlet_id,
-    customer_id: order.customer_id || null,
+    customer: order.customer || null,
     table_id: order.table_id || null,
     
     // Discount fields
@@ -17,6 +17,7 @@ export const mapOrderToApiPayload = (order, userId) => {
     // Order items - map from items array
     orderItems: (order.orderItems || []).map(item => ({
       productId: item.productId || item.id,
+      product_name: item.product_name,
       unitPrice: item.unitPrice || item.price || 0,
       quantity: item.quantity || 0,
       shots: item.shots || 0,
