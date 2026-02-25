@@ -9,6 +9,9 @@ import { refundOrderAPI } from "../../api/refundApi";
 import { exchangeOrderAPI } from "../../api/exchangeApi";
 import { useHoldOrderStore } from "../../store/useHoldOrderStore";
 import { useCartStore } from "../../store/useCartStore";
+import { useCreditOrderStore } from "../../store/useCreditOrderStore";
+import { usePaymentMethodStore } from "../../store/usePaymentMethodStore";
+import { useAuthStore } from "../../store/useAuthStore";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
   const { setCartFromHold } = useCartStore();
@@ -19,7 +22,9 @@ const Invoices = () => {
   const loadHoldOrdersFromDB = useHoldOrderStore(
     state => state.loadHoldOrdersFromDB
   );
-
+  const { creditOrders, fetchCreditOrders, hydrate: hydrateCreditOrders } = useCreditOrderStore();
+  const { paymentMethods, hydrate: hydratePaymentMethods } = usePaymentMethodStore();
+  const user = useAuthStore((state) => state.user);
   const orders = useOrderStore(state => state.orders);
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
   const setOrders = useOrderStore(state => state.setOrders);
@@ -28,6 +33,28 @@ const Invoices = () => {
   //   setSelectedOrder(null);
   // }, [orders]);
 
+  // 🔹 Effect to specifically handle Credit Invoices Sync
+useEffect(() => {
+  (async () => {
+    try {
+      await hydratePaymentMethods(); // Get all methods first
+      
+      // Find the ID where name is "Credit"
+      const creditMethod = paymentMethods.find(
+        (m) => m.payment_method_name === "Credit" || m.display_name === "Credit"
+      );
+
+      // Trigger fetch if we have both Outlet ID and the Credit Method ID
+      if (navigator.onLine && user?.outlet_id && creditMethod?.id) {
+        await fetchCreditOrders(user.outlet_id, creditMethod.id);
+      }
+      
+      await hydrateCreditOrders(); // Load from IndexedDB
+    } catch (err) {
+      console.error("Credit fetch failed:", err);
+    }
+  })();
+}, [user?.outlet_id, paymentMethods.length]);
   // 🔹 Initial load: sync from API (if online) then hydrate from IndexedDB
   useEffect(() => {
     (async () => {
@@ -83,8 +110,10 @@ const Invoices = () => {
 
 
   const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
-  const selectedOrderData = selectedOrder ? orders.find(o => orderKey(o) === orderKey(selectedOrder)) || null : null;
-
+  // const selectedOrderData = selectedOrder ? orders.find(o => orderKey(o) === orderKey(selectedOrder)) || null : null;
+  const selectedOrderData = selectedOrder 
+    ? (activeBtn === "creditInvoiceBTN" ? creditOrders : orders).find(o => orderKey(o) === orderKey(selectedOrder)) 
+    : null;
 
   const isHoldInvoice = activeBtn === "holdInvoiceBTN";
 
@@ -98,7 +127,10 @@ const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [holdSearchTerm, setHoldSearchTerm] = useState("");
 
-  const currentOrders = activeBtn === "holdInvoiceBTN" ? sortedHoldOrders : orders;
+  const currentOrders = 
+    activeBtn === "holdInvoiceBTN" ? sortedHoldOrders : 
+    activeBtn === "creditInvoiceBTN" ? creditOrders : 
+    orders;
 
 
   const filteredOrders = currentOrders.filter((order) => {
@@ -252,12 +284,12 @@ const Invoices = () => {
             >
               Invoices on Hold
             </button>
-            {/* <button
+            <button
               className={getBtnClass("creditInvoiceBTN")}
               onClick={() => setActiveBtn("creditInvoiceBTN")}
             >
               Invoices on Credit
-            </button> */}
+            </button>
           </div>
         </div>
         {activeBtn === "holdInvoiceBTN" ? (
@@ -289,11 +321,11 @@ const Invoices = () => {
           selectedOrder={selectedOrderData}
           onRefund={handleRefundAction}
           onExchange={handleExchangeAction}
+          activeBtn={activeBtn}
         /> : <HoldInvoiceFrom
           selectedHoldOrder={selectedHoldOrder}
           onAddToCart={(cartData) => {
             setCartFromHold(cartData);
-            // setActiveBtn("invoiceBTN");
           }}
           onDelete={() => { setSelectedHoldOrder(); }}
         />}

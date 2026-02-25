@@ -22,15 +22,22 @@ export const createOfflineOrder = async ({
     isSynced: false,
 
     display_id: displayId,
-    orderNumber:orderNumber,
+    orderNumber: orderNumber,
 
     outlet_id: outletId || null,
-    customer_id: customer?.serverId || null,
+    customer: customer ? {
+      id: customer.serverId || null,
+      first_name: customer.first_name || customer.firstName || null,
+      last_name: customer.last_name || customer.lastName || null,
+      email: customer.email || null,
+      phone_code: customer.phone_code || customer.phoneCode || null,
+      phone_number: customer.phone_number || customer.phoneNumer || null,
+    } : null,
     table_id: table?.serverId || null,
 
     orderItems: cartData.map(p => ({
       productId: p.id || p.productId,
-      name: p.name,
+      product_name: p.name,
       type: null,
       price: p.price || p.unitPrice || p.sellingPrice || 0,
       unitPrice: p.unitPrice || p.price || p.sellingPrice || 0,

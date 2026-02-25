@@ -6,7 +6,7 @@ import RefundPopup from "./RefundPopup";
 import ExchangePopup from "./ExchangePopup";
 import { useProductStore } from "../../../store/useProductStore";
 import { normalizeOrderItemsForExchange } from "../../../helper/orderExchangeNormalizer";
-const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
+const InvoiceFrom = ({ selectedOrder, onRefund, onExchange, activeBtn }) => {
 
 
   if (!selectedOrder) {
@@ -341,7 +341,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
         </div>
 
 
-
+        {activeBtn != "creditInvoiceBTN" && 
         <div className="flex gap-2 mt-2 text-sm">
           <div className="w-1/2">
             <button className={`bg-[#15b71a] w-full text-white font-bold py-4 px-2 rounded-md flex items-center justify-center gap-2 cursor-pointer ${isDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
@@ -401,6 +401,7 @@ const InvoiceFrom = ({ selectedOrder, onRefund, onExchange }) => {
             </button>
           </div>
         </div>
+        }
       </div>
       <PrintInvoiceSlip
         show={showPrintSlip}
