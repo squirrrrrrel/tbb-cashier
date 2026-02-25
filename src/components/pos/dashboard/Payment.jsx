@@ -4,14 +4,19 @@ import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
 import { useRetail } from "../../../hooks/useRetail";
 import Select from 'react-select';
 import { commonSelectStyles } from "../../common/select/selectStyle";
+import { useOutletStore } from "../../../store/useOutletStore";
 
 export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal, cartProducts }) => {
     const { paymentMethods, hydrate, hydrated } = usePaymentMethodStore();
     const [isPaying, setIsPaying] = useState(false);
+    const { hydrate: hydrateOutlet, hydrated: hydratedOutlet } = useOutletStore.getState();
 
     useEffect(() => {
         if (!hydrated) {
             hydrate();
+        }
+        if (!hydratedOutlet) {
+            hydrateOutlet();
         }
     }, []);
 
@@ -19,7 +24,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     const hoverStyle = "hover:border-secondary hover:text-secondary";
 
     const [splits, setSplits] = useState([
-        { id: Date.now(), amount: "", methodId: "" }
+        { id: Date.now(), amount: "", methodId: "", methodName: "" }
     ]);
 
     const { isRetail, setIsRetail, isRetailOpen, setIsRetailOpen } = useRetail();
@@ -29,10 +34,19 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
     const isPayDisabled = totalTendered < total;
 
     useEffect(() => {
+        // Only run if we have methods and the first split hasn't been assigned a method yet
         if (paymentMethods.length > 0 && splits[0].methodId === "") {
-            const newSplits = [...splits];
-            newSplits[0].methodId = paymentMethods[0].id;
-            setSplits(newSplits);
+            const defaultMethod = paymentMethods[0];
+
+            setSplits(prev => {
+                const newSplits = [...prev];
+                newSplits[0] = {
+                    ...newSplits[0],
+                    methodId: defaultMethod.id,
+                    methodName: defaultMethod.display_name || defaultMethod.payment_method_name || "Cash"
+                };
+                return newSplits;
+            });
         }
     }, [paymentMethods]);
 
@@ -115,6 +129,7 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
             cashReturned: parseFloat(change) || 0,
             paymentMethods: splits.map(s => ({
                 paymentMethodId: s.methodId,
+                paymentMethodName: s.methodName,
                 payment_tax_amount: tax,
                 amount: parseFloat(s.amount) || 0
             }))
@@ -214,7 +229,12 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                                             options={methodOptions}
                                             // Find the object that matches the current methodId
                                             value={methodOptions.find(opt => opt.value === split.methodId) || null}
-                                            onChange={(option) => updateSplit(split.id, "methodId", option?.value || "")}
+                                            onChange={(option) => {
+                                                const selectedMethod = paymentMethods.find(pm => pm.id === option?.value);
+                                                // Directly update the split row with both ID and Name
+                                                updateSplit(split.id, "methodId", option?.value || "");
+                                                updateSplit(split.id, "methodName", selectedMethod?.display_name || selectedMethod?.payment_method_name || "");
+                                            }}
                                             placeholder="Method"
                                             isSearchable={false} // Set to false if you want it to behave like a standard dropdown
                                             styles={{
@@ -262,7 +282,14 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                             <button
                                 onClick={() => {
                                     const remaining = Math.max(0, total - totalTendered);
-                                    setSplits([...splits, { id: Date.now(), amount: remaining > 0 ? remaining.toString() : "", methodId: paymentMethods[0]?.id }]);
+                                    const defaultMethod = paymentMethods[0]; // Get the first method
+
+                                    setSplits([...splits, {
+                                        id: Date.now(),
+                                        amount: remaining > 0 ? remaining.toString() : "",
+                                        methodId: defaultMethod?.id || "",
+                                        methodName: defaultMethod?.display_name || defaultMethod?.payment_method_name || "" // Store name here
+                                    }]);
                                 }}
                                 className="w-full bg-gradient-to-b from-secondary to-primary rounded-md py-2 font-bold text-white text-sm"
                             >

@@ -53,7 +53,14 @@ export const createOrder = async ({
   if (navigator.onLine) {
     try {
       const payload = {
-        customer_id: customer?.serverId || null,
+        customer: customer? {
+          id: customer.serverId || null,
+          first_name: customer.first_name || customer.firstName || null,
+          last_name: customer.last_name || customer.lastName || null,
+          email: customer.email || null,
+          phone_code: customer.phone_code || customer.phoneCode || null,
+          phone_number: customer.phone_number || customer.phoneNumer || null,
+        } : null,
         table_id: table?.serverId || null,
         subtotal: totals.subtotal,
         outlet_id: outletId || null,
@@ -85,6 +92,7 @@ export const createOrder = async ({
 
           return {
             productId: p.id || p.productId,
+            product_name: p.name,
             unitPrice,
             quantity: qty,
             shots,
