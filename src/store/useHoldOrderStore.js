@@ -22,11 +22,28 @@ export const useHoldOrderStore = create((set, get) => ({
 
     // 2️⃣ Sync to backend (non-blocking)
     try {
-      const res = await api.post("/hold-orders", {
-        client_hold_id: order.localId,
-        cartData: order.cartData,
-        note: order.note,
-      });
+      const { user } = (await import("./useAuthStore")).useAuthStore.getState();
+
+      const payload = {
+        outlet_id: user?.outlet_id || "",
+        customer_id: order.cartData.customer?.id || order.cartData.customer?.serverId || "",
+        table_id: order.cartData.table?.id || order.cartData.table?.serverId || "",
+        order_details: {
+          items: (order.cartData.orderItems || []).map((item) => ({
+            product_id: item.id || item.serverId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          subtotal: order.cartData.subtotal || 0,
+          tax: order.cartData.taxAmount || 0,
+          discount: order.cartData.discount?.value || 0,
+          total: order.cartData.totalAmountToPay || 0,
+        },
+        // client_hold_id: order.localId,
+        // note: order.note,
+      };
+
+      const res = await api.post("/hold-order", payload);
 
       await upsertHoldOrderDB({
         ...order,
