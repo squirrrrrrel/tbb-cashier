@@ -63,13 +63,13 @@ const DashboardPopup = ({
       if (activePopup === "receipt") {
         const key = e.key.toLowerCase();
 
-        if (key === "p") {
+        if (key === "n") {
           e.preventDefault();
           onPrintAction();
         } else if (key === "w") {
           e.preventDefault();
           onWhatsAppAction();
-        } else if (key === "n") {
+        } else if (key === "c") {
           e.preventDefault();
           onCancelAction();
         }
@@ -118,14 +118,14 @@ const DashboardPopup = ({
                 onClick={onPrintAction}
                 className="flex-1 py-2 font-bold text-white bg-gradient-to-b from-secondary to-primary rounded-md"
               >
-                <ShortcutLabel text="Print" char="p" />
+                <ShortcutLabel text="Print" char="n" />
               </button>
 
               <button
                 onClick={onCancelAction}
                 className="flex-1 py-2 font-bold shadow rounded-md"
               >
-                <ShortcutLabel text="Cancel" char="n" />
+                <ShortcutLabel text="Cancel" char="c" />
               </button>
             </div>
           </div>

@@ -235,7 +235,7 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
                 <h3>{isHold ? "Hold Order Receipt" : "Sales Receipt"}</h3>
 
                 <p><b>Order:</b> #{finalOrderData?.displayId || finalOrderData?.display_id}</p>
-                <p><b>Date:</b> {formatOrderDate(finalOrderData?.order_date || finalOrderData?.created_at || finalOrderData?.createdAt || date.now())}</p>
+                <p><b>Date:</b> {formatOrderDate(finalOrderData?.order_date || finalOrderData?.created_at || finalOrderData?.createdAt || new Date())}</p>
                 <p><b>Cashier:</b> {finalOrderData?.user?.first_name || user?.first_name || "-"}</p>
                 <p><b>Customer:</b> {finalOrderData?.customer?.firstName || finalOrderData?.customer?.first_name || "Walk-in"} {finalOrderData?.customer?.lastName || finalOrderData?.customer?.last_name || ""}</p>
                 <p><b>Payment:</b> {paymentMethodsString}</p>
