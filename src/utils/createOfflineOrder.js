@@ -1,6 +1,7 @@
 import { saveOrderDB } from "../db/ordersDB";
 import { v4 as uuid } from "uuid";
 import { useAuthStore } from "../store/useAuthStore";
+import { generateNextOrderId } from "./formatOrderDisplayId";
 
 export const createOfflineOrder = async ({
   cartData,
@@ -12,12 +13,16 @@ export const createOfflineOrder = async ({
   cashReturned = 0,
   discount_percentage = null,
 }) => {
+  const { displayId, orderNumber } = generateNextOrderId();
   const outletId = useAuthStore.getState().user?.outlet_id;
 
   const order = {
     localId: uuid(),
     createdAt: Date.now(),
     isSynced: false,
+
+    display_id: displayId,
+    orderNumber:orderNumber,
 
     outlet_id: outletId || null,
     customer_id: customer?.serverId || null,

@@ -258,7 +258,7 @@ useEffect(() => {
       });
       if (result.mode === "online") {
         setOrderData(result.order);
-        openPaySuccess(result.order.display_id);
+        openPaySuccess(result.order.display_id || result.order.displayId);
         notifySuccess(
           result.mode === "online"
             ? "Order created successfully"
@@ -273,10 +273,9 @@ useEffect(() => {
           {
             ...result.order,
             customer: selectedCustomer,
-            display_id: "Offline order"
           }
         );
-        openPaySuccess("Offline order", `${Date.now()}`);
+        openPaySuccess(result.order.display_id);
       }
       resetCart();
       setPayToProceed(false);
