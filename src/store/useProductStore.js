@@ -71,8 +71,7 @@ subtractStockLocal: async (cartItems) => {
       const orderedItem = cartItems.find(
         (item) => item.id === product.serverId
       );
-      if (!orderedItem) return product;
-
+      if (!orderedItem) return product;      
       const newStock = Math.max(
         -1,
         product.stock - orderedItem.quantity
@@ -103,7 +102,8 @@ subtractStockLocal: async (cartItems) => {
       );
       if (!orderedItem) return product;
 
-      const newStock = Math.max(0, product.stock - orderedItem.quantity);
+      const qty = orderedItem.shots > 0 ? orderedItem.quantity * orderedItem.shots : orderedItem.quantity;
+      const newStock = Math.max(0, product.stock - qty);
 
       updateProductStockDB(product.serverId, newStock);
 

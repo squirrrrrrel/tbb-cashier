@@ -259,11 +259,7 @@ useEffect(() => {
       if (result.mode === "online") {
         setOrderData(result.order);
         openPaySuccess(result.order.display_id || result.order.displayId);
-        notifySuccess(
-          result.mode === "online"
-            ? "Order created successfully"
-            : "Order saved offline"
-        );
+        notifySuccess("Order created successfully");
         await Promise.all([
           fetchOrdersFromAPI(),
           productStore.fetchProductsFromAPI()
@@ -275,6 +271,7 @@ useEffect(() => {
             customer: selectedCustomer,
           }
         );
+        notifySuccess("Order saved offline");
         openPaySuccess(result.order.display_id);
       }
       resetCart();
