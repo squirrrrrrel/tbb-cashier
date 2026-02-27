@@ -203,80 +203,90 @@ export const Payment = ({ setPayToProceed, total, onPay, tax, discount, subtotal
                         </div>
 
                         {/* --- LOOP: Dynamic Payment Rows --- */}
-                        {splits.map((split, index) => (
-                            <div key={split.id} className="flex justify-between gap-4 bg-[#f8f8f8] p-2 mb-2 rounded-md items-center">
-                                <div className="w-full flex gap-4">
-                                    <div className="flex-1">
-                                        <input
-                                            ref={index === splits.length - 1 ? inputRef : null}
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={split.amount}
-                                            placeholder="0.00"
-                                            onKeyDown={handleKeyDown}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                if (val === "" || /^\d*\.?\d*$/.test(val)) {
-                                                    updateSplit(split.id, "amount", val);
-                                                }
-                                            }}
-                                            className="w-full outline-secondary rounded-md py-3 px-4 text-sm bg-white shadow-[0_0_3px_#00000028]"
-                                        />
-                                    </div>
-                                    <div className="flex-1 flex gap-2">
-                                        <Select
-                                            className="flex-1"
-                                            options={methodOptions}
-                                            // Find the object that matches the current methodId
-                                            value={methodOptions.find(opt => opt.value === split.methodId) || null}
-                                            onChange={(option) => {
-                                                const selectedMethod = paymentMethods.find(pm => pm.id === option?.value);
-                                                // Directly update the split row with both ID and Name
-                                                updateSplit(split.id, "methodId", option?.value || "");
-                                                updateSplit(split.id, "methodName", selectedMethod?.display_name || selectedMethod?.payment_method_name || "");
-                                            }}
-                                            placeholder="Method"
-                                            isSearchable={false} // Set to false if you want it to behave like a standard dropdown
-                                            styles={{
-                                                ...commonSelectStyles,
-                                                control: (base) => ({
-                                                    ...base,
-                                                    border: 'none',
-                                                    boxShadow: '0 0 3px #00000028',
-                                                    borderRadius: '0.375rem', // rounded-md
-                                                    paddingTop: '3px',
-                                                    paddingBottom: '3px',
-                                                    minHeight: '44px',
-                                                    cursor: 'pointer'
-                                                }),
-                                                menu: (base) => ({
-                                                    ...base,
-                                                    zIndex: 9999
-                                                })
-                                            }}
-                                        />
-                                        {splits.length > 1 && index !== 0 && (
-                                            <button
-                                                onClick={() => setSplits(splits.filter(s => s.id !== split.id))}
-                                                className="text-red-500 font-bold px-2 w-10"
-                                            >
-                                                <svg
-                                                    viewBox="64 64 896 896"
-                                                    focusable="false"
-                                                    data-icon="delete"
-                                                    width="16"
-                                                    height="16"
-                                                    fill="currentColor"
-                                                    aria-hidden="true"
+                        {splits.map((split, index) => {
+                            const isLast = index === splits.length - 1;
+                            return (
+                                <div key={split.id} className="flex justify-between gap-4 bg-[#f8f8f8] p-2 mb-2 rounded-md items-center">
+                                    <div className="w-full flex gap-4">
+                                        <div className="flex-1">
+                                            <input
+                                                ref={index === splits.length - 1 ? inputRef : null}
+
+                                                type="text"
+                                                inputMode="decimal"
+                                                value={split.amount}
+                                                placeholder="0.00"
+                                                disabled={!isLast}
+                                                onKeyDown={handleKeyDown}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                                                        updateSplit(split.id, "amount", val);
+                                                    }
+                                                }}
+                                                className="w-full outline-primary h-[44px] rounded-md border-2 border-solid border-[#ccc] py-3 px-4 text-sm bg-white"
+                                            />
+                                        </div>
+                                        <div className="flex-1 flex gap-2">
+                                            <Select
+                                                className="flex-1"
+                                                options={methodOptions}
+                                                // Find the object that matches the current methodId
+                                                value={methodOptions.find(opt => opt.value === split.methodId) || null}
+                                                onChange={(option) => {
+                                                    const selectedMethod = paymentMethods.find(pm => pm.id === option?.value);
+                                                    // Directly update the split row with both ID and Name
+                                                    updateSplit(split.id, "methodId", option?.value || "");
+                                                    updateSplit(split.id, "methodName", selectedMethod?.display_name || selectedMethod?.payment_method_name || "");
+                                                }}
+                                                placeholder="Method"
+                                                isSearchable={false} // Set to false if you want it to behave like a standard dropdown
+                                                styles={{
+                                                    ...commonSelectStyles,
+                                                    control: (base, state) => ({
+                                                        ...base,
+                                                        border: state.isFocused
+                                                            ? "2px solid var(--color-primary)"
+                                                            : "2px solid #ccc",
+                                                        boxShadow: "none",
+                                                        borderRadius: '0.375rem', // rounded-md
+                                                        paddingTop: '3px',
+                                                        paddingBottom: '3px',
+                                                        maxHeight: '44px',
+                                                        cursor: 'pointer',
+                                                        "&:hover": {
+                                                            border: "2px solid var(--color-primary)",
+                                                        },
+                                                    }),
+                                                    menu: (base) => ({
+                                                        ...base,
+                                                        zIndex: 9999
+                                                    })
+                                                }}
+                                            />
+                                            {splits.length > 1 && index !== 0 && (
+                                                <button
+                                                    onClick={() => setSplits(splits.filter(s => s.id !== split.id))}
+                                                    className="text-red-500 font-bold px-2 w-10"
                                                 >
-                                                    <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"></path>
-                                                </svg>
-                                            </button>
-                                        )}
+                                                    <svg
+                                                        viewBox="64 64 896 896"
+                                                        focusable="false"
+                                                        data-icon="delete"
+                                                        width="16"
+                                                        height="16"
+                                                        fill="currentColor"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <path d="M360 184h-8c4.4 0 8-3.6 8-8v8h304v-8c0 4.4 3.6 8 8 8h-8v72h72v-80c0-35.3-28.7-64-64-64H352c-35.3 0-64 28.7-64 64v80h72v-72zm504 72H160c-17.7 0-32 14.3-32 32v32c0 4.4 3.6 8 8 8h60.4l24.7 523c1.6 34.1 29.8 61 63.9 61h454c34.2 0 62.3-26.8 63.9-61l24.7-523H888c4.4 0 8-3.6 8-8v-32c0-17.7-14.3-32-32-32zM731.3 840H292.7l-24.2-512h487l-24.2 512z"></path>
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         <div className="p-2">
                             <button
