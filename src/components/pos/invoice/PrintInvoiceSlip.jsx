@@ -422,7 +422,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                   <td></td>
                   <td></td>
                   <td className="inputvalue">
-                    P{orderDetails?.isSynced ? item?.amount.toFixed(2) : orderDetails?.tenderedAmount}
+                    P{orderDetails?.isSynced ? item?.amount.toFixed(2) : orderDetails?.tenderedAmount || item?.amount}
                   </td>
                 </tr>
               ))}
