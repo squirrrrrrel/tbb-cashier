@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { useAuthStore } from "../../../store/useAuthStore";
-import { usePaymentMethodStore } from "../../../store/usePaymentMethodStore";
 
 const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
 
     const user = useAuthStore((u) => u.user);
-    const { paymentMethods } = usePaymentMethodStore();
     const printRef = useRef();
     const isPrinting = useRef(false);
     const originalTitle = document.title;
@@ -179,23 +177,6 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
 
     const discountValue = getDiscountValue();
 
-    const totalTendered = finalOrderData?.tendered_amount || finalOrderData?.tenderedAmount ||
-        finalOrderData?.transactions?.reduce((sum, tx) => sum + (tx.tendered_amount || 0), 0) ||
-        finalOrderData?.payments?.reduce((sum, p) => sum + (p.amount || 0), 0) ||
-        finalOrderData?.payment?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-
-    const methodLookup = Object.fromEntries(
-        paymentMethods.map(m => [m.id, m.display_name])
-    );
-
-    const paymentMethodsString = [
-        ...new Set(
-            (finalOrderData?.payments || finalOrderData?.payment || [])
-                .map(p => p.paymentMethodName || methodLookup[p.payment_method_id || p.paymentMethodId])
-                .filter(Boolean)
-        )
-    ].join(', ') || "Cash";
-
     const formatOrderDate = (dateSource) => {
         if (!dateSource) return "";
         // Handle timestamps (Structure 2) vs strings
@@ -228,6 +209,7 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
     }
 
     const orderItems = finalOrderData.orderItems || finalOrderData.order_items || [];
+    const paymentArrray = finalOrderData.payments || finalOrderData.payment || [];
 
     return (
         <div ref={printRef} style={{ display: "none" }}>
@@ -237,8 +219,8 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
                 <p><b>Order:</b> #{finalOrderData?.displayId || finalOrderData?.display_id}</p>
                 <p><b>Date:</b> {formatOrderDate(finalOrderData?.order_date || finalOrderData?.created_at || finalOrderData?.createdAt || new Date())}</p>
                 <p><b>Cashier:</b> {finalOrderData?.user?.first_name || user?.first_name || "-"}</p>
-                <p><b>Customer:</b> {finalOrderData?.customer?.firstName || finalOrderData?.customer?.first_name || "Walk-in"} {finalOrderData?.customer?.lastName || finalOrderData?.customer?.last_name || ""}</p>
-                <p><b>Payment:</b> {paymentMethodsString}</p>
+                <p><b>Customer:</b> {finalOrderData?.customer?.firstName || finalOrderData?.customer?.first_name || "-"} {finalOrderData?.customer?.lastName || finalOrderData?.customer?.last_name || ""}</p>
+                {/* <p><b>Payment:</b> {paymentMethodsString}</p> */}
 
                 <table>
                     <thead>
@@ -302,12 +284,16 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
                             <td></td>
                             <td className="inputvalue">P{parseFloat(finalOrderData?.totalAmountToPay || finalOrderData?.total_amount || finalOrderData?.totalAmount || finalOrderData?.amount || 0).toFixed(2)}</td>
                         </tr>
-                        <tr>
-                            <td>Tendered</td>
-                            <td></td>
-                            <td></td>
-                            <td className="inputvalue">P{parseFloat(totalTendered).toFixed(2)}</td>
-                        </tr>
+                        {paymentArrray.map((payment) => {
+                            return (
+                                <tr>
+                                    <td>{payment.paymentMethodName || "payment"}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td className="inputvalue">P{parseFloat(payment.tendered_amount || payment.amount || "-").toFixed(2)}</td>
+                                </tr>
+                            );
+                        })}
                         <tr>
                             <td>Change</td>
                             <td></td>
