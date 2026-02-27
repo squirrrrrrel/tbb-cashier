@@ -303,7 +303,7 @@ const PrintInvoiceSlip = ({ show, setShow = false, orderDetails, productList }) 
                           <tr key={`orig-${idx}`}>
                             <td>{item.shots ? `${item.productName || item.name} (${item.quantity / item.shots}ml each)` : item.productName || item.name}</td>
                             <td>{`P${parseFloat(item.unitPrice || item.price).toFixed(2)}`}</td>
-                            <td className="inputvalue">{item.shots ? item.shots : item.quantity}{item.category_name?.toLowerCase() === "butchery" ? " kg" : item.shots ? "" : "pcs"}</td>
+                            <td className="inputvalue">{item.shots ? item.shots : Number(item.quantity)}{item.category_name?.toLowerCase() === "butchery" ? " kg" : item.shots ? "" : "pcs"}</td>
                             <td className="inputvalue">{`P${parseFloat(item.subtotal || item.total).toFixed(2)}`}</td>
                           </tr>
                         ))}
