@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import InvoiceList from "../../components/pos/invoice/InvoiceList";
 import InvoiceForm from "../../components/pos/invoice/InvoiceForm";
 import HoldInvoiceList from "../../components/pos/invoice/HoldInvoiceList";
@@ -29,32 +29,35 @@ const Invoices = () => {
   const loadOrdersFromDB = useOrderStore(state => state.loadOrdersFromDB);
   const setOrders = useOrderStore(state => state.setOrders);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  // useEffect(() => {
-  //   setSelectedOrder(null);
-  // }, [orders]);
+  const creditFetchedRef = useRef(false);
 
-  // 🔹 Effect to specifically handle Credit Invoices Sync
-useEffect(() => {
-  (async () => {
-    try {
-      await hydratePaymentMethods(); // Get all methods first
-      
-      // Find the ID where name is "Credit"
-      const creditMethod = paymentMethods.find(
-        (m) => m.payment_method_name === "Credit" || m.display_name === "Credit"
-      );
+  // 🔹 Step 1: Hydrate payment methods once on mount
+  useEffect(() => {
+    hydratePaymentMethods();
+  }, []);
 
-      // Trigger fetch if we have both Outlet ID and the Credit Method ID
-      if (navigator.onLine && user?.outlet_id && creditMethod?.id) {
-        await fetchCreditOrders(user.outlet_id, creditMethod.id);
-      }
-      
-      await hydrateCreditOrders(); // Load from IndexedDB
-    } catch (err) {
-      console.error("Credit fetch failed:", err);
+  // 🔹 Step 2: Fetch credit orders once payment methods are loaded
+  useEffect(() => {
+    // Skip if already fetched or no payment methods yet
+    if (creditFetchedRef.current || !paymentMethods.length) return;
+
+    const creditMethod = paymentMethods.find(
+      (m) => m.payment_method_name === "Credit" || m.display_name === "Credit"
+    );
+
+    if (navigator.onLine && user?.outlet_id && creditMethod?.id) {
+      creditFetchedRef.current = true;
+      (async () => {
+        try {
+          await fetchCreditOrders(user.outlet_id, creditMethod.id);
+          await hydrateCreditOrders();
+        } catch (err) {
+          console.error("Credit fetch failed:", err);
+          creditFetchedRef.current = false; // allow retry on error
+        }
+      })();
     }
-  })();
-}, [user?.outlet_id, paymentMethods.length]);
+  }, [paymentMethods, user?.outlet_id]);
   // 🔹 Initial load: sync from API (if online) then hydrate from IndexedDB
   useEffect(() => {
     (async () => {
@@ -111,8 +114,8 @@ useEffect(() => {
 
   const orderKey = (o) => o?.localId || o?.orderId || o?.serverOrderId;
   // const selectedOrderData = selectedOrder ? orders.find(o => orderKey(o) === orderKey(selectedOrder)) || null : null;
-  const selectedOrderData = selectedOrder 
-    ? (activeBtn === "creditInvoiceBTN" ? creditOrders : orders).find(o => orderKey(o) === orderKey(selectedOrder)) 
+  const selectedOrderData = selectedOrder
+    ? (activeBtn === "creditInvoiceBTN" ? creditOrders : orders).find(o => orderKey(o) === orderKey(selectedOrder))
     : null;
 
   const isHoldInvoice = activeBtn === "holdInvoiceBTN";
@@ -127,10 +130,10 @@ useEffect(() => {
   const [searchTerm, setSearchTerm] = useState("");
   const [holdSearchTerm, setHoldSearchTerm] = useState("");
 
-  const currentOrders = 
-    activeBtn === "holdInvoiceBTN" ? sortedHoldOrders : 
-    activeBtn === "creditInvoiceBTN" ? creditOrders : 
-    orders;
+  const currentOrders =
+    activeBtn === "holdInvoiceBTN" ? sortedHoldOrders :
+      activeBtn === "creditInvoiceBTN" ? creditOrders :
+        orders;
 
 
   const filteredOrders = currentOrders.filter((order) => {
