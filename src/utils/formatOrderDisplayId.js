@@ -8,15 +8,11 @@ export const generateNextOrderId = () => {
   const user = useAuthStore.getState().user;
   const { outlets } = useOutletStore.getState();
   const { orders } = useOrderStore.getState();
-  console.log(outlets);
-  console.log(user);
 
   // 1. Find Outlet Code
   const userOutlet = outlets.find((o) => o.id === user?.outlet_id);
-  console.log(userOutlet);
   
   const outletCode = userOutlet?.outlet_code || "NA";
-  console.log(outletCode);
   
 
   // 2. Calculate Next Number
