@@ -37,6 +37,7 @@ export const createOfflineOrder = async ({
 
     orderItems: cartData.map(p => ({
       productId: p.id || p.productId,
+      imageUrl: p.img || p.imageUrl || null,
       product_name: p.name,
       type: null,
       price: p.price || p.unitPrice || p.sellingPrice || 0,

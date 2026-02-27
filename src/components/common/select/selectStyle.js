@@ -1,8 +1,10 @@
 export const commonSelectStyles = {
-  control: (provided) => ({
+  control: (provided, state) => ({
     ...provided,
     borderRadius: "4px",
-    border: "2px solid #ccc",
+    border: state.isFocused 
+      ? "2px solid var(--color-primary)" 
+      : "2px solid #ccc",
     boxShadow: "none",
     "&:hover": {
       border: "2px solid var(--color-primary)",

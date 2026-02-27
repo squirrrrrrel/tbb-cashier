@@ -47,7 +47,7 @@ const SideHeader = ({ setIsLogoutClicked }) => {
   
   // Updated shortcut mapping based on your requirements
   const navLinks = [
-    { name: "Home", icon: <HomeIcon />, target: "/pos/dashboard", key: "" }, // No shortcut specified for Home in your list
+    { name: "Home", icon: <HomeIcon />, target: "/pos/dashboard", key: "m" }, // No shortcut specified for Home in your list
     { name: "Customers", icon: <CustomersIcon />, target: "/pos/customers", key: "u" },
     { name: "Tables", icon: <TablesIcon />, target: "/pos/tables", key: "a" },
     { name: "Invoices", icon: <InvoicesIcon />, target: "/pos/invoices", key: "i" },
