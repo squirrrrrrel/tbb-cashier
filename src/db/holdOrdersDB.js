@@ -3,7 +3,7 @@ import { openDB } from "idb";
 const DB_NAME = "pos-hold-orders-db";
 const STORE = "holdOrders";
 
-const dbPromise = openDB(DB_NAME, 1, {
+const dbPromise = openDB(DB_NAME, 2, {
   upgrade(db) {
     if (!db.objectStoreNames.contains(STORE)) {
       db.createObjectStore(STORE, { keyPath: "localId" });
