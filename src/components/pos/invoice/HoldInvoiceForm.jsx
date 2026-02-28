@@ -6,9 +6,9 @@ import { useState } from "react";
 import PrintOrder from "../dashboard/PrintOrder";
 
 
-const HoldInvoiceFrom = ({ selectedHoldOrder , onAddToCart,onDelete}) => {
-const navigate = useNavigate();
-const [isPrinting, setIsPrinting] = useState(false);
+const HoldInvoiceFrom = ({ selectedHoldOrder, onAddToCart, onDelete }) => {
+  const navigate = useNavigate();
+  const [isPrinting, setIsPrinting] = useState(false);
   // const tax = selectedHoldOrder.orderItems.reduce((acc, item) => {
   //   const itemTax = item.taxPercentagePerProduct
   //     ? (item.itemSubtotal * item.taxPercentagePerProduct) / 100
@@ -16,14 +16,14 @@ const [isPrinting, setIsPrinting] = useState(false);
   //   return acc + itemTax;
   // }, 0);
   const handlePrint = async () => {
-  if (isPrinting) return;
+    if (isPrinting) return;
 
-  setIsPrinting(true);
-};
+    setIsPrinting(true);
+  };
 
-const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
+  const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
 
- if (!selectedHoldOrder) {
+  if (!selectedHoldOrder) {
 
     return (
       <div className="flex  h-full text-[#555555] border-l border-gray-200 px-4 py-2 text-sm">
@@ -32,10 +32,11 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
     );
   }
 
-  const discountValue = selectedHoldOrder?.cartData?.discount?.value==="FIXED" ? 
-                      selectedHoldOrder.cartData.discount.value :
-                      (parseFloat(selectedHoldOrder?.cartData?.subtotal)?.toFixed(2) + parseFloat(selectedHoldOrder?.cartData?.taxAmount)?.toFixed(2)) *  (parseFloat(selectedHoldOrder.cartData.discount.value)?.toFixed(2) / 100) ||0.00 ;
- const handleAddToCart = async () => {
+  // const discountValue = selectedHoldOrder?.cartData?.discount?.value === "FIXED" ?
+  //   selectedHoldOrder.cartData.discount.value :
+  //   (parseFloat(selectedHoldOrder?.cartData?.subtotal)?.toFixed(2) * (parseFloat(selectedHoldOrder.cartData.discount.value)?.toFixed(2) / 100) || 0.00);
+  const discountValue = (parseFloat(selectedHoldOrder?.cartData?.subtotal)?.toFixed(2) * (parseFloat(selectedHoldOrder.cartData.discount.value)?.toFixed(2) / 100) || 0.00);
+  const handleAddToCart = async () => {
     // 1️⃣ Restore cart
     onAddToCart(selectedHoldOrder.cartData);
 
@@ -48,7 +49,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
     await resumeHoldOrder(selectedHoldOrder);
     onDelete();
   };
-  
+
   return (
     <div className="pt-2.5 px-5 pb-2 flex flex-col h-full border-l border-gray-200">
       <div className="text-xl flex items-center justify-between  gap-2 pb-2.5">
@@ -106,12 +107,12 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 flex items-center justify-center rounded-md ">
-                <img src={item.img || defaultImg} alt="Product Image" />
+                <img src={item.image_url || item.img || defaultImg} alt="Product Image" />
               </div>
 
               <div className="flex flex-col gap-0.5">
                 <p className=" text-[#6f6f6f]">
-                  {item.name}
+                  {item.product_name || item.name}
                 </p>
                 <p>
                   P{(item.price.toFixed(2))} × {item.quantity}
@@ -152,7 +153,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           </div>
           <button className="bg-gradient-to-b from-secondary to-primary text-white text-sm font-bold w-full py-3.5 px-2 rounded-md
                    flex items-center justify-center gap-2 cursor-pointer"  disabled={isPrinting}
-  onClick={handlePrint}>
+            onClick={handlePrint}>
             <span
               role="img"
               aria-label="printer"
@@ -175,8 +176,8 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
         </div>
         <div className="flex gap-2 mt-2 text-sm">
           <div className="w-1/2">
-            <button 
-            className="bg-gradient-to-b from-secondary to-primary w-full text-white font-bold py-3.5 px-2 rounded-md
+            <button
+              className="bg-gradient-to-b from-secondary to-primary w-full text-white font-bold py-3.5 px-2 rounded-md
                    flex items-center justify-center gap-2 cursor-pointer" onClick={handleAddToCart}>
               <span
                 role="img"
@@ -223,7 +224,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
           </div>
         </div>
       </div>
-       {isPrinting && (
+      {isPrinting && (
         <PrintOrder
           show={isPrinting}
           setShow={setIsPrinting}
@@ -232,7 +233,7 @@ const resumeHoldOrder = useHoldOrderStore(state => state.resumeHoldOrder);
         />
       )}
     </div>
-   
+
   );
 }
 

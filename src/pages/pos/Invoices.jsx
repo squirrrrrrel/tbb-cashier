@@ -22,6 +22,7 @@ const Invoices = () => {
   const loadHoldOrdersFromDB = useHoldOrderStore(
     state => state.loadHoldOrdersFromDB
   );
+  const fetchHoldOrders = useHoldOrderStore(state => state.fetchHoldOrders);
   const { creditOrders, fetchCreditOrders, hydrate: hydrateCreditOrders } = useCreditOrderStore();
   const { paymentMethods, hydrate: hydratePaymentMethods } = usePaymentMethodStore();
   const user = useAuthStore((state) => state.user);
@@ -64,6 +65,9 @@ const Invoices = () => {
       try {
         if (navigator.onLine) {
           await fetchOrdersFromAPI(); // Server → IndexedDB
+          if (user?.outlet_id) {
+            await fetchHoldOrders(user.outlet_id); // Server → IndexedDB
+          }
         }
         await loadOrdersFromDB();      // IndexedDB → Zustand
         await loadHoldOrdersFromDB();  // Load hold invoices as well
