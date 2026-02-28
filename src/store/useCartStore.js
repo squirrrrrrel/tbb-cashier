@@ -183,13 +183,29 @@ export const useCartStore = create(
           };
         }),
       setCartData: (data) => set({ cartData: data }),
-      setCartFromHold: (cartData) =>
+      setCartFromHold: (cartData) => {
+        // Determine the correct managerDiscount value
+        // Dashboard expects: < 1 = percentage fraction (e.g. 0.1 for 10%), >= 1 = fixed amount
+        let discountVal = 0;
+        const d = cartData?.discount;
+        if (d) {
+          if (d.type === "PERCENT") {
+            discountVal = (d.value || 0) / 100; // 10 → 0.1
+          } else if (d.type === "FIXED") {
+            discountVal = d.value || 0;
+          } else {
+            // API-fetched hold orders have no type — treat as percentage (fixed is currently disabled)
+            discountVal = (d.value || 0) / 100; // 10 → 0.1
+          }
+        }
+
         set({
           cartData: cartData.orderItems,
           selectedCustomer: cartData.customer || null,
           selectedTable: cartData.table || null,
-          managerDiscount: cartData?.discount?.type === "PERCENT" ? cartData.discount.value / 100 : cartData.discount.value || 0,
-        }),
+          managerDiscount: discountVal,
+        });
+      },
       // ===== OTHER =====
       setSelectedCustomer: (customer) => set({ selectedCustomer: customer }),
       setSelectedTable: (table) => set({ selectedTable: table }),

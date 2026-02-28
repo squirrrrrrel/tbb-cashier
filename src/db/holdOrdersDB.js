@@ -30,4 +30,13 @@ export const clearHoldOrdersDB = async () => {
   const tx = db.transaction(STORE, "readwrite");
   await tx.objectStore(STORE).clear();
   await tx.done;
-}
+};
+
+export const bulkUpsertHoldOrdersDB = async (orders) => {
+  const db = await dbPromise;
+  const tx = db.transaction(STORE, "readwrite");
+  for (const order of orders) {
+    await tx.store.put(order);
+  }
+  await tx.done;
+};

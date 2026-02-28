@@ -6,6 +6,7 @@ import { useCartStore } from "../../store/useCartStore";
 import SearchBar from "../../components/searchBar/SearchBar";
 import { useNavigate } from "react-router-dom";
 import { useHoldOrderStore } from "../../store/useHoldOrderStore";
+import { useAuthStore } from "../../store/useAuthStore";
 const Tables = () => {
   const { tables, hydrate, hydrated, addTable, deleteTable } = useTableStore();
   const [addNewTableModal, setAddNewModal] = useState(false);
@@ -18,11 +19,21 @@ const Tables = () => {
   const loadHoldOrdersFromDB = useHoldOrderStore(
     state => state.loadHoldOrdersFromDB
   );
+  const fetchHoldOrders = useHoldOrderStore(state => state.fetchHoldOrders);
+  const user = useAuthStore((state) => state.user);
   useEffect(() => {
-    loadHoldOrdersFromDB();
+    (async () => {
+      if (navigator.onLine && user?.outlet_id) {
+        await fetchHoldOrders(user.outlet_id);
+      }
+      await loadHoldOrdersFromDB();
+    })();
   }, []);
-  // to find the table ids which are on hold
-  const holdOrderTableIds = holdOrders?.map((order) => order.cartData.table?.localId);
+  // to find the table ids which are on hold (collect all possible IDs for matching)
+  const holdOrderTableIds = holdOrders?.flatMap((order) => {
+    const t = order.cartData?.table;
+    return t ? [t.localId, t.serverId, t.id].filter(Boolean) : [];
+  }) || [];
 
 
   useEffect(() => {
@@ -81,7 +92,8 @@ const Tables = () => {
     .filter((item) => {
       const isOccupied =
         item.localId === selectedTable?.localId ||
-        holdOrderTableIds.includes(item.localId);
+        holdOrderTableIds.includes(item.localId) ||
+        holdOrderTableIds.includes(item.serverId);
 
       if (filter === "occupied") return isOccupied;
       if (filter === "vacant") return !isOccupied;
@@ -137,7 +149,7 @@ const Tables = () => {
             <div className="flex flex-wrap gap-10 overflow-y-auto overflow-x-hidden py-5 px-3 h-full m-2 no-scrollbar">
               {filteredTableList.map((item) => {
                 const isSelected = selectedTable?.localId === item?.localId;
-                const isOnHold = holdOrderTableIds?.includes(item.localId);
+                const isOnHold = holdOrderTableIds?.includes(item.localId) || holdOrderTableIds?.includes(item.serverId);
                 return (
                   <div className="group" key={item.localId}>
                     {/* Table Visual Card */}
@@ -146,35 +158,46 @@ const Tables = () => {
                         className={`relative z-10 flex h-[120px] w-[150px] items-center justify-center rounded-[15px] text-center font-semibold shadow-[0_0_4px_0_rgba(0,0,0,0.11)] transition-all duration-300
                       ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary text-white"
-                            : "bg-white text-secondary"}`}
+                            : isOnHold
+                              ? "bg-gradient-to-b from-secondary to-primary text-white"
+                              : "bg-white text-secondary"}`}
                       >
-                        <div className={`flex flex-col gap-1 text-secondary ${isSelected ? "text-white" : "text-[#117892]"}`}>
+                        <div className={`flex flex-col gap-1 ${isSelected ? "text-white" : isOnHold ? "text-white" : "text-[#117892]"}`}>
                           <h3 className="text-2xl">Table {item.tableNumber}</h3>
                           <p className={`text-md font-semibold `}>
                             Seats: {item.seats}
                           </p>
+                          {isOnHold && <span className="text-xs font-normal opacity-90">On Hold</span>}
                         </div>
 
                         {/* Decorative Table  (Chair effect) */}
                         <span className={`absolute left-[40px] top-[-15px] h-2.5 w-[70px] rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
-                            : "bg-white"}`}>
+                            : isOnHold
+                              ? "bg-gradient-to-b from-secondary to-primary"
+                              : "bg-white"}`}>
                         </span>
                         <span className={`absolute bottom-[-15px] left-[40px] h-2.5 w-[70px] rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
-                            : "bg-white"}`}>
+                            : isOnHold
+                              ? "bg-gradient-to-b from-secondary to-primary"
+                              : "bg-white"}`}>
                         </span>
                         <span className={`absolute left-[-15px] top-[30px] h-[70px] w-2.5 rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
-                            : "bg-white"}`}>
+                            : isOnHold
+                              ? "bg-gradient-to-b from-secondary to-primary"
+                              : "bg-white"}`}>
                         </span>
                         <span className={`absolute right-[-15px] top-[30px] h-[70px] w-2.5 rounded-md shadow-[0_0_6px_0_rgba(0,0,0,0.11)] 
                     ${isSelected
                             ? "bg-gradient-to-b from-secondary to-primary"
-                            : "bg-white"}`}>
+                            : isOnHold
+                              ? "bg-gradient-to-b from-secondary to-primary"
+                              : "bg-white"}`}>
                         </span>
                       </div>
 

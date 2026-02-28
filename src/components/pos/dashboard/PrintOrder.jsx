@@ -163,12 +163,20 @@ const PrintOrder = ({ show, setShow, finalOrderData, isHold = false }) => {
         const { discount, subtotal, taxAmound, tax_amount, taxAmount, discount_amount, discountAmount } = finalOrderData || {};
 
         // Handle case where discount is an object {type, value}
-        if (discount && typeof discount === 'object' && discount.type) {
+        if (discount && typeof discount === 'object') {
             if (discount.type === "PERCENT") {
                 const baseAmount = (parseFloat(subtotal) || 0) + (parseFloat(tax_amount || taxAmount || taxAmound) || 0);
                 return baseAmount * (discount.value / 100);
             }
-            return discount.value || 0;
+            if (discount.type === "FIXED") {
+                return discount.value || 0;
+            }
+            // No type (API-fetched hold orders) — treat value as percentage
+            if (discount.value) {
+                const baseAmount = (parseFloat(subtotal) || 0);
+                return baseAmount * (discount.value / 100);
+            }
+            return 0;
         }
 
         // Handle cases where discount is just a number/field
