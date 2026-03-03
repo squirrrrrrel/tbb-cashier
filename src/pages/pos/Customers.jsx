@@ -6,6 +6,7 @@ import { useCustomerStore } from "../../store/useCustomerStore";
 import { useCartStore } from "../../store/useCartStore";
 import SearchBar from "../../components/searchBar/SearchBar";
 import { countriesList } from "../../store/countryStore";
+import { useAuthStore } from "../../store/useAuthStore";
 
 const Customers = () => {
   const {
@@ -20,6 +21,8 @@ const Customers = () => {
   const { selectedCustomer, setSelectedCustomer } = useCartStore();
   const [focusedCustomer, setFocusedCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const user = useAuthStore((u) => u.user);
+  const outletId = user.outlet_id || user.outletId || null;
 
   // 🔹 LOAD CUSTOMERS FROM INDEXEDDB
   useEffect(() => {
@@ -27,21 +30,28 @@ const Customers = () => {
   }, [hydrate]);
 
 
-const filteredCustomers = React.useMemo(() => {
-  const search = searchTerm.toLowerCase();
+  const filteredCustomers = React.useMemo(() => {
 
-  return customers
-    .filter((customer) => {
-      return (
-        customer.firstName?.toLowerCase().includes(search) ||
-        customer.lastName?.toLowerCase().includes(search) ||
-        customer.email?.toLowerCase().includes(search) ||
-        customer.phone?.includes(search)
-      );
-    })
-    // STABILIZE: Sort by localId or Date created so they never swap
-    .sort((a, b) => (a.localId > b.localId ? -1 : 1)); 
-}, [customers, searchTerm]);
+    const outletCustomers = customers.filter((customer) => {
+    // Check both common naming conventions just in case
+    const customerOutletId = customer.outletId || customer.outlet_id;
+    return String(customerOutletId) === String(outletId);
+  });
+
+    const search = searchTerm.toLowerCase();
+
+    return outletCustomers
+      .filter((customer) => {
+        return (
+          customer.firstName?.toLowerCase().includes(search) ||
+          customer.lastName?.toLowerCase().includes(search) ||
+          customer.email?.toLowerCase().includes(search) ||
+          customer.phone?.includes(search)
+        );
+      })
+      // STABILIZE: Sort by localId or Date created so they never swap
+      .sort((a, b) => (a.localId > b.localId ? -1 : 1));
+  }, [customers, searchTerm]);
 
   if (!hydrated) return <OfflineLoader />;
 

@@ -100,7 +100,7 @@ const SideHeader = ({ setIsLogoutClicked }) => {
       </div>
       <div className="logout">
         <div className="text-center text-xs text-[#555555]">
-          {user?.role?.name === "admin" ? "Admin" : user?.first_name || ""}
+          {user?.role?.name === "manager" ? "Admin" : user?.first_name || ""}
         </div>
         <div
           onClick={() => setIsLogoutClicked(true)}
