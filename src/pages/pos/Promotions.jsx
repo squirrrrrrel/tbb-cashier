@@ -63,8 +63,10 @@ const Promotions = () => {
   const combinedScheduleOptions = [
     { label: "Fixed 24hours", value: "WEEKLY:FULL_DAY" },
     { label: "Fixed with Timer", value: "WEEKLY:TIME_RANGE" },
+    { label: "Fixed Between", value: "BETWEEN_DAYS:TIME_RANGE" },
     { label: "Periodic 24hours", value: "DATE_RANGE:FULL_DAY" },
     { label: "Periodic with Timer", value: "DATE_RANGE:TIME_RANGE" },
+    { label: "Periodic Between", value: "BETWEEN_DATES:TIME_RANGE" },
   ];
 
   const outletOptions = useMemo(() =>
@@ -138,12 +140,14 @@ const Promotions = () => {
       return `${h % 12 || 12}:${minutes} ${ampm}`;
 
     };
-    const formattedTime = p.schedule_mode === "FULL_DAY" ? "24 Hours" : formatTimeStr(time);
+    const formattedTime = p.schedule_mode === "FULL_DAY" ? "FULL_DAY" : formatTimeStr(time);
+
+    const dateOrDay = p.schedule_type === "WEEKLY" ? "week" : p.schedule_type === "BETWEEN_DAYS" ? "week" : p.schedule_type === "DATE_RANGE" ? "date" : p.schedule_type === "BETWEEN_DATES" ? "date" : "";
 
     return (
       <div className="flex flex-col text-xs">
-        <span>{formattedDate ? `🗓️${formattedDate}` : ""}</span>
-        <span className="">{formattedDay ? `🗓️${formattedDay}` : ""}</span>
+        {dateOrDay === "week" && <span>{formattedDay ? `🗓️${formattedDay}` : ""}</span> }
+        {dateOrDay === "date" && <span>{formattedDate ? `🗓️${formattedDate}` : ""}</span>}
         <span>{formattedTime ? `🕛${formattedTime}` : ""}</span>
       </div>
     );
