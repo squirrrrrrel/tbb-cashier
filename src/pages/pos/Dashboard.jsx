@@ -187,7 +187,7 @@ const Dashboard = () => {
     };
   }, [socket]);
 
-useEffect(() => {
+  useEffect(() => {
     let filtered = [...products];
 
     // Category Filter
@@ -334,80 +334,6 @@ useEffect(() => {
     return false;
   };
 
-
-  // const isScheduleValid = (promo, now) => {
-  //   const jsDay = now.getDay();
-  //   const currentDay = jsDay === 0 ? 7 : jsDay; // Sunday: 0→7, Mon–Sat: 1–6 stay
-  //   const currentTime = now.toTimeString().slice(0, 5); // HH:mm
-  //   const currentDate = now.toISOString().split('T')[0];
-
-  //   /* -------- DAILY -------- */
-  //   if (promo.schedule_type === 'DAILY') {
-  //     return isTimeAllowed(promo, currentTime);
-  //   }
-
-  //   /* -------- WEEKLY -------- */
-  //   if (promo.schedule_type === 'WEEKLY') {
-  //     if (
-  //       promo.schedule_start_day == null ||
-  //       promo.schedule_end_day == null
-  //     ) return false;
-
-  //     if (!isDayBetween(currentDay, promo.schedule_start_day, promo.schedule_end_day)) {
-  //       return false;
-  //     }
-
-  //     return isTimeAllowed(promo, currentTime);
-  //   }
-
-  //   /* -------- DATE RANGE -------- */
-  //   if (promo.schedule_type === 'DATE_RANGE') {
-  //     if (
-  //       !promo.schedule_start_date ||
-  //       !promo.schedule_end_date
-  //     ) return false;
-
-  //     if (
-  //       currentDate < promo.schedule_start_date ||
-  //       currentDate > promo.schedule_end_date
-  //     ) return false;
-
-  //     return isTimeAllowed(promo, currentTime);
-  //   }
-
-  //   return false;
-  // };
-
-  // const isTimeAllowed = (promo, currentTime) => {
-  //   if (promo.schedule_mode === 'ALWAYS') return true;
-
-  //   if (promo.schedule_mode === 'FULL_DAY') {
-  //     return true; // 00:00 → 23:59
-  //   }
-
-  //   if (promo.schedule_mode === 'TIME_RANGE') {
-  //     if (!promo.schedule_start_time || !promo.schedule_end_time) {
-  //       return false;
-  //     }
-
-  //     // Overnight support
-  //     if (promo.schedule_start_time <= promo.schedule_end_time) {
-  //       return (
-  //         currentTime >= promo.schedule_start_time &&
-  //         currentTime <= promo.schedule_end_time
-  //       );
-  //     }
-
-  //     // Overnight (22:00 → 06:00)
-  //     return (
-  //       currentTime >= promo.schedule_start_time ||
-  //       currentTime <= promo.schedule_end_time
-  //     );
-  //   }
-
-  //   return false;
-  // };
-
   const isScheduleValid = (promo, now) => {
     const jsDay = now.getDay();
     const currentDay = jsDay === 0 ? 7 : jsDay; // Mon:1, Tue:2 ... Sun:7
@@ -434,6 +360,41 @@ useEffect(() => {
     const startForConfig = (promo.schedule_start_time || "00:00").slice(0, 5);
     const endForConfig = (promo.schedule_end_time || "00:00").slice(0, 5);
     const isOvernightConfig = promo.schedule_mode === 'TIME_RANGE' && startForConfig > endForConfig;
+
+    // 1. Handle the new CONTINUOUS "BETWEEN_DAYS" logic
+    if (promo.schedule_type === 'BETWEEN_DAYS') {
+      const startDay = Number(promo.schedule_start_day);
+      const endDay = Number(promo.schedule_end_day);
+      const startTime = (promo.schedule_start_time || "00:00").slice(0, 5);
+      const endTime = (promo.schedule_end_time || "23:59").slice(0, 5);
+
+      // Create a "comparable" value by combining Day + Time (e.g., Mon 11:00 becomes 111:00)
+      const currentWeight = `${currentDay}${currentTime}`;
+      const startWeight = `${startDay}${startTime}`;
+      const endWeight = `${endDay}${endTime}`;
+
+      if (startDay <= endDay) {
+        // Standard: Mon to Wed
+        return currentWeight >= startWeight && currentWeight <= endWeight;
+      } else {
+        // Wrapped: Sat to Tue
+        return currentWeight >= startWeight || currentWeight <= endWeight;
+      }
+    }
+
+    // 2. Handle the new CONTINUOUS "BETWEEN_DATES" logic
+    if (promo.schedule_type === 'BETWEEN_DATES') {
+      // Construct full JS Dates for start and end
+      const startDate = new Date(promo.schedule_start_date);
+      const [sH, sM] = (promo.schedule_start_time || "00:00").split(":");
+      startDate.setHours(Number(sH), Number(sM), 0, 0);
+
+      const endDate = new Date(promo.schedule_end_date);
+      const [eH, eM] = (promo.schedule_end_time || "23:59").split(":");
+      endDate.setHours(Number(eH), Number(eM), 59, 999);
+
+      return now >= startDate && now <= endDate;
+    }
 
     /* -------- DAILY -------- */
     if (promo.schedule_type === 'DAILY') {
