@@ -304,6 +304,15 @@ const Dashboard = () => {
 
 
   //promotion functions
+
+  const getBotswanaTime = () => {
+    const now = new Date();
+
+    // This produces a string like "2024-05-20 14:30:05" in Botswana's timezone
+    const tzString = now.toLocaleString("en-US", { timeZone: "Africa/Gaborone" });
+    return new Date(tzString);
+  };
+
   const normalizeId = (v) => (v == null ? "" : String(v));
   const includesId = (arr, id) => {
     if (!Array.isArray(arr) || !arr.length) return false;
@@ -512,7 +521,8 @@ const Dashboard = () => {
       return product?.sellingPrice ?? 0;
     }
 
-    const now = new Date();
+    // const now = new Date();
+    const now = getBotswanaTime();
 
     const applicablePromos = activePromos.filter(
       (p) => {
