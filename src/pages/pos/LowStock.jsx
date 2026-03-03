@@ -29,7 +29,6 @@ const LowStock = () => {
     categoriesHydrate();
     lowStockHydrate();
   }, [productHydrate, categoriesHydrate, lowStockHydrate]);
-  if (!productsHydrated && !categoriesHydrated && !lowStockHydrated) return <OfflineLoader />;
 
 
   const productOptions = [
@@ -40,9 +39,29 @@ const LowStock = () => {
     ...new Set(categories.map((i) => i.category_name).filter(Boolean)),
   ].map((v) => ({ label: v, value: v }));
 
-  const outletOptions = [
-    ...new Set(lowStock.map((i) => i.outletName).filter(Boolean)),
-  ].map((v) => ({ label: v, value: v }));
+  // const outletOptions = [
+  //   ...new Set(lowStock.map((i) => i.outletName).filter(Boolean)),
+  // ].map((v) => ({ label: v, value: v }));
+
+  const outletOptions = React.useMemo(() => {
+    // Start with the user's current outlet so it's always available
+    const baseOptions = user?.outlet_name ? [user.outlet_name] : [];
+
+    // Add outlets found in the lowStock data
+    const stockOutlets = lowStock.map((i) => i.outletName).filter(Boolean);
+
+    return [...new Set([...baseOptions, ...stockOutlets])].map((v) => ({
+      label: v,
+      value: v,
+    }));
+  }, [lowStock, user]);
+
+  // Sync filter when user loads
+  useEffect(() => {
+    if (user?.outlet_name && !filters.outlet) {
+      setFilters(prev => ({ ...prev, outlet: user.outlet_name }));
+    }
+  }, [user, filters.outlet]);
 
   const filtered = lowStock.filter((p) => {
     if (filters.product && p.productName !== filters.product) return false;
@@ -50,6 +69,9 @@ const LowStock = () => {
     if (filters.outlet && p.outletName !== filters.outlet) return false;
     return true;
   });
+
+  
+  if (!productsHydrated && !categoriesHydrated && !lowStockHydrated) return <OfflineLoader />;
 
   return (
     <div className="bg-background w-full h-full p-4">
@@ -61,7 +83,10 @@ const LowStock = () => {
           <Select
             options={outletOptions}
             isDisabled={true}
-            value={outletOptions.find(o => o.value === (user?.outlet_name || filters.outlet))}
+            value={
+              outletOptions.find(o => o.value === (filters.outlet || user?.outlet_name)) ||
+              (user?.outlet_name ? { label: user.outlet_name, value: user.outlet_name } : null)
+            }
             placeholder="Select Outlet"
             styles={commonSelectStyles}
             onChange={(o) =>

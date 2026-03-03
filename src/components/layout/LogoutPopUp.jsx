@@ -13,8 +13,44 @@ const LogoutPopUp = ({ setIsLogoutClicked }) => {
     setOpen(true);
   }, []);
 
-  const handleLogout = () => {
+  // --- Helper to clear IndexedDB ---
+  // const clearIndexedDB = async () => {
+  //   // List all possible DB names used by your app
+  //   const databases = [
+  //     "pos-auth-db",
+  //     "pos-categories-db",
+  //     "pos-credit-order-db",
+  //     "pos-customers-db",
+  //     "pos-hold-orders-db",
+  //     "pos-lowstock-db",
+  //     "pos-orders-db",
+  //     "pos-outlet-db",
+  //     "pos-payment-methods-db",
+  //     "pos-products-db",
+  //     "pos-promotions-db",
+  //     "pos-tables-db"
+  //   ];
+
+  //   databases.forEach((dbName) => {
+  //     const req = indexedDB.deleteDatabase(dbName);
+
+  //     req.onsuccess = () => {
+  //       console.log(`Deleted database: ${dbName}`);
+  //     };
+  //     req.onerror = () => {
+  //       console.error(`Couldn't delete database: ${dbName}`);
+  //     };
+  //     req.onblocked = () => {
+  //       console.warn(`Deletion of ${dbName} blocked. Close other tabs.`);
+  //     };
+  //   });
+  // };
+
+  const handleLogout = async () => {
     try {
+      // await clearIndexedDB();
+      // localStorage.clear();
+      // sessionStorage.clear();
       logout();
       resetCart();
       setIsLogoutClicked(false);

@@ -142,9 +142,9 @@ const Promotions = () => {
 
     return (
       <div className="flex flex-col text-xs">
-        <span>{formattedDate ? `🗓️${formattedDate}` : "-"}</span>
-        <span>{formattedTime ? `🕛${formattedTime}` : "-"}</span>
-        <span className="">{formattedDay ? `🗓️${formattedDay}` : "-"}</span>
+        <span>{formattedDate ? `🗓️${formattedDate}` : ""}</span>
+        <span className="">{formattedDay ? `🗓️${formattedDay}` : ""}</span>
+        <span>{formattedTime ? `🕛${formattedTime}` : ""}</span>
       </div>
     );
   };
@@ -306,7 +306,7 @@ const Promotions = () => {
                     <td className="p-2 max-w-[150px] truncate">{getCategoryByProduct(p.product)}</td>
                     <td className="p-2 max-w-[150px]">{getNameFromId(p.product, products, "name")}</td>
                     <td className={`p-2 ${p.type === "HIKE" ? "text-green-600" : "text-red-500"}`}>
-                      {p.type === "Hike" ? "+" : "-"}{p.type === "FREE" ? "FREE" : `${p.value}%`}</td>
+                      {p.type === "HIKE" ? "+" : "-"}{p.type === "FREE" ? "FREE" : `${p.value}%`}</td>
                     <td className="p-2">
                       <div className="flex flex-col items-center justify-center">
                         {priceInfo.old && (<span className="line-through">{priceInfo.old}</span>)}

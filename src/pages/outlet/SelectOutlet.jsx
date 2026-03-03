@@ -121,8 +121,15 @@ const FloatingItem = ({ item, index }) => {
 const SelectOutlet = () => {
     const { outlets, hydrate } = useOutletStore();
     const setOutlet = useAuthStore((s) => s.setOutlet);
+    const user = useAuthStore((s) => s.user);
     const navigate = useNavigate();
     const resetCart = useCartStore((s) => s.resetCart);
+    const tenantId = user.tenantId || user.tenant_id || null;
+
+    const tenantOutlet = outlets.filter((outlet) => {
+        const tenantId = outlet.tenantId || outlet.tenant_id;
+        return String(tenantId) === String(tenantId);
+    });
 
     useEffect(() => {
         hydrate();
@@ -130,10 +137,10 @@ const SelectOutlet = () => {
 
 
     const handleSelectOutlet = async (outletId, outletName) => {
-    await setOutlet(outletId, outletName);   // save to IndexedDB + Zustand
-    resetCart(); // Clear any existing cart data on outlet change
-    navigate("/pos/dashboard");  // normal navigation
-  };
+        await setOutlet(outletId, outletName);   // save to IndexedDB + Zustand
+        resetCart(); // Clear any existing cart data on outlet change
+        navigate("/pos/dashboard");  // normal navigation
+    };
 
     return (
         <div className="login relative overflow-hidden bg-linear-to-b from-primary to-secondary min-h-screen flex items-center justify-center">
@@ -148,7 +155,7 @@ const SelectOutlet = () => {
                     Select Outlet
                 </h1>
                 <div className="">
-                    {outlets.map((outlet) => (
+                    {tenantOutlet.map((outlet) => (
                         <div
                             key={outlet.id}
                             className="text-sm cursor-pointer border-b border-primary hover:bg-gradient-to-b from-secondary to-primary hover:text-white transition-colors"
