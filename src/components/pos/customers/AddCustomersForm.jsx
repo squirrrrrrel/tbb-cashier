@@ -4,6 +4,7 @@ import { commonSelectStyles } from "../../common/select/selectStyle";
 import { useState, useEffect } from "react";
 import { useNotification } from "../../../hooks/useNotification.jsx";
 import PhoneInputWithCode from "../../phoneCodeInput/PhoneInputWithCode.jsx";
+import LoadingBar from "../../common/LoadingBar/LoadingBar.jsx";
 
 const InputComp = ({ label, placeholder, isRequired = false, type, name, value, onChange, }) => {
   return (
@@ -35,7 +36,7 @@ const AddCustomersForm = ({
 }) => {
 
   const { notifySuccess, notifyError } = useNotification();
-
+  const [isLoading, setIsLoading] = useState(false);
   const defaultCodeOption = {
     label: "Select Code",
     value: "",
@@ -132,7 +133,7 @@ const AddCustomersForm = ({
       phoneCode: formData.phoneCode ? formData.phoneCode.value : "",
       country: formData.country.value,
     };
-
+    setIsLoading(true);
 
 
     if (!validateForm(formData)) return;
@@ -153,6 +154,8 @@ const AddCustomersForm = ({
     } catch (error) {
       notifyError("An error occurred. Please try again.");
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -160,6 +163,7 @@ const AddCustomersForm = ({
 
   return (
     <div className="bg-white p-3 border-l border-gray-200 ">
+      <LoadingBar isLoading={isLoading} />
       <h2 className="text-2xl font-semibold text-[#555555]">{focusedCustomer ? "Edit Customer" : "Add New Customer"}</h2>
       <div className="form mt-4" onSubmit={handleSubmit} >
         <form className="flex flex-col gap-3 ">
@@ -313,7 +317,7 @@ const AddCustomersForm = ({
             />
           </div>
           <button className="submit w-full p-3 bg-linear-180 from-primary to-secondary text-white font-bold text-center rounded-lg cursor-pointer mt-2">
-            {focusedCustomer ? "Update Customer" : "Save Customer"}
+            {isLoading ? "Saving..." : focusedCustomer ? "Update Customer" : "Save Customer"}
           </button>
           {focusedCustomer ? (
             <button type="button" onClick={handleCancel} className="cancel mb-5 w-full p-3 bg-white border-2 border-gray-200 text-[#555555] font-bold text-center rounded-lg cursor-pointer">Cancel</button>

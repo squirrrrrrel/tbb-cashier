@@ -23,6 +23,7 @@ import { usePromotionStore } from "../../store/usePromotionStore";
 import PettyCash from "../../components/pos/dashboard/PettyCash";
 import api from "../../utils/api";
 import { useSocket } from "../../socket/SocketProvider";
+import LoadingBar from "../../components/common/LoadingBar/LoadingBar";
 
 const Dashboard = () => {
   const socket = useSocket();
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const { cartData, setCartData, resetCart, selectedCustomer, selectedTable, addToCart, managerDiscount } = useCartStore();
   const { isRetail, isRetailOpen } = useRetail();
   const [isPettyClicked, setIsPettyClicked] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const scanToCart = (barcode) => {
     const trimmed = (barcode || "").trim();
@@ -165,7 +167,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!socket) return;
-
+    setIsLoading(true);
     const handleOrderRefresh = (payload) => {
       if (payload?.type !== "REFETCH_STOCK_LIST_FOR_CASHIER") return;
 
@@ -180,7 +182,7 @@ const Dashboard = () => {
 
     socket.on("purchase:product", handleOrderRefresh);
     socket.on("promotion:refresh", handlePromotionRefresh);
-
+    setIsLoading(false);
     return () => {
       socket.off("purchase:product", handleOrderRefresh);
       socket.off("promotion:refresh", handlePromotionRefresh);
@@ -225,9 +227,9 @@ const Dashboard = () => {
     console.log("✅ orderData updated:", orderData);
   }, [orderData]);
 
-  if (!hydrated || !promoHydarated) {
-    return <OfflineLoader />;
-  }
+  // if (!hydrated || !promoHydarated) {
+  //   return <OfflineLoader />;
+  // }
 
   const handleCustomerChange = (e) => {
     const { name, value } = e.target;
@@ -239,7 +241,7 @@ const Dashboard = () => {
 
 
   const handlePay = async (finalOrderData) => {
-
+    setIsLoading(true);
     try {
       const result = await createOrder({
         cartData,
@@ -279,6 +281,8 @@ const Dashboard = () => {
     } catch (err) {
       notifyError("Order failed");
       console.error("Error creating order:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
   const subtotal = cartData.reduce(
@@ -556,6 +560,7 @@ const Dashboard = () => {
 
   //whats app
   const handleWhatsApp = async () => {
+    setIsLoading(true);
     try {
       // To safely concatenate phone code and phone number, ensure both exist, then fallback if missing.
       let finalphone =
@@ -649,12 +654,15 @@ Hope to see you again soon!
       notifyError(
         <>Whats App is not connected or Something <br />  went wrong while sending the message!</>
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
 
   return (
     <div className="flex overflow-x-hidden">
+      <LoadingBar isLoading={!hydrated || !promoHydarated || isLoading} />
       <div className="home flex-grow bg-background flex flex-col h-screen p-3 gap-2">
         {payToProceed ? (
           <Payment setPayToProceed={setPayToProceed} total={parseFloat(total).toFixed(2)} onPay={handlePay} tax={parseFloat(tax).toFixed(2)} discount={parseFloat(discount).toFixed(2)} subtotal={parseFloat(subtotal).toFixed(2)} cartProducts={cartData} />

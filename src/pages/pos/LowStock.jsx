@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { useLowStockStore } from "../../store/useLowStockStore";
 import { useProductStore } from "../../store/useProductStore";
-import OfflineLoader from "../../components/OfflineLoader";
+// import OfflineLoader from "../../components/OfflineLoader";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
 import defaultImg from "./../../assets/images/Default_Product_Img.png";
 import { useCategoryStore } from "../../store/useCategoryStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useRetail } from "../../hooks/useRetail";
 import { useNavigate } from "react-router-dom";
+import LoadingBar from "../../components/common/LoadingBar/LoadingBar";
 
 const LowStock = () => {
   const { lowStock, hydrate: lowStockHydrate, hydrated: lowStockHydrated } = useLowStockStore();
@@ -71,10 +72,11 @@ const LowStock = () => {
   });
 
   
-  if (!productsHydrated && !categoriesHydrated && !lowStockHydrated) return <OfflineLoader />;
+  // if (!productsHydrated && !categoriesHydrated && !lowStockHydrated) return <OfflineLoader />;
 
   return (
     <div className="bg-background w-full h-full p-4">
+      <LoadingBar isLoading={!productsHydrated || !categoriesHydrated || !lowStockHydrated} />
       <h1 className="text-2xl font-bold text-gray-700">Low Stock List</h1>
 
       {/* Filters */}

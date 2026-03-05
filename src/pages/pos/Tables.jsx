@@ -7,6 +7,7 @@ import SearchBar from "../../components/searchBar/SearchBar";
 import { useNavigate } from "react-router-dom";
 import { useHoldOrderStore } from "../../store/useHoldOrderStore";
 import { useAuthStore } from "../../store/useAuthStore";
+import LoadingBar from "../../components/common/LoadingBar/LoadingBar";
 const Tables = () => {
   const { tables, hydrate, hydrated, addTable, deleteTable } = useTableStore();
   const [addNewTableModal, setAddNewModal] = useState(false);
@@ -106,6 +107,7 @@ const Tables = () => {
 
   return (
     <div className="grid grid-cols-1 w-full h-screen">
+      <LoadingBar isLoading={!hydrated} />
       <div className="flex flex-col bg-background h-full overflow-hidden">
         {/* Tab Changer Header */}
         <div className="grid grid-cols-[repeat(4,150px)]  gap-3 bg-white p-2.5 shadow-[0_0_3px_0_rgba(0,0,0,0.15)]">
