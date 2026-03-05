@@ -7,6 +7,7 @@ import { useCartStore } from "../../store/useCartStore";
 import SearchBar from "../../components/searchBar/SearchBar";
 import { countriesList } from "../../store/countryStore";
 import { useAuthStore } from "../../store/useAuthStore";
+import LoadingBar from "../../components/common/LoadingBar/LoadingBar";
 
 const Customers = () => {
   const {
@@ -57,6 +58,7 @@ const Customers = () => {
 
   return (
     <div className="w-full h-full flex">
+      <LoadingBar isLoading={!hydrated} />
       {/* LEFT: CUSTOMER LIST */}
       <div className="customer-list py-2 flex-grow bg-background flex flex-col h-full">
         <div className="customer-list-header mb-2 px-2.5">

@@ -12,10 +12,11 @@ import { useCartStore } from "../../store/useCartStore";
 import { useCreditOrderStore } from "../../store/useCreditOrderStore";
 import { usePaymentMethodStore } from "../../store/usePaymentMethodStore";
 import { useAuthStore } from "../../store/useAuthStore";
+import LoadingBar from "../../components/common/LoadingBar/LoadingBar";
 const Invoices = () => {
   const [activeBtn, setActiveBtn] = useState("invoiceBTN");
   const { setCartFromHold } = useCartStore();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [givenDate, setGivenDate] = useState(new Date());
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const holdOrders = useHoldOrderStore(state => state.holdOrders);
@@ -49,12 +50,15 @@ const Invoices = () => {
     if (navigator.onLine && user?.outlet_id && creditMethod?.id) {
       creditFetchedRef.current = true;
       (async () => {
+        setIsLoading(true);
         try {
           await fetchCreditOrders(user.outlet_id, creditMethod.id);
           await hydrateCreditOrders();
         } catch (err) {
           console.error("Credit fetch failed:", err);
           creditFetchedRef.current = false; // allow retry on error
+        } finally {
+          setIsLoading(false);
         }
       })();
     }
@@ -62,6 +66,7 @@ const Invoices = () => {
   // 🔹 Initial load: sync from API (if online) then hydrate from IndexedDB
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       try {
         if (navigator.onLine) {
           await fetchOrdersFromAPI(); // Server → IndexedDB
@@ -73,6 +78,8 @@ const Invoices = () => {
         await loadHoldOrdersFromDB();  // Load hold invoices as well
       } catch (err) {
         console.error("Failed to load invoices on mount:", err);
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, [loadOrdersFromDB, loadHoldOrdersFromDB]);
@@ -233,6 +240,7 @@ const Invoices = () => {
     if (!refundData?.order_id) {
       throw new Error("Missing order_id for refund");
     }
+    setIsLoading(true);
     try {
       // 1️⃣ Call backend refund API
       await refundOrderAPI(refundData);
@@ -245,6 +253,8 @@ const Invoices = () => {
     } catch (error) {
       // 🔴 Let RefundPopup handle error message
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -252,6 +262,7 @@ const Invoices = () => {
     if (!newExchangeData?.order_id) {
       throw new Error("Missing order_id for exchange");
     }
+    setIsLoading(true);
     try {
       // 1️⃣ Call backend exchange API
       await exchangeOrderAPI(newExchangeData);
@@ -264,11 +275,14 @@ const Invoices = () => {
     } catch (error) {
       // 🔴 Let RefundPopup handle error message
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
     <div className="flex w-full h-screen">
+      <LoadingBar isLoading={isLoading} />
       <div className=" bg-background flex-grow flex flex-col min-h-0">
         <div className="bg-white invoice-list-header shadow-[0_0_3px_#00000028] p-2 mb-0.5">
           <div>

@@ -8,6 +8,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     const [exchangeRows, setExchangeRows] = useState([]);
     const [restock, setRestock] = useState(true);
     const { notifyError, notifySuccess } = useNotification();
+    const [isProcessing, setIsProcessing] = useState(false);
 
 
     useEffect(() => {
@@ -132,6 +133,7 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
     //   }
     // };
     const handleFinalSubmit = async () => {
+        setIsProcessing(true);
         try {
             // 1️⃣ Build exchange items row-by-row (CORRECT)
             const exchangeItems = exchangeRows
@@ -181,6 +183,8 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
         } catch (error) {
             console.error(error);
             notifyError("Something went wrong while exchanging product");
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -333,13 +337,13 @@ const ExchangePopup = ({ open, onClose, items = [], products = [], onExchange, o
                 </div>
 
                 <div className="flex gap-3 mt-1 text-sm">
-                    <button className={`flex-1 bg-gradient-to-b from-secondary to-primary text-white font-bold py-2.5 rounded-md ${isExchangeDisabled
+                    <button className={`flex-1 bg-gradient-to-b from-secondary to-primary text-white font-bold py-2.5 rounded-md ${isExchangeDisabled || isProcessing
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
                         : " hover:bg-none hover:bg-secondary cursor-pointer "
                         }`}
-                        disabled={isExchangeDisabled}
+                        disabled={isExchangeDisabled || isProcessing}
                         onClick={handleFinalSubmit}>
-                        Exchange
+                        {isProcessing ? "Processing..." : "Exchange"}
                     </button>
                     <button className="flex-1 font-bold py-2.5 border-gray-300 rounded-md  outline-none shadow-[0_0_3px_#00000026] hover:bg-gray-200 hover:shadow-none cursor-pointer" onClick={onClose}>
                         Cancel

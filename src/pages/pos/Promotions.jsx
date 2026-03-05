@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import Select from "react-select";
 import { commonSelectStyles } from "../../components/common/select/selectStyle";
 import { usePromotionStore } from "../../store/usePromotionStore";
-import OfflineLoader from "../../components/OfflineLoader";
+// import OfflineLoader from "../../components/OfflineLoader";
 import { useProductStore } from "../../store/useProductStore";
 import { useCategoryStore } from "../../store/useCategoryStore";
 import { useOutletStore } from "../../store/useOutletStore";
@@ -10,6 +10,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import upDownIcon from '../../assets/images/upDown.png';
 import { useRetail } from "../../hooks/useRetail";
 import { useNavigate } from "react-router-dom";
+import LoadingBar from "../../components/common/LoadingBar/LoadingBar";
 
 const Promotions = () => {
   const { promotions, hydrated: promoHydrated, hydrate: promoHydrate } = usePromotionStore();
@@ -19,7 +20,7 @@ const Promotions = () => {
   const user = useAuthStore((u) => u.user);
   const navigate = useNavigate();
   const { setIsRetail, setIsRetailOpen } = useRetail();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
     promotionName: "",
     product: "",
@@ -30,10 +31,12 @@ const Promotions = () => {
   });
 
   useEffect(() => {
+    setIsLoading(true);
     if (!promoHydrated) promoHydrate();
     if (!productsHydrated) productsHydrate();
     if (!categoriesHydrated) categoriesHydrate();
     if (!outletHydrated) outletHydrate();
+    setIsLoading(false);
   }, [promoHydrated, productsHydrated, categoriesHydrated, outletHydrated]);
 
   // Options
@@ -188,10 +191,11 @@ const Promotions = () => {
     });
   }, [filters, promotions, products, categories]); // Added categories to deps
 
-  if (!productsHydrated || !promoHydrated || !categoriesHydrated || !outletHydrated) return <OfflineLoader />;
+  // if (!productsHydrated || !promoHydrated || !categoriesHydrated || !outletHydrated) return <OfflineLoader />;
 
   return (
     <div className="bg-background w-full h-full p-4">
+      <LoadingBar isLoading={!productsHydrated || !promoHydrated || !categoriesHydrated || !outletHydrated || isLoading} />
       <h1 className="text-2xl font-bold text-gray-700">Promotions</h1>
 
       {/* Filters Grid */}
@@ -250,7 +254,7 @@ const Promotions = () => {
           <thead className="bg-gradient-to-b from-secondary to-primary text-white text-center">
             <tr>
               <th className="p-2">Promotion</th>
-              {/* <th className="p-2">Type</th> */}
+              <th className="p-2">Schedule Type</th>
               <th className="p-2">Start Details</th>
               <th className="p-2">End Details</th>
               <th className="p-2">Category</th>
@@ -265,15 +269,17 @@ const Promotions = () => {
               <th className="p-2">Outlet</th>
             </tr>
           </thead>
-          <tbody className="text-center text-sm text-gray-600">
+          <tbody className="text-center text-[#555555]">
             {filteredPromotions.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-10 text-gray-400">
-                  No data matching filters
+                <td colSpan={9} className="p-3">
+                  No Promotion found
                 </td>
               </tr>
             ) : (
               filteredPromotions.map((p) => {
+                const scheduleKey = `${p.schedule_type}:${p.schedule_mode}`;
+  const scheduleLabel = combinedScheduleOptions.find(opt => opt.value === scheduleKey)?.label || scheduleKey;
                 // Logic to find the price
                 const getPriceDisplay = () => {
                   if (p.promo_on === "CATEGORY" || p.type === "FREE") return { old: null, current: "-" };
@@ -304,7 +310,7 @@ const Promotions = () => {
                 return (
                   <tr key={p.promotion_id} className="even:bg-button-background">
                     <td className="p-2">{p.promotion_name}</td>
-                    {/* <td className="p-2"><span>{p.type}</span></td> */}
+                    <td className="p-2">{scheduleLabel}</td>
                     <td className="p-2">{formatSchedulePart(p, "START")}</td>
                     <td className="p-2">{formatSchedulePart(p, "END")}</td>
                     <td className="p-2 max-w-[150px] truncate">{getCategoryByProduct(p.product)}</td>

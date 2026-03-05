@@ -7,6 +7,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     const [restock, setRestock] = useState(true);
     const [reason, setReason] = useState("");
     const { notifyError, notifySuccess } = useNotification();
+    const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         if (open) {
@@ -67,7 +68,7 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
             }));
 
         if (itemsToRefund.length === 0) return onClose();
-
+        setIsProcessing(true);
         // Construct the RefundData interface
         const refundData = {
             order_id: orderId,
@@ -103,6 +104,8 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
         } catch (error) {
             console.error("Refund failed:", error);
             notifyError("Refund failed:", error.message || error);
+        } finally {
+            setIsProcessing(false);
         }
 
     };
@@ -215,9 +218,12 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                     <div className=" flex flex-col sm:flex-row gap-5 mt-7">
                         <button
                             onClick={handleSubmit}
-                            className="flex-1 bg-gradient-to-b from-secondary to-primary text-white font-bold py-2 rounded-md hover:bg-none hover:bg-secondary cursor-pointer "
+                            disabled={refundItems.every(i => i.refundQty === 0) || isProcessing}
+                            className={`flex-1 font-bold py-2 rounded-md text-white bg-gradient-to-b from-secondary to-primary  transition-all ${(refundItems.every(i => i.refundQty === 0) || isProcessing)
+                                    ? "cursor-not-allowed opacity-70"
+                                    : "cursor-pointer"}`}
                         >
-                            Refund
+                            {isProcessing ? "Processing..." : "Refund"}
                         </button>
                         <button
                             onClick={handleClose}
