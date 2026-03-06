@@ -194,7 +194,7 @@ export const useCustomerStore = create((set, get) => ({
     if (navigator.onLine && customer.serverId) {
       try {
         const res = await api.delete(`/tenant/customer/${customer.serverId}`);
-       // console.log("Delete response:", res.data);
+        // console.log("Delete response:", res.data);
         updatedCustomer.isSynced = true;
         await updateCustomerDB(updatedCustomer);
       } catch (err) {
@@ -213,11 +213,11 @@ export const useCustomerStore = create((set, get) => ({
     }
 
     try {
-    //  console.log("🔄 Fetching customers from API...");
+      //  console.log("🔄 Fetching customers from API...");
       // Fetch customers from API
       const outletId = useAuthStore.getState().user?.outlet_id;
       const res = await api.get(`/tenant/customer/${outletId}`);
-     // console.log("📦 API Response:", res.data);
+      // console.log("📦 API Response:", res.data);
 
       // Handle different possible response structures
       let apiCustomers = [];
@@ -347,25 +347,50 @@ export const useCustomerStore = create((set, get) => ({
         }
       }
 
-      // Preserve ALL local-only customers (those without serverId that aren't deleted and not processed)
-      const localOnlyCustomers = existingCustomers.filter(
-        c => !c.isDeleted &&
-          !c.serverId &&
-          !processedLocalIds.has(c.localId)
-      );
+      // ... inside fetchCustomersFromAPI after the loop processing apiCustomers
 
-      //console.log(`💾 Preserving ${localOnlyCustomers.length} local-only customers`);
+      // 1. Create a set of all server IDs currently active on the server
+      const serverActiveIds = new Set(apiCustomers.map(c =>
+        String(c.customer_id || c.customerId || c.id || c._id)
+      ));
 
-      // Combine server customers with local-only customers
-      const allCustomers = [...processedCustomers, ...localOnlyCustomers];
+      // 2. Identify customers to remove locally
+      // Logic: If they have a serverId, but that ID is NOT in the server's active list
+      for (const localCustomer of existingCustomers) {
+        if (
+          localCustomer.serverId &&
+          !serverActiveIds.has(String(localCustomer.serverId)) &&
+          localCustomer.isSynced // Only delete if we are sure it was already synced
+        ) {
+          console.log(`🗑️ Removing customer ${localCustomer.firstName} (Server ID: ${localCustomer.serverId}) because they were deleted on another device.`);
+          await deleteCustomerDB(localCustomer.localId);
+        }
+      }
 
-      // Update Zustand state (only non-deleted customers)
-      const activeCustomers = allCustomers.filter(c => !c.isDeleted);
+      // 3. Finally, refresh the Zustand state
+      const finalCustomers = await getCustomersDB();
       set({
-        customers: activeCustomers,
+        customers: finalCustomers.filter(c => !c.isDeleted),
       });
+      // Preserve ALL local-only customers (those without serverId that aren't deleted and not processed)
+      // const localOnlyCustomers = existingCustomers.filter(
+      //   c => !c.isDeleted &&
+      //     !c.serverId &&
+      //     !processedLocalIds.has(c.localId)
+      // );
 
-     // console.log(`✅ Successfully synced ${processedCustomers.length} customers from API, preserved ${localOnlyCustomers.length} local customers. Total: ${activeCustomers.length} active customers`);
+      // //console.log(`💾 Preserving ${localOnlyCustomers.length} local-only customers`);
+
+      // // Combine server customers with local-only customers
+      // const allCustomers = [...processedCustomers, ...localOnlyCustomers];
+
+      // // Update Zustand state (only non-deleted customers)
+      // const activeCustomers = allCustomers.filter(c => !c.isDeleted);
+      // set({
+      //   customers: activeCustomers,
+      // });
+
+      // console.log(`✅ Successfully synced ${processedCustomers.length} customers from API, preserved ${localOnlyCustomers.length} local customers. Total: ${activeCustomers.length} active customers`);
     } catch (err) {
       console.error("❌ Failed to fetch customers from API:", err);
       console.error("Error details:", err.response?.data || err.message);
@@ -412,7 +437,7 @@ export const useCustomerStore = create((set, get) => ({
             "/tenant/customer",
             mapCustomerToApiPayload(customer)
           );
-        //  console.log("Sync create response:", res.data);
+          //  console.log("Sync create response:", res.data);
           customer.serverId = res.data.data.customer.customerId || res.data.customer.customerId || res.data._id;
         }
 
