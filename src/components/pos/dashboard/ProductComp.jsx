@@ -106,11 +106,16 @@ const ProductComp = ({
     playBeepSound();
   };
 
+  const handleImageError = (e) => {
+    e.target.src = defaultImg;
+  };
+
   return (
     <div onClick={handleAddToCart} className="product bg-white border border-gray-300 rounded-lg w-36 h-[290px] hover:border-secondary cursor-pointer">
       {img ? (
         <img
           src={img}
+          onError={handleImageError}
           alt={defaultImg}
           style={{
             width: "144px",

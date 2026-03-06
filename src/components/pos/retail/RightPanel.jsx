@@ -303,15 +303,15 @@ const productOptions = useMemo(() => {
                                             )}
                                         </div>
                                         <div className="text-xs text-inherit space-x-2">
-                                            <span className="opacity-60 text-inherit">In Stock: [{option.data.stockQueue}]</span>
                                             <span className={`font-semibold ${isActive
                                                 ? "text-white" // When hovered/selected, force white
-                                                : option.data.stockQueue < option.data.lowStockThreshold
-                                                    ? "text-red-500"
-                                                    : "text-green-500"
-                                                }`}>
-                                                Stock: [{option.data.stock}]
+                                                : option.data.stock < option.data.lowStockThreshold
+                                                ? "text-red-500"
+                                                : "text-green-500"
+                                            }`}>
+                                                In Stock: [{option.data.stock}]
                                             </span>
+                                            <span className="opacity-60 text-inherit">Stock: [{option.data.stockQueue}]</span>
                                         </div>
                                     </div>
                                 </div>
