@@ -9,18 +9,24 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
     const { notifyError, notifySuccess } = useNotification();
     const [isProcessing, setIsProcessing] = useState(false);
 
+
+
     useEffect(() => {
-        if (open) {
-            setRefundItems(
-                items.filter(item => item.category_name !== "Butchery" && item.category_name !== "Shots").map(item => ({
+        // Only initialize/reset if the popup is opening AND we aren't currently processing a refund
+        if (open && !isProcessing) {
+            const filteredItems = items.filter(item => item.category_name !== "Butchery" && item.category_name !== "Shots")
+                .map(item => ({
                     ...item,
                     refundQty: 0,
                 }))
+            setRefundItems(
+
+                filteredItems.filter(item => item.productId && (item.quantity - item.refundQuantity) > 0)
             );
             setRestock(true);
             setReason("");
         }
-    }, [open, items]);
+    }, [open]);
 
     if (!open) return null;
 
@@ -133,9 +139,9 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                         </p>
                     )}
 
-                    {refundItems.filter(item => item.productId && (item.quantity - item.refundQuantity) > 0).map((item, index) => (
+                    {refundItems.map((item, index) => (
                         <div
-                            key={item.id || index}
+                            key={index}
                             className="flex justify-between items-center px-3 py-2 "
                         >
                             <div className="flex gap-2">
@@ -220,8 +226,8 @@ const RefundPopup = ({ open, onClose, items = [], orderId, onProcessRefund }) =>
                             onClick={handleSubmit}
                             disabled={refundItems.every(i => i.refundQty === 0) || isProcessing}
                             className={`flex-1 font-bold py-2 rounded-md text-white bg-gradient-to-b from-secondary to-primary  transition-all ${(refundItems.every(i => i.refundQty === 0) || isProcessing)
-                                    ? "cursor-not-allowed opacity-70"
-                                    : "cursor-pointer"}`}
+                                ? "cursor-not-allowed opacity-70"
+                                : "cursor-pointer"}`}
                         >
                             {isProcessing ? "Processing..." : "Refund"}
                         </button>

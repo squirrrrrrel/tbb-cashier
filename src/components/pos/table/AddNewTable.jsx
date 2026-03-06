@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-
+import LoadingBar from "../../common/LoadingBar/LoadingBar";
 const AddNewTable = ({ onClose, onSave }) => {
   const [tableNumber, setTableNumber] = useState("");
   const [seats, setSeats] = useState("");
-
+  const [isLoading, setIsLoading] = useState("");
   const firstInputRef = useRef(null);
 
   useEffect(() => {
@@ -29,13 +29,14 @@ const AddNewTable = ({ onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevents the page from reloading
     if (isSaveDisabled) return;
-
+    setIsLoading(true);
     await onSave({
       tableNumber: Number(tableNumber),
       seats: Number(seats),
     });
 
     resetForm();
+    setIsLoading(false);
   };
 
   return (
@@ -43,6 +44,7 @@ const AddNewTable = ({ onClose, onSave }) => {
       className="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
       onClick={handleCancel}
     >
+      <LoadingBar isLoading={isLoading} />
       {/* 2. Change div to form */}
       <form
         onSubmit={handleSubmit}
@@ -76,11 +78,11 @@ const AddNewTable = ({ onClose, onSave }) => {
           {/* 3. Explicitly set type="submit" */}
           <button
             type="submit"
-            disabled={isSaveDisabled}
+            disabled={isSaveDisabled || isLoading}
             className={`px-4 py-2 w-1/3 rounded text-white bg-gradient-to-b from-secondary to-primary
-              ${isSaveDisabled ? "opacity-80 cursor-not-allowed" : ""}`}
+              ${isSaveDisabled || isLoading ? "opacity-80 cursor-not-allowed" : ""}`}
           >
-            Save
+            {isLoading? "saving..." : "Save"}
           </button>
 
           {/* 4. Set type="button" for non-submitting buttons to prevent accidental triggers */}

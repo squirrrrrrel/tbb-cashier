@@ -249,7 +249,7 @@ const Promotions = () => {
       </div>
 
       {/* Table */}
-      <div className="table-container overflow-x-auto mt-6">
+      <div className="table-container overflow-x-auto mt-4">
         <table className="w-full">
           <thead className="bg-gradient-to-b from-secondary to-primary text-white text-center">
             <tr>
@@ -269,10 +269,10 @@ const Promotions = () => {
               <th className="p-2">Outlet</th>
             </tr>
           </thead>
-          <tbody className="text-center text-[#555555]">
+          <tbody className="text-center text-sm text-[#555555]">
             {filteredPromotions.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-3">
+                <td colSpan={9} className="p-3 text-base">
                   No Promotion found
                 </td>
               </tr>
