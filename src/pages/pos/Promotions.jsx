@@ -80,7 +80,7 @@ const Promotions = () => {
     [outlets]);
 
   // Helper Functions for Table Display
-  const DAY_MAP = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const DAY_MAP = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
   const getNameFromId = (ids, store, labelKey) => {
     if (!ids) return "-";
@@ -127,7 +127,7 @@ const Promotions = () => {
     const time = isStart ? p.schedule_start_time : p.schedule_end_time;
     const dayIdx = isStart ? p.schedule_start_day : p.schedule_end_day;
 
-    const formattedDate = date ? new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : "";
+    const formattedDate = date ? new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }).toUpperCase() : "";
     const formattedDay = dayIdx ? DAY_MAP[dayIdx - 1] : "";
     const formatTimeStr = (timeStr) => {
       if (!timeStr) return "";
@@ -148,10 +148,12 @@ const Promotions = () => {
     const dateOrDay = p.schedule_type === "WEEKLY" ? "week" : p.schedule_type === "BETWEEN_DAYS" ? "week" : p.schedule_type === "DATE_RANGE" ? "date" : p.schedule_type === "BETWEEN_DATES" ? "date" : "";
 
     return (
-      <div className="flex flex-col text-xs">
-        {dateOrDay === "week" && <span>{formattedDay ? `🗓️${formattedDay}` : ""}</span> }
-        {dateOrDay === "date" && <span>{formattedDate ? `🗓️${formattedDate}` : ""}</span>}
-        <span>{formattedTime ? `🕛${formattedTime}` : ""}</span>
+      <div className="flex text-xs justify-center">
+        <div className="flex flex-col text-start">
+          {dateOrDay === "week" && <span>{formattedDay ? `🗓️ ${formattedDay}` : ""}</span>}
+          {dateOrDay === "date" && <span>{formattedDate ? `🗓️ ${formattedDate}` : ""}</span>}
+          <span>{formattedTime ? `🕛 ${formattedTime}` : ""}</span>
+        </div>
       </div>
     );
   };
@@ -254,7 +256,6 @@ const Promotions = () => {
           <thead className="bg-gradient-to-b from-secondary to-primary text-white text-center">
             <tr>
               <th className="p-2">Promotion</th>
-              <th className="p-2">Schedule Type</th>
               <th className="p-2">Start Details</th>
               <th className="p-2">End Details</th>
               <th className="p-2">Category</th>
@@ -279,7 +280,7 @@ const Promotions = () => {
             ) : (
               filteredPromotions.map((p) => {
                 const scheduleKey = `${p.schedule_type}:${p.schedule_mode}`;
-  const scheduleLabel = combinedScheduleOptions.find(opt => opt.value === scheduleKey)?.label || scheduleKey;
+                const scheduleLabel = combinedScheduleOptions.find(opt => opt.value === scheduleKey)?.label || scheduleKey;
                 // Logic to find the price
                 const getPriceDisplay = () => {
                   if (p.promo_on === "CATEGORY" || p.type === "FREE") return { old: null, current: "-" };
@@ -310,7 +311,6 @@ const Promotions = () => {
                 return (
                   <tr key={p.promotion_id} className="even:bg-button-background">
                     <td className="p-2">{p.promotion_name}</td>
-                    <td className="p-2">{scheduleLabel}</td>
                     <td className="p-2">{formatSchedulePart(p, "START")}</td>
                     <td className="p-2">{formatSchedulePart(p, "END")}</td>
                     <td className="p-2 max-w-[150px] truncate">{getCategoryByProduct(p.product)}</td>
