@@ -11,8 +11,10 @@ import upDownIcon from '../../assets/images/upDown.png';
 import { useRetail } from "../../hooks/useRetail";
 import { useNavigate } from "react-router-dom";
 import LoadingBar from "../../components/common/LoadingBar/LoadingBar";
+import { useSocket } from "../../socket/SocketProvider";
 
 const Promotions = () => {
+  const socket = useSocket();
   const { promotions, hydrated: promoHydrated, hydrate: promoHydrate } = usePromotionStore();
   const { products, hydrated: productsHydrated, hydrate: productsHydrate } = useProductStore();
   const { categories, hydrate: categoriesHydrate, hydrated: categoriesHydrated } = useCategoryStore();
@@ -38,6 +40,22 @@ const Promotions = () => {
     if (!outletHydrated) outletHydrate();
     setIsLoading(false);
   }, [promoHydrated, productsHydrated, categoriesHydrated, outletHydrated]);
+
+    useEffect(() => {
+      if (!socket) return;
+  
+      const handlePromotionRefresh = (payload) => {
+        console.log("Promotion change detected:", payload.source);
+        // Refresh the promotion store
+        usePromotionStore.getState().fetchPromotionsFromAPI();
+      }
+  
+      socket.on("promotion:refresh", handlePromotionRefresh);
+      setIsLoading(false);
+      return () => {
+        socket.off("promotion:refresh", handlePromotionRefresh);
+      };
+    }, [socket]);
 
   // Options
   const productOptions = useMemo(() => products.map(p => ({ label: p.name, value: p.serverId || p.id })), [products]);
