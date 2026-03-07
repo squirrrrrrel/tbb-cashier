@@ -29,7 +29,7 @@ export const clearLowStockByOutletDB = async (outletId) => {
   const all = await db.getAll(STORE);
   for (const item of all) {
     if (item.outletId === outletId) {
-      await db.delete(STORE, item.localId);
+      await db.delete(STORE, item.productId);
     }
   }
 };
