@@ -126,7 +126,7 @@ const Retail = ({ setPayToProceed, getFinalProductPrice, setIsPettyClicked, mute
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-            <div className="grow  h-full px-5" >
+            <div className="w-[65vw] h-full px-5" >
                 <div className="flex h-15 mt-3">
                     <div><img className="w-36" src={qKartLogo} alt="logo" /></div>
                     {/* <div className="font-bold text-3xl text-right flex-1"><h3>Cashier Panel</h3></div> */}

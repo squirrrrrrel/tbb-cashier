@@ -24,7 +24,7 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         const taxPercent = Number(item.tax || 0);
         return (
             totalTax +
-            (item.price * (item.quantity || 1) * taxPercent) / 100
+            ((item.price || 0) * (item.quantity || 1) * taxPercent) / 100
         );
     }, 0);
     const discount = Number(managerDiscount) < 1 ? ((total + tax) * (managerDiscount)).toFixed(2) : Number(managerDiscount).toFixed(2);
@@ -51,14 +51,38 @@ const RightPanel = ({ total, setPayToProceed, getFinalProductPrice }) => {
         };
     }, []);
 
+    // --- Keyboard Shortcuts Logic ---
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Don't trigger shortcuts if the user is typing in a search/input field
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            const key = e.key.toLowerCase();
+
+            switch (key) {
+                case 'i': navigate("/pos/invoices"); break;    // I for Invoice
+                case 'p': navigate("/pos/promotions"); break;  // P for Promotion
+                case 'l': navigate("/pos/lowstock"); break;    // L for Low Stock
+                case 'u': navigate("/pos/customers"); break;    // U for select Customer
+                case 'd': handleDiscountClick(); break;        // D for Discount
+                case 'e': navigate("/pos/invoices"); break;    // E for Exchange (assuming same route)
+                case 'h': setActiveModal("holdOrder"); break;  // H for Hold Order
+                default: break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [navigate, cartData, activeModal]); // Dependencies to ensure functions have latest state
+
     // --- Data Formatting for Searchable Select ---
-const customerOptions = useMemo(() => {
-    return (customers?.map(c => ({
-        value: c.localId,
-        label: `${c.firstName} ${c.lastName} [${c.phoneCode}-${c.phone}]`,
-        data: c
-    })) || []);
-}, [customers]);
+    const customerOptions = useMemo(() => {
+        return (customers?.map(c => ({
+            value: c.localId,
+            label: `${c.firstName} ${c.lastName} [${c.phoneCode}-${c.phone}]`,
+            data: c
+        })) || []);
+    }, [customers]);
 
     const formatCustomerLabel = ({ label, data }, { context }) => (
         // 'text-inherit' ensures the spans take the color from the option: (base) style
@@ -77,18 +101,18 @@ const customerOptions = useMemo(() => {
     const excludedCategories = ["shots", "butchery"];
 
 
-const productOptions = useMemo(() => {
-    return products
-        ?.filter(p => {
-            const category = p?.categoryName?.toLowerCase() || "";
-            return !excludedCategories.includes(category);
-        })
-        .map(p => ({
-            value: p?.serverId,
-            label: p?.name || "Unknown Product",
-            data: p
-        }));
-}, [products]);
+    const productOptions = useMemo(() => {
+        return products
+            ?.filter(p => {
+                const category = p?.categoryName?.toLowerCase() || "";
+                return !excludedCategories.includes(category);
+            })
+            .map(p => ({
+                value: p?.serverId,
+                label: p?.name || "Unknown Product",
+                data: p
+            }));
+    }, [products]);
 
     // --- Custom Styles to match your existing UI ---
     const customSelectStyles = {
@@ -232,7 +256,7 @@ const productOptions = useMemo(() => {
                     {/* Right Buttons */}
                     <div className="flex flex-1 gap-2">
                         <button className="flex flex-1 justify-between items-center gap-2 px-3 py-2 text-md text-white rounded-md bg-linear-to-b from-secondary to-primary">
-                            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer?.firstName} ${selectedCustomer?.lastName} ` : "Select Customer"}</p>
+                            <p className="text-sm">{selectedCustomer?.firstName ? `${selectedCustomer?.firstName} ${selectedCustomer?.lastName} ` : <span>Select C<u className="underline decoration-1 underline-offset-2 ">u</u>stomer</span>}</p>
                             {selectedCustomer ? `[${selectedCustomer?.phoneCode}-${selectedCustomer?.phone}]` :
                                 <svg
                                     viewBox="64 64 896 896"
@@ -306,9 +330,9 @@ const productOptions = useMemo(() => {
                                             <span className={`font-semibold ${isActive
                                                 ? "text-white" // When hovered/selected, force white
                                                 : option.data.stock < option.data.lowStockThreshold
-                                                ? "text-red-500"
-                                                : "text-green-500"
-                                            }`}>
+                                                    ? "text-red-500"
+                                                    : "text-green-500"
+                                                }`}>
                                                 In Stock: [{option.data.stock}]
                                             </span>
                                             <span className="opacity-60 text-inherit">Stock: [{option.data.stockQueue}]</span>
@@ -358,7 +382,7 @@ const productOptions = useMemo(() => {
                         >
                             <path d="M938 458.8l-29.6-312.6c-1.5-16.2-14.4-29-30.6-30.6L565.2 86h-.4c-3.2 0-5.7 1-7.6 2.9L88.9 557.2a9.96 9.96 0 000 14.1l363.8 363.8c1.9 1.9 4.4 2.9 7.1 2.9s5.2-1 7.1-2.9l468.3-468.3c2-2.1 3-5 2.8-8zM699 387c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"></path>
                         </svg>
-                        <p>Invoice</p>
+                        <p><u className="underline decoration-1 underline-offset-2 decoration-gray-500">I</u>nvoice</p>
                     </div>
                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/promotions")}>
                         <svg
@@ -372,7 +396,7 @@ const productOptions = useMemo(() => {
                         >
                             <path d="M938 458.8l-29.6-312.6c-1.5-16.2-14.4-29-30.6-30.6L565.2 86h-.4c-3.2 0-5.7 1-7.6 2.9L88.9 557.2a9.96 9.96 0 000 14.1l363.8 363.8c1.9 1.9 4.4 2.9 7.1 2.9s5.2-1 7.1-2.9l468.3-468.3c2-2.1 3-5 2.8-8zM699 387c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"></path>
                         </svg>
-                        <p>Promotion</p>
+                        <p><u className="underline decoration-1 underline-offset-2 decoration-gray-500">P</u>romotion</p>
                     </div>
                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/lowstock")}>
                         <svg
@@ -386,7 +410,7 @@ const productOptions = useMemo(() => {
                         >
                             <path d="M938 458.8l-29.6-312.6c-1.5-16.2-14.4-29-30.6-30.6L565.2 86h-.4c-3.2 0-5.7 1-7.6 2.9L88.9 557.2a9.96 9.96 0 000 14.1l363.8 363.8c1.9 1.9 4.4 2.9 7.1 2.9s5.2-1 7.1-2.9l468.3-468.3c2-2.1 3-5 2.8-8zM699 387c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"></path>
                         </svg>
-                        <p>Low Stock</p>
+                        <p>L<u className="underline decoration-1 underline-offset-2 decoration-gray-500">o</u>w Stock</p>
                     </div>
                 </div>
                 <div className="cart-btns mt-2 flex gap-2 text-base">
@@ -404,7 +428,7 @@ const productOptions = useMemo(() => {
                         >
                             <path d="M855.7 210.8l-42.4-42.4a8.03 8.03 0 00-11.3 0L168.3 801.9a8.03 8.03 0 000 11.3l42.4 42.4c3.1 3.1 8.2 3.1 11.3 0L855.6 222c3.2-3 3.2-8.1.1-11.2zM304 448c79.4 0 144-64.6 144-144s-64.6-144-144-144-144 64.6-144 144 64.6 144 144 144zm0-216c39.7 0 72 32.3 72 72s-32.3 72-72 72-72-32.3-72-72 32.3-72 72-72zm416 344c-79.4 0-144 64.6-144 144s64.6 144 144 144 144-64.6 144-144-64.6-144-144-144zm0 216c-39.7 0-72-32.3-72-72s32.3-72 72-72 72 32.3 72 72-32.3 72-72 72z"></path>
                         </svg>
-                        <p>Discount</p>
+                        <p><u className="underline decoration-1 underline-offset-2 decoration-gray-500">D</u>iscount</p>
                     </div>
                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer" onClick={() => navigate("/pos/invoices")}>
                         <svg
@@ -418,7 +442,7 @@ const productOptions = useMemo(() => {
                         >
                             <path d="M938 458.8l-29.6-312.6c-1.5-16.2-14.4-29-30.6-30.6L565.2 86h-.4c-3.2 0-5.7 1-7.6 2.9L88.9 557.2a9.96 9.96 0 000 14.1l363.8 363.8c1.9 1.9 4.4 2.9 7.1 2.9s5.2-1 7.1-2.9l468.3-468.3c2-2.1 3-5 2.8-8zM699 387c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"></path>
                         </svg>
-                        <p>Exchange</p>
+                        <p><u className="underline decoration-1 underline-offset-2 decoration-gray-500">E</u>xchange</p>
                     </div>
                     <div className="discount w-full bg-button-background p-4 fill-gray-700 text-gray-700 rounded-lg cursor-pointer"
                         onClick={() => setActiveModal("holdOrder")}>
@@ -433,7 +457,7 @@ const productOptions = useMemo(() => {
                         >
                             <path d="M304 176h80v672h-80zm408 0h-64c-4.4 0-8 3.6-8 8v656c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V184c0-4.4-3.6-8-8-8z"></path>
                         </svg>
-                        <p>Hold Order</p>
+                        <p><u className="underline decoration-1 underline-offset-2 decoration-gray-500">H</u>old Order</p>
                     </div>
                 </div>
                 {/* <div className="cart-checkout flex justify-between items-center bg-gradient-to-b from-primary to-secondary text-white p-4 mt-4 rounded-lg  cursor-pointer" onClick={handleProceed}> */}

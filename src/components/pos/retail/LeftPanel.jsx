@@ -63,7 +63,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
 
 
   return (
-    <div className="h-full mt-4 rounded-md bg-white flex flex-col overflow-hidden border border-gray-200">
+    <div className="h-[80vh] mt-4 rounded-md bg-white flex flex-col overflow-hidden border border-gray-200">
 
       {/* BARCODE SEARCH SECTION */}
 
@@ -88,7 +88,7 @@ const LeftPanel = ({ setTotalAmount, getFinalProductPrice }) => {
       </div>
 
       {/* TABLE BODY */}
-      <div className="flex-1 overflow-y-auto text-sm bg-white text-[#555555]">
+      <div className=" overflow-y-auto text-sm bg-white mr-2 text-[#555555]">
         {cartData.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-50">
             <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" strokeWidth="1" className="mb-4">
